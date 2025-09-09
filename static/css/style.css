@@ -1,0 +1,66 @@
+/* Custom styles for Provision-it */
+
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px;
+    width: 100%;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+}
+
+.error {
+    color: #dc3545;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    margin: 1rem 0;
+}
+
+.success {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    margin: 1rem 0;
+}
+
+.table th {
+    background-color: #e9ecef;
+    border-top: none;
+}
+
+.value-positive {
+    color: #28a745;
+}
+
+.value-negative {
+    color: #dc3545;
+}
+
+.asset-card {
+    transition: transform 0.2s;
+}
+
+.asset-card:hover {
+    transform: translateY(-2px);
+}

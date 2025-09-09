@@ -1,0 +1,101 @@
+asset_id,name,description,max_fractions,min_fractions,available_fractions,submitted_by_Users_user_id,created_at,status,approved_at,approved_by_Users_user_id
+1,Stock 1,Somebody recognize free.,10000,1,10000,237,2025-03-12 13:52:49,pending,,
+2,Land 2,Look civil another person.,10000,1,10000,306,2024-12-28 13:36:49,pending,,
+3,Office 3,Owner impact another large born.,10000,1,10000,884,2025-04-26 15:20:49,approved,2025-05-07 15:20:49,143
+4,Bond 4,Service region middle artist memory.,10000,1,10000,498,2025-05-05 14:52:49,approved,2025-05-20 14:52:49,752
+5,Crypto 5,Very check scientist plan.,10000,1,10000,594,2025-08-14 13:18:49,rejected,,
+6,Stock 6,Dog set guess newspaper available leader establish.,10000,1,10000,48,2025-01-28 14:45:49,rejected,,
+7,Office 7,Determine main next record east fact.,10000,1,10000,702,2025-08-28 17:03:49,archived,,
+8,Warehouse 8,Great likely opportunity.,10000,1,10000,137,2025-04-08 15:40:49,pending,,
+9,Art 9,Laugh officer thus art.,10000,1,10000,770,2025-06-15 05:29:49,approved,2025-06-26 05:29:49,556
+10,Office 10,Shoulder only lose example low sister concern.,10000,1,10000,904,2025-03-22 18:35:49,approved,2025-04-12 18:35:49,970
+11,Warehouse 11,Word product face wall gas national.,10000,1,10000,39,2025-07-02 03:34:49,approved,2025-07-25 03:34:49,587
+12,Land 12,Focus drug leave trade us.,10000,1,10000,746,2025-08-30 18:15:49,approved,2025-09-03 18:15:49,169
+13,REIT 13,Various may pay care rich enter.,10000,1,10000,994,2025-07-02 03:45:49,approved,2025-07-24 03:45:49,300
+14,Crypto 14,Body picture produce deep improve close personal.,10000,1,10000,152,2024-10-19 20:38:49,approved,2024-11-05 20:38:49,169
+15,Bond 15,It can political want stay chance explain.,10000,1,10000,860,2024-12-29 17:50:49,archived,,
+16,Warehouse 16,Certainly wind defense discover product lay instead each.,10000,1,10000,749,2025-08-03 11:27:49,approved,2025-08-12 11:27:49,360
+17,Crypto 17,Their task on last know would.,10000,1,10000,990,2025-08-18 13:40:49,approved,2025-09-05 13:40:49,970
+18,Stock 18,Response ground indicate sense.,10000,1,10000,274,2025-09-04 09:28:49,approved,2025-09-22 09:28:49,601
+19,Stock 19,Speech up second common today century.,10000,1,10000,562,2025-03-23 21:46:49,archived,,
+20,Art 20,Fire course determine.,10000,1,10000,409,2025-02-05 09:38:49,approved,2025-02-18 09:38:49,211
+21,Office 21,Morning audience also position.,10000,1,10000,903,2025-02-12 15:15:49,archived,,
+22,Fund 22,Get share her lead rather read positive.,10000,1,10000,245,2024-11-02 03:13:49,archived,,
+23,Fund 23,Own both test table.,10000,1,10000,748,2025-02-28 12:20:49,approved,2025-03-03 12:20:49,176
+24,Land 24,Season group pass player college there bag poor.,10000,1,10000,803,2025-08-22 22:09:49,approved,2025-09-02 22:09:49,698
+25,Office 25,Good choose sort million.,10000,1,10000,563,2024-10-02 09:43:49,archived,,
+26,Bond 26,Defense word power near blood at market.,10000,1,10000,485,2024-10-13 04:40:49,approved,2024-10-26 04:40:49,680
+27,Art 27,Week full amount live.,10000,1,10000,845,2024-10-21 20:17:49,approved,2024-10-24 20:17:49,864
+28,REIT 28,Bed shake by.,10000,1,10000,1000,2024-12-14 11:33:49,approved,2024-12-17 11:33:49,450
+29,Crypto 29,Hear push throw human speak.,10000,1,10000,681,2025-05-18 00:24:49,approved,2025-06-15 00:24:49,633
+30,REIT 30,Well people start avoid require system.,10000,1,10000,535,2024-11-12 04:36:49,approved,2024-11-15 04:36:49,202
+31,ETF 31,Agree increase top wind play thus.,10000,1,10000,373,2024-12-15 13:39:49,approved,2024-12-23 13:39:49,513
+32,Office 32,Build base give it police which walk call.,10000,1,10000,157,2024-10-06 06:01:49,approved,2024-11-03 06:01:49,796
+33,Art 33,Bring at beyond time remember.,10000,1,10000,330,2025-02-26 08:19:49,rejected,,
+34,Crypto 34,Military respond of international order southern house.,10000,1,10000,126,2025-02-12 15:28:49,approved,2025-02-24 15:28:49,165
+35,Art 35,Authority move concern avoid as interview.,10000,1,10000,679,2024-12-16 03:53:49,approved,2024-12-25 03:53:49,143
+36,ETF 36,Certainly kid fill half despite.,10000,1,10000,298,2025-01-23 22:05:49,approved,2025-02-16 22:05:49,634
+37,REIT 37,See special American work reduce reveal.,10000,1,10000,778,2024-12-19 16:12:49,approved,2025-01-04 16:12:49,513
+38,Stock 38,Necessary yard apply serious star president wife.,10000,1,10000,677,2025-05-11 00:49:49,approved,2025-05-24 00:49:49,988
+39,ETF 39,Form thus range.,10000,1,10000,19,2024-11-29 14:12:49,approved,2024-12-18 14:12:49,99
+40,Land 40,For work change ability necessary approach their.,10000,1,10000,314,2024-12-05 11:14:49,approved,2024-12-14 11:14:49,313
+41,Bond 41,Sense involve yard with.,10000,1,10000,94,2024-12-14 23:41:49,rejected,,
+42,Office 42,Control amount source gas seat season reality or.,10000,1,10000,132,2025-02-05 10:33:49,pending,,
+43,Art 43,Second grow black.,10000,1,10000,735,2025-01-26 07:49:49,approved,2025-02-05 07:49:49,922
+44,Fund 44,Toward shake raise range establish newspaper able.,10000,1,10000,442,2024-10-13 00:21:49,approved,2024-10-26 00:21:49,313
+45,Crypto 45,Federal person address population pattern military.,10000,1,10000,133,2024-10-28 13:18:49,pending,,
+46,Warehouse 46,Purpose tough control last.,10000,1,10000,65,2024-10-04 13:51:49,rejected,,
+47,Office 47,Teach challenge nice PM.,10000,1,10000,775,2025-01-24 07:47:49,approved,2025-02-23 07:47:49,646
+48,Art 48,Author stage paper east record.,10000,1,10000,111,2024-11-10 01:43:49,draft,,
+49,ETF 49,Themselves hit age hard enjoy.,10000,1,10000,425,2025-01-10 14:16:49,approved,2025-01-26 14:16:49,538
+50,Art 50,Former suggest evidence throw up my along.,10000,1,10000,525,2025-09-04 22:58:49,pending,,
+51,Land 51,Task care road begin five eye choose.,10000,1,10000,555,2025-08-19 22:54:49,approved,2025-09-01 22:54:49,935
+52,Land 52,Worry me wall enter campaign example stand.,10000,1,10000,121,2025-07-25 12:18:49,approved,2025-07-29 12:18:49,21
+53,Crypto 53,What heart site control marriage agreement.,10000,1,10000,91,2025-05-22 01:43:49,approved,2025-05-29 01:43:49,833
+54,Fund 54,Cut pay manage range sport range company.,10000,1,10000,495,2025-08-12 02:28:49,pending,,
+55,Bond 55,Toward however skin store end.,10000,1,10000,144,2025-02-13 18:17:49,approved,2025-02-24 18:17:49,450
+56,Crypto 56,Herself writer look story space painting professional beat.,10000,1,10000,531,2025-09-06 14:38:49,approved,2025-09-09 14:38:49,360
+57,Art 57,Whose turn bank Democrat firm company eight best.,10000,1,10000,393,2025-05-01 22:18:49,approved,2025-05-18 22:18:49,538
+58,Art 58,Trouble interview culture piece yet size must ask.,10000,1,10000,698,2025-08-14 10:53:49,approved,2025-09-09 10:53:49,521
+59,REIT 59,About would employee.,10000,1,10000,878,2024-12-07 11:53:49,approved,2024-12-14 11:53:49,96
+60,Crypto 60,Parent study turn market although only notice.,10000,1,10000,668,2025-03-02 05:30:49,approved,2025-03-07 05:30:49,740
+61,REIT 61,Accept fine woman series chair power beat man.,10000,1,10000,953,2025-03-19 13:43:49,draft,,
+62,Fund 62,Agree may whose better last song successful.,10000,1,10000,680,2025-08-13 20:52:49,approved,2025-08-27 20:52:49,118
+63,Bond 63,Teach individual allow admit maybe along include.,10000,1,10000,844,2025-03-28 18:55:49,approved,2025-04-07 18:55:49,590
+64,Bond 64,Make property some evening course bed set.,10000,1,10000,728,2025-05-25 01:33:49,approved,2025-06-09 01:33:49,882
+65,Office 65,Control themselves table.,10000,1,10000,900,2025-05-28 19:01:49,approved,2025-06-01 19:01:49,779
+66,ETF 66,Wonder entire go board car cultural.,10000,1,10000,141,2025-08-04 00:41:49,approved,2025-08-22 00:41:49,876
+67,Bond 67,Cut why most enter source.,10000,1,10000,511,2025-05-18 22:26:49,approved,2025-06-13 22:26:49,415
+68,Bond 68,Machine capital heavy family news.,10000,1,10000,548,2025-06-20 15:23:49,draft,,
+69,Art 69,Yet fly base society bring fire.,10000,1,10000,529,2025-07-20 06:06:49,approved,2025-07-22 06:06:49,148
+70,Art 70,Face find federal.,10000,1,10000,230,2024-10-07 11:27:49,draft,,
+71,Bond 71,Seven trial example compare top they.,10000,1,10000,159,2025-08-10 22:04:49,approved,2025-08-20 22:04:49,598
+72,Stock 72,Situation bank use man admit wind.,10000,1,10000,896,2024-11-15 09:27:49,approved,2024-11-25 09:27:49,217
+73,Bond 73,Price concern offer wait know gas.,10000,1,10000,333,2024-12-03 14:03:49,draft,,
+74,REIT 74,Guy long improve sing.,10000,1,10000,401,2025-08-24 09:48:49,approved,2025-09-01 09:48:49,412
+75,Crypto 75,Interview admit herself central yard perhaps paper.,10000,1,10000,711,2025-07-24 13:43:49,approved,2025-08-07 13:43:49,257
+76,Warehouse 76,Thousand anything game.,10000,1,10000,696,2025-02-16 17:10:49,pending,,
+77,Crypto 77,Rate gas five center you trouble traditional.,10000,1,10000,674,2025-05-24 23:39:49,approved,2025-06-09 23:39:49,412
+78,Fund 78,Tax gun dog without.,10000,1,10000,19,2024-12-29 18:00:49,approved,2025-01-18 18:00:49,422
+79,Bond 79,Own truth see.,10000,1,10000,554,2025-07-26 14:04:49,approved,2025-08-24 14:04:49,935
+80,Bond 80,Always race although deal.,10000,1,10000,593,2025-04-09 18:35:49,approved,2025-04-21 18:35:49,2
+81,Land 81,Stage save room laugh campaign probably.,10000,1,10000,968,2025-06-23 22:53:49,approved,2025-07-05 22:53:49,461
+82,Stock 82,Baby southern offer stock level news agreement.,10000,1,10000,493,2025-05-06 09:25:49,approved,2025-06-01 09:25:49,169
+83,Warehouse 83,Far church future method open your.,10000,1,10000,829,2025-08-04 20:37:49,approved,2025-08-22 20:37:49,914
+84,REIT 84,Travel identify full mean organization pull stock picture.,10000,1,10000,807,2025-06-19 00:47:49,approved,2025-06-21 00:47:49,74
+85,Crypto 85,Study agent listen visit work.,10000,1,10000,594,2025-07-22 06:31:49,approved,2025-08-10 06:31:49,556
+86,Crypto 86,Table hospital civil also.,10000,1,10000,79,2025-03-01 20:30:49,pending,,
+87,Land 87,Every beautiful six.,10000,1,10000,174,2024-10-05 17:51:49,approved,2024-11-02 17:51:49,793
+88,ETF 88,Lead save author foot property people.,10000,1,10000,311,2025-06-25 12:06:49,approved,2025-06-29 12:06:49,313
+89,ETF 89,Course outside team listen cover kind compare.,10000,1,10000,509,2025-04-24 02:38:49,approved,2025-05-02 02:38:49,618
+90,Art 90,Number wait practice about successful culture.,10000,1,10000,583,2024-12-09 18:40:49,approved,2024-12-19 18:40:49,270
+91,Bond 91,Power side single.,10000,1,10000,569,2025-05-28 15:14:49,approved,2025-06-14 15:14:49,669
+92,Land 92,Wrong imagine act radio.,10000,1,10000,912,2025-07-23 20:06:49,draft,,
+93,ETF 93,Age city bring hair high air while short.,10000,1,10000,811,2024-09-15 01:59:49,approved,2024-09-18 01:59:49,302
+94,Stock 94,Gas expert owner hot Congress.,10000,1,10000,158,2025-04-27 19:45:49,approved,2025-05-01 19:45:49,662
+95,Fund 95,Rule personal note prepare.,10000,1,10000,584,2025-07-10 17:30:49,approved,2025-07-18 17:30:49,305
+96,Fund 96,Day lawyer speak.,10000,1,10000,794,2024-12-20 21:20:49,approved,2024-12-23 21:20:49,322
+97,Stock 97,True show own teacher final base.,10000,1,10000,346,2025-07-21 18:59:49,approved,2025-07-27 18:59:49,846
+98,Office 98,Hotel west return mind last attorney sell.,10000,1,10000,351,2025-07-28 05:35:49,draft,,
+99,REIT 99,Player moment well reason me want.,10000,1,10000,326,2025-02-11 07:10:49,approved,2025-02-16 07:10:49,322
+100,Bond 100,Police word easy attack prepare while.,10000,1,10000,696,2025-06-16 15:21:49,approved,2025-06-23 15:21:49,201

@@ -2,7 +2,7 @@
 Authentication API endpoints
 """
 
-from flask import Blueprint, request
+from flask import Blueprint, request, session
 from app.models import User
 from app import db
 from app.api.errors import AuthenticationError, ValidationError, success_response, error_response
@@ -47,6 +47,11 @@ def login():
         # Generate a simple session token (in production, use JWT)
         session_token = secrets.token_urlsafe(32)
         
+        # Set Flask session for web interface
+        session['user_id'] = user.user_id
+        session['username'] = user.username
+        session['session_token'] = session_token
+        
         # Return user info with session token
         user_data = user.to_dict()
         user_data['session_token'] = session_token
@@ -66,7 +71,8 @@ def logout():
     User logout endpoint
     POST /api/v1/auth/logout
     """
-    # In a real application, you would invalidate the session token
+    # Clear Flask session
+    session.clear()
     return success_response(message="Logout successful")
 
 

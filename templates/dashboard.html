@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Provision-it{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">My Asset Holdings</h1>
+            <div class="text-muted">
+                <small>User ID: {{ user_id }}</small>
+            </div>
+        </div>
+        
+        {% if holdings %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Portfolio Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Asset Name</th>
+                                    <th>Description</th>
+                                    <th>Fractions Owned</th>
+                                    <th>Latest Asset Value</th>
+                                    <th>Fraction Value</th>
+                                    <th>Total Holding Value</th>
+                                    <th>Latest Purchase</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for holding in holdings %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ holding.name }}</strong>
+                                        <br>
+                                        <small class="text-muted">ID: {{ holding.asset_id }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">{{ holding.description or 'No description' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ holding.fractions_owned }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">${{ "{:,.0f}".format(holding.latest_asset_value) }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-success fw-bold">${{ "{:.2f}".format(holding.fraction_value) }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-success fw-bold fs-5">${{ "{:,.2f}".format(holding.total_value) }}</span>
+                                    </td>
+                                    <td>
+                                        {% if holding.latest_purchase_date %}
+                                            <small class="text-muted">
+                                                {{ holding.latest_purchase_date.strftime('%Y-%m-%d') }}
+                                            </small>
+                                        {% else %}
+                                            <small class="text-muted">Unknown</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                    onclick="viewAssetDetails({{ holding.asset_id }})">
+                                                View Details
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                                    onclick="viewAssetHistory({{ holding.asset_id }})">
+                                                History
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Portfolio Summary -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Assets</h5>
+                            <h3 class="card-text">{{ holdings|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Value</h5>
+                            <h3 class="card-text">${{ "{:,.2f}".format(holdings|sum(attribute='total_value')) }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Fractions</h5>
+                            <h3 class="card-text">{{ holdings|sum(attribute='fractions_owned') }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-chart-line fa-3x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted">No Asset Holdings Found</h4>
+                    <p class="text-muted">You don't currently own any asset fractions.</p>
+                    <a href="/assets" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Browse Available Assets
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Asset Details Modal -->
+<div class="modal fade" id="assetDetailsModal" tabindex="-1" aria-labelledby="assetDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assetDetailsModalLabel">Asset Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="assetDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewAssetDetails(assetId) {
+    // Load asset details via API
+    fetch(`/api/v1/assets/${assetId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const asset = data.data;
+                const modalContent = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Asset Information</h6>
+                            <p><strong>Name:</strong> ${asset.name}</p>
+                            <p><strong>Description:</strong> ${asset.description || 'No description'}</p>
+                            <p><strong>Status:</strong> <span class="badge bg-${asset.status === 'approved' ? 'success' : 'warning'}">${asset.status}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Fraction Details</h6>
+                            <p><strong>Available Fractions:</strong> ${asset.available_fractions}</p>
+                            <p><strong>Min Fractions:</strong> ${asset.min_fractions}</p>
+                            <p><strong>Max Fractions:</strong> ${asset.max_fractions}</p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('assetDetailsContent').innerHTML = modalContent;
+                new bootstrap.Modal(document.getElementById('assetDetailsModal')).show();
+            } else {
+                alert('Error loading asset details: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading asset details');
+        });
+}
+
+function viewAssetHistory(assetId) {
+    // Redirect to asset history page
+    window.location.href = `/assets?asset_id=${assetId}`;
+}
+</script>
+{% endblock %}

@@ -66,9 +66,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                     // Store user info in localStorage
                     localStorage.setItem('user', JSON.stringify(data.data));
-                    // Redirect to assets page after 2 seconds
+                    // Redirect to dashboard after 2 seconds
                     setTimeout(() => {
-                        window.location.href = '/assets';
+                        window.location.href = '/dashboard';
                     }, 2000);
                 } else {
                     resultDiv.innerHTML = `

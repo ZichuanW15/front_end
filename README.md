@@ -28,6 +28,7 @@ Provision-it/
 ├── templates/                   # HTML templates
 │   ├── base.html
 │   ├── login.html
+│   ├── dashboard.html          # User dashboard for asset holdings
 │   └── asset_history.html
 ├── static/                      # Static files
 │   ├── css/style.css
@@ -105,11 +106,19 @@ python run.py
 #### Authentication (`/api/v1/auth`)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/v1/auth/login` | User login |
-| `POST` | `/api/v1/auth/logout` | User logout |
+| `POST` | `/api/v1/auth/login` | User login (sets session cookie) |
+| `POST` | `/api/v1/auth/logout` | User logout (clears session) |
 | `GET` | `/api/v1/auth/profile` | Get user profile |
 | `GET` | `/api/v1/auth/users` | List all users |
 | `GET` | `/api/v1/auth/users/<id>` | Get specific user |
+
+#### Web Interface
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/` | Home page (redirects to login) |
+| `GET` | `/login` | Login page |
+| `GET` | `/dashboard` | User dashboard (requires session) |
+| `GET` | `/assets` | Asset history page |
 
 #### Assets (`/api/v1/assets`)
 | Method | Endpoint | Description |
@@ -166,6 +175,12 @@ python run.py
 - Fixed all column name mismatches
 - Proper foreign key relationships
 - Consistent naming conventions
+
+### 6. User Dashboard
+- **Route**: `/dashboard` - Comprehensive user asset holdings view
+- **Authentication**: Session-based with cookie management
+- **Features**: Portfolio summary, asset details, financial calculations
+- **Documentation**: See [DASHBOARD_README.md](DASHBOARD_README.md) for detailed implementation
 
 ## 📊 Response Format
 

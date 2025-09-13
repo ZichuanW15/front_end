@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Fractions - Provision-it{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">Browse Available Fractions</h1>
+            <div class="text-muted">
+                <small>Welcome, {{ username }}</small>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Filters</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="asset_id" class="form-label">Filter by Asset</label>
+                        <select class="form-select" id="asset_id" name="asset_id">
+                            <option value="">All Assets</option>
+                            {% for asset in available_assets %}
+                            <option value="{{ asset.asset_id }}" {% if asset_id == asset.asset_id %}selected{% endif %}>
+                                {{ asset.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button type="submit" class="btn btn-primary">Apply Filter</button>
+                            <a href="/browse" class="btn btn-outline-secondary">Clear</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Results Summary -->
+        <div class="alert alert-info">
+            <strong>{{ total_count }}</strong> available fractions found
+            {% if asset_id %}
+                for selected asset
+            {% endif %}
+        </div>
+        
+        <!-- Fractions Table -->
+        {% if fractions %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Available Fractions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fraction ID</th>
+                                    <th>Fraction No</th>
+                                    <th>Asset</th>
+                                    <th>Current Owner</th>
+                                    <th>Value</th>
+                                    <th>Acquired Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fraction in fractions %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary">#{{ fraction.fraction_id }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">#{{ fraction.fraction_no }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ fraction.asset_name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ fraction.asset_description or 'No description' }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ fraction.current_owner }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="text-success fw-bold">${{ "{:.2f}".format(fraction.fraction_value or 0) }}</span>
+                                    </td>
+                                    <td>
+                                        {% if fraction.acquired_date %}
+                                            <small class="text-muted">
+                                                {{ fraction.acquired_date.strftime('%Y-%m-%d') }}
+                                            </small>
+                                        {% else %}
+                                            <small class="text-muted">Unknown</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                onclick="requestTrade({{ fraction.fraction_id }}, '{{ fraction.asset_name }}', '{{ fraction.current_owner }}')">
+                                            Request Trade
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if total_count > per_page %}
+                    <nav aria-label="Browse pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if page > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page - 1 }}{% if asset_id %}&asset_id={{ asset_id }}{% endif %}">Previous</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for p in range(1, ((total_count + per_page - 1) // per_page) + 1) %}
+                                {% if p == page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ p }}</span>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ p }}{% if asset_id %}&asset_id={{ asset_id }}{% endif %}">{{ p }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page < ((total_count + per_page - 1) // per_page) %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page + 1 }}{% if asset_id %}&asset_id={{ asset_id }}{% endif %}">Next</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-search fa-3x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted">No Available Fractions Found</h4>
+                    <p class="text-muted">
+                        {% if asset_id %}
+                            No fractions are available for the selected asset.
+                        {% else %}
+                            There are currently no fractions available for trading.
+                        {% endif %}
+                    </p>
+                    <a href="/dashboard" class="btn btn-primary">
+                        <i class="fas fa-chart-line"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Trade Request Modal -->
+<div class="modal fade" id="tradeRequestModal" tabindex="-1" aria-labelledby="tradeRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tradeRequestModalLabel">Request Trade</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="/submit_trade_request">
+                <div class="modal-body">
+                    <input type="hidden" id="modal_fraction_id" name="fraction_id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Fraction Details</label>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Fraction ID:</strong> <span id="modal_fraction_id_display"></span></p>
+                                <p class="mb-1"><strong>Asset:</strong> <span id="modal_asset_name"></span></p>
+                                <p class="mb-0"><strong>Current Owner:</strong> <span id="modal_current_owner"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Message (Optional)</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                  placeholder="Add a message to the current owner..."></textarea>
+                        <small class="text-muted">This message will be sent to the current owner with your trade request.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Trade Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function requestTrade(fractionId, assetName, currentOwner) {
+    document.getElementById('modal_fraction_id').value = fractionId;
+    document.getElementById('modal_fraction_id_display').textContent = '#' + fractionId;
+    document.getElementById('modal_asset_name').textContent = assetName;
+    document.getElementById('modal_current_owner').textContent = currentOwner;
+    
+    new bootstrap.Modal(document.getElementById('tradeRequestModal')).show();
+}
+</script>
+{% endblock %}

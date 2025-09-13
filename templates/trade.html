@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Trade Fractions - Provision-it{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">Trade Fractions</h1>
+            <div class="text-muted">
+                <small>Welcome, {{ username }}</small>
+            </div>
+        </div>
+        
+        {% if user_fractions %}
+            <!-- Trade Form -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Transfer Ownership</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="from_owner_id" class="form-label">From Owner</label>
+                                    <input type="number" class="form-control" id="from_owner_id" name="from_owner_id" 
+                                           value="{{ session.user_id }}" readonly>
+                                    <small class="text-muted">You (User ID: {{ session.user_id }})</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="to_owner_id" class="form-label">To Owner</label>
+                                    <select class="form-select" id="to_owner_id" name="to_owner_id" required>
+                                        <option value="">Select recipient...</option>
+                                        {% for user in all_users %}
+                                            {% if user.user_id != session.user_id %}
+                                            <option value="{{ user.user_id }}">{{ user.username }} (ID: {{ user.user_id }})</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="fraction_ids" class="form-label">Fraction IDs to Transfer</label>
+                            <textarea class="form-control" id="fraction_ids" name="fraction_ids" rows="3" 
+                                      placeholder="Enter fraction IDs separated by commas (e.g., 123, 456, 789)" required></textarea>
+                            <small class="text-muted">Enter the fraction IDs you want to transfer, separated by commas</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Transfer Fractions</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">Clear Form</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Your Fractions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Your Fraction Holdings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fraction ID</th>
+                                    <th>Fraction No</th>
+                                    <th>Asset</th>
+                                    <th>Value</th>
+                                    <th>Acquired</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fraction in user_fractions %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary">#{{ fraction.fractions_fraction_id }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">#{{ fraction.fraction_no }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ fraction.asset_name }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="text-success fw-bold">${{ "{:.2f}".format(fraction.fraction_value or 0) }}</span>
+                                    </td>
+                                    <td>
+                                        {% if fraction.acquired_at %}
+                                            <small class="text-muted">
+                                                {{ fraction.acquired_at.strftime('%Y-%m-%d') }}
+                                            </small>
+                                        {% else %}
+                                            <small class="text-muted">Unknown</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                onclick="selectFraction({{ fraction.fractions_fraction_id }})">
+                                            Select
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            Showing {{ user_fractions|length }} fractions you own
+                        </small>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-exchange-alt fa-3x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted">No Fractions to Trade</h4>
+                    <p class="text-muted">You don't currently own any asset fractions to trade.</p>
+                    <a href="/dashboard" class="btn btn-primary">
+                        <i class="fas fa-chart-line"></i> View Dashboard
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function selectFraction(fractionId) {
+    const textarea = document.getElementById('fraction_ids');
+    const currentValue = textarea.value.trim();
+    
+    if (currentValue) {
+        // Check if fraction ID is already in the list
+        const fractionIds = currentValue.split(',').map(id => id.trim());
+        if (fractionIds.includes(fractionId.toString())) {
+            alert('Fraction ID ' + fractionId + ' is already selected');
+            return;
+        }
+        textarea.value = currentValue + ', ' + fractionId;
+    } else {
+        textarea.value = fractionId;
+    }
+}
+
+function clearForm() {
+    document.getElementById('to_owner_id').value = '';
+    document.getElementById('fraction_ids').value = '';
+}
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const toOwnerId = document.getElementById('to_owner_id').value;
+    const fractionIds = document.getElementById('fraction_ids').value.trim();
+    
+    if (!toOwnerId) {
+        e.preventDefault();
+        alert('Please select a recipient');
+        return;
+    }
+    
+    if (!fractionIds) {
+        e.preventDefault();
+        alert('Please enter at least one fraction ID');
+        return;
+    }
+    
+    // Validate fraction IDs format
+    const fractionIdList = fractionIds.split(',').map(id => id.trim());
+    const invalidIds = fractionIdList.filter(id => !/^\d+$/.test(id));
+    
+    if (invalidIds.length > 0) {
+        e.preventDefault();
+        alert('Invalid fraction ID format: ' + invalidIds.join(', ') + '\nPlease enter only numeric IDs separated by commas.');
+        return;
+    }
+    
+    // Confirm transfer
+    const recipient = document.getElementById('to_owner_id').selectedOptions[0].text;
+    const confirmMessage = `Are you sure you want to transfer ${fractionIdList.length} fraction(s) to ${recipient}?\n\nFraction IDs: ${fractionIds}`;
+    
+    if (!confirm(confirmMessage)) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}

@@ -8,11 +8,11 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h2">My Asset Holdings</h1>
             <div class="text-muted">
-                <small>User ID: {{ user_id }}</small>
+                <small>Welcome, {{ username }}</small>
             </div>
         </div>
         
-        {% if holdings %}
+        {% if asset_holdings %}
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Portfolio Overview</h5>
@@ -26,40 +26,44 @@
                                     <th>Description</th>
                                     <th>Fractions Owned</th>
                                     <th>Latest Asset Value</th>
-                                    <th>Fraction Value</th>
                                     <th>Total Holding Value</th>
                                     <th>Latest Purchase</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for holding in holdings %}
+                                {% for asset_id, holding in asset_holdings.items() %}
                                 <tr>
                                     <td>
-                                        <strong>{{ holding.name }}</strong>
+                                        <strong>{{ holding.asset_name }}</strong>
                                         <br>
-                                        <small class="text-muted">ID: {{ holding.asset_id }}</small>
+                                        <small class="text-muted">ID: {{ asset_id }}</small>
                                     </td>
                                     <td>
-                                        <span class="text-muted">{{ holding.description or 'No description' }}</span>
+                                        <span class="text-muted">{{ holding.asset_description or 'No description' }}</span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-primary">{{ holding.fractions_owned }}</span>
+                                        <span class="badge bg-primary">{{ holding.total_fractions }}</span>
                                     </td>
                                     <td>
-                                        <span class="fw-bold">${{ "{:,.0f}".format(holding.latest_asset_value) }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="text-success fw-bold">${{ "{:.2f}".format(holding.fraction_value) }}</span>
+                                        <span class="fw-bold">${{ "{:,.0f}".format(holding.latest_asset_value or 0) }}</span>
+                                        {% if holding.value_updated %}
+                                            <br><small class="text-muted">{{ holding.value_updated.strftime('%Y-%m-%d') }}</small>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         <span class="text-success fw-bold fs-5">${{ "{:,.2f}".format(holding.total_value) }}</span>
                                     </td>
                                     <td>
-                                        {% if holding.latest_purchase_date %}
-                                            <small class="text-muted">
-                                                {{ holding.latest_purchase_date.strftime('%Y-%m-%d') }}
-                                            </small>
+                                        {% if holding.fractions %}
+                                            {% set latest_fraction = holding.fractions | sort(attribute='acquired_at', reverse=true) | first %}
+                                            {% if latest_fraction and latest_fraction.acquired_at %}
+                                                <small class="text-muted">
+                                                    {{ latest_fraction.acquired_at.strftime('%Y-%m-%d') }}
+                                                </small>
+                                            {% else %}
+                                                <small class="text-muted">Unknown</small>
+                                            {% endif %}
                                         {% else %}
                                             <small class="text-muted">Unknown</small>
                                         {% endif %}
@@ -67,11 +71,11 @@
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
                                             <button type="button" class="btn btn-outline-primary btn-sm" 
-                                                    onclick="viewAssetDetails({{ holding.asset_id }})">
+                                                    onclick="viewAssetDetails({{ asset_id }})">
                                                 View Details
                                             </button>
                                             <button type="button" class="btn btn-outline-secondary btn-sm" 
-                                                    onclick="viewAssetHistory({{ holding.asset_id }})">
+                                                    onclick="viewAssetHistory({{ asset_id }})">
                                                 History
                                             </button>
                                         </div>
@@ -90,7 +94,7 @@
                     <div class="card bg-primary text-white">
                         <div class="card-body">
                             <h5 class="card-title">Total Assets</h5>
-                            <h3 class="card-text">{{ holdings|length }}</h3>
+                            <h3 class="card-text">{{ total_assets }}</h3>
                         </div>
                     </div>
                 </div>
@@ -98,7 +102,7 @@
                     <div class="card bg-success text-white">
                         <div class="card-body">
                             <h5 class="card-title">Total Value</h5>
-                            <h3 class="card-text">${{ "{:,.2f}".format(holdings|sum(attribute='total_value')) }}</h3>
+                            <h3 class="card-text">${{ "{:,.2f}".format(total_value) }}</h3>
                         </div>
                     </div>
                 </div>
@@ -106,7 +110,7 @@
                     <div class="card bg-info text-white">
                         <div class="card-body">
                             <h5 class="card-title">Total Fractions</h5>
-                            <h3 class="card-text">{{ holdings|sum(attribute='fractions_owned') }}</h3>
+                            <h3 class="card-text">{{ total_fractions }}</h3>
                         </div>
                     </div>
                 </div>

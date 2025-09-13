@@ -1,5 +1,6 @@
 from datetime import datetime
 from app import db
+import uuid
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -102,7 +103,7 @@ class Ownership(db.Model):
 class Transaction(db.Model):
     __tablename__ = 'transactions'
     
-    transaction_id = db.Column(db.Integer, primary_key=True)
+    transaction_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     quantity = db.Column(db.Integer, nullable=False)
     unit_price = db.Column(db.Numeric(12, 2))
     currency = db.Column(db.String(3))
@@ -143,4 +144,34 @@ class ValueHistory(db.Model):
             'asset_value': self.asset_value,
             'update_time': self.update_time.isoformat() if self.update_time else None,
             'end_time': self.end_time.isoformat() if self.end_time else None
+        }
+
+
+class TradeRequest(db.Model):
+    __tablename__ = 'trade_requests'
+    
+    request_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    fraction_id = db.Column(db.Integer, db.ForeignKey('fractions.fraction_id'), nullable=False)
+    from_user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    to_user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='pending')
+    requested_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    responded_at = db.Column(db.DateTime, nullable=True)
+    notes = db.Column(db.String(500), nullable=True)
+    
+    # Relationships
+    fraction = db.relationship('Fraction', backref='trade_requests')
+    from_user = db.relationship('User', foreign_keys=[from_user_id], backref='outgoing_requests')
+    to_user = db.relationship('User', foreign_keys=[to_user_id], backref='incoming_requests')
+    
+    def to_dict(self):
+        return {
+            'request_id': self.request_id,
+            'fraction_id': self.fraction_id,
+            'from_user_id': self.from_user_id,
+            'to_user_id': self.to_user_id,
+            'status': self.status,
+            'requested_at': self.requested_at.isoformat() if self.requested_at else None,
+            'responded_at': self.responded_at.isoformat() if self.responded_at else None,
+            'notes': self.notes
         }

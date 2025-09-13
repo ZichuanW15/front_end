@@ -96,6 +96,7 @@ def create_trade():
     try:
         # Create transaction record
         transaction = Transaction(
+            transaction_id=None,  # Let auto-increment handle this
             fractions_fraction_id=data['fraction_id'],
             from_users_user_id=data['seller_id'],
             to_users_user_id=data['buyer_id'],

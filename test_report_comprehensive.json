@@ -1,12 +1,20 @@
 {
-  "timestamp": "2025-09-09T23:39:31.438644",
-  "total_duration": "0:00:05.707054",
+  "timestamp": "2025-09-11T21:05:57.370878",
+  "total_duration": "0:00:40.680353",
   "results": {
     "backend": {
-      "passed": 1,
+      "passed": 0,
       "failed": 0,
       "errors": [],
-      "duration": 0.9727559089660645
+      "duration": 0
+    },
+    "api": {
+      "passed": 0,
+      "failed": 1,
+      "errors": [
+        ""
+      ],
+      "duration": 40.05792307853699
     },
     "frontend": {
       "passed": 0,
@@ -15,16 +23,16 @@
       "duration": 0
     },
     "database": {
-      "passed": 1,
+      "passed": 0,
       "failed": 0,
       "errors": [],
-      "duration": 2.13161301612854
+      "duration": 0
     },
     "integration": {
-      "passed": 1,
+      "passed": 0,
       "failed": 0,
       "errors": [],
-      "duration": 2.0770211219787598
+      "duration": 0
     },
     "performance": {
       "passed": 0,
@@ -34,9 +42,9 @@
     }
   },
   "summary": {
-    "total_passed": 3,
-    "total_failed": 0,
-    "success_rate": 100.0,
-    "total_execution_time": 5.181390047073364
+    "total_passed": 0,
+    "total_failed": 1,
+    "success_rate": 0.0,
+    "total_execution_time": 40.05792307853699
   }
 }

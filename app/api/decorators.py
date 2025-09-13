@@ -79,6 +79,9 @@ def handle_exceptions(f):
         try:
             return f(*args, **kwargs)
         except Exception as e:
-            from app.api.errors import error_response
+            from app.api.errors import error_response, APIError
+            # Re-raise APIError exceptions so they can be handled by the error handlers
+            if isinstance(e, APIError):
+                raise e
             return error_response(f"An error occurred: {str(e)}", 500)
     return decorated_function

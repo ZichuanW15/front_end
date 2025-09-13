@@ -7,35 +7,47 @@ A modern, scalable Flask application for fractional asset ownership management w
 ```
 Provision-it/
 ├── app/
-│   ├── __init__.py              # Main app factory with error handling
-│   ├── models.py                # Database models (fixed column mappings)
-│   ├── utils.py                 # Utility functions
-│   ├── api/                     # New API package
-│   │   ├── __init__.py
-│   │   ├── errors.py            # Centralized error handling
-│   │   ├── decorators.py        # Common decorators
+│   ├── __init__.py              # Main app factory with error handling and blueprint registration
+│   ├── models.py                # Database models (User, Asset, Fraction, Ownership, Transaction, ValueHistory, TradeRequest)
+│   ├── utils.py                 # Utility functions for data processing and validation
+│   ├── api/                     # REST API package
+│   │   ├── __init__.py          # API blueprint registration
+│   │   ├── errors.py            # Centralized error handling (APIError, ValidationError, NotFoundError)
+│   │   ├── decorators.py        # Common decorators (require_json, require_fields, handle_exceptions)
 │   │   └── v1/                  # API version 1
 │   │       ├── __init__.py      # V1 blueprint registration
-│   │       ├── auth.py          # Authentication endpoints
+│   │       ├── auth.py          # Authentication endpoints (login, logout, profile)
 │   │       ├── assets.py        # Asset management endpoints
 │   │       ├── users.py         # User/owner endpoints
-│   │       └── transactions.py  # Transaction/ledger endpoints
-│   └── routes/                  # Legacy routes (backward compatibility)
-│       ├── auth.py
-│       ├── asset.py
-│       ├── user.py
-│       └── ledger.py
-├── templates/                   # HTML templates
-│   ├── base.html
-│   ├── login.html
+│   │       ├── transactions.py  # Transaction/ledger endpoints
+│   │       ├── trading.py       # Trading & trade request endpoints (request_trade, respond_request, browse_fractions, trade, ledger, snapshot)
+│   │       └── admin.py         # Admin-only endpoints (create_assets, update_values, user_management, stats)
+│   └── routes/                  # Web interface routes
+│       ├── __init__.py          # Routes package initialization
+│       ├── auth.py              # Legacy authentication routes
+│       ├── asset.py             # Legacy asset routes
+│       ├── user.py              # Legacy user routes
+│       ├── ledger.py            # Legacy ledger routes
+│       └── dashboard.py         # Web interface routes (dashboard, admin, browse, trade_requests, ledger, snapshot, trade)
+├── templates/                   # Jinja2 HTML templates
+│   ├── base.html               # Base template with navigation and common layout
+│   ├── login.html              # Login page template
 │   ├── dashboard.html          # User dashboard for asset holdings
-│   └── asset_history.html
+│   ├── admin_dashboard.html    # Admin dashboard with asset creation and management
+│   ├── browse.html             # Browse available fractions for trading
+│   ├── trade_requests.html     # Trade request management interface
+│   ├── ledger.html             # Transaction history with filters
+│   ├── snapshot.html           # Ownership snapshot at specific date
+│   ├── trade.html              # Direct fraction trading interface
+│   └── asset_history.html      # Legacy asset history template
 ├── static/                      # Static files
-│   ├── css/style.css
-│   └── js/app.js
-├── config.py                    # Configuration
+│   ├── css/
+│   │   └── style.css           # Custom CSS styles
+│   └── js/
+│       └── app.js              # Frontend JavaScript for API interactions
+├── config.py                    # Application configuration
 ├── run.py                       # Application entry point
-├── requirements.txt             # Dependencies
+├── requirements.txt             # Python dependencies
 ├── setup_env.sh                 # Setup script (macOS/Linux)
 ├── setup_env.bat                # Setup script (Windows)
 ├── tests/                       # Comprehensive testing suite

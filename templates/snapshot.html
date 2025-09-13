@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Ownership Snapshot - Provision-it{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">Ownership Snapshot</h1>
+            <div class="text-muted">
+                <small>Welcome, {{ username }}</small>
+            </div>
+        </div>
+        
+        <!-- Date Selector -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Snapshot Date</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="at" class="form-label">Select Date</label>
+                        <input type="date" class="form-control" id="at" name="at" 
+                               value="{{ snapshot_date }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button type="submit" class="btn btn-primary">View Snapshot</button>
+                            <a href="/snapshot" class="btn btn-outline-secondary">Today</a>
+                        </div>
+                    </div>
+                </form>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        Showing ownership as of: <strong>{{ snapshot_date }}</strong>
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Snapshot Data -->
+        {% if snapshot_data %}
+            {% for asset in snapshot_data %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            {{ asset.asset_name }}
+                            <small class="text-muted">(Asset ID: {{ asset.asset_id }})</small>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if asset.fractions %}
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Fraction ID</th>
+                                            <th>Fraction No</th>
+                                            <th>Owner</th>
+                                            <th>Last Transfer</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for fraction in asset.fractions %}
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-secondary">#{{ fraction.fraction_id }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-muted">#{{ fraction.fraction_no }}</span>
+                                            </td>
+                                            <td>
+                                                <strong>{{ fraction.current_owner.username }}</strong>
+                                                <br>
+                                                <small class="text-muted">User ID: {{ fraction.current_owner.user_id }}</small>
+                                            </td>
+                                            <td>
+                                                {% if fraction.last_transfer_timestamp %}
+                                                    <small class="text-muted">
+                                                        {{ fraction.last_transfer_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                                                    </small>
+                                                {% else %}
+                                                    <small class="text-muted">Initial ownership</small>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Ownership Summary -->
+                            <div class="mt-3">
+                                <h6>Ownership Summary</h6>
+                                {% set ownership_counts = {} %}
+                                {% for fraction in asset.fractions %}
+                                    {% set owner = fraction.current_owner.username %}
+                                    {% if owner in ownership_counts %}
+                                        {% set _ = ownership_counts.update({owner: ownership_counts[owner] + 1}) %}
+                                    {% else %}
+                                        {% set _ = ownership_counts.update({owner: 1}) %}
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                <div class="row">
+                                    {% for owner, count in ownership_counts.items() %}
+                                    <div class="col-md-3 mb-2">
+                                        <div class="card bg-light">
+                                            <div class="card-body py-2">
+                                                <h6 class="card-title mb-1">{{ owner }}</h6>
+                                                <p class="card-text mb-0">
+                                                    <span class="badge bg-primary">{{ count }}</span> fractions
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-3">
+                                <p class="text-muted mb-0">No fraction ownership data available for this date.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <div class="alert alert-info">
+                <h6 class="alert-heading">Snapshot Information</h6>
+                <p class="mb-0">
+                    This snapshot shows the ownership state as of <strong>{{ snapshot_date }}</strong>. 
+                    It displays who owned each fraction at that point in time, based on the most recent 
+                    transfer transaction that occurred on or before the selected date.
+                </p>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-camera fa-3x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted">No Snapshot Data Available</h4>
+                    <p class="text-muted">
+                        No ownership data found for the selected date: <strong>{{ snapshot_date }}</strong>
+                    </p>
+                    <p class="text-muted">
+                        Try selecting a different date or check if there were any assets in the system at that time.
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

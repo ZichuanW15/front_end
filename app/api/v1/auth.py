@@ -51,6 +51,7 @@ def login():
         session['user_id'] = user.user_id
         session['username'] = user.username
         session['session_token'] = session_token
+        session['is_admin'] = user.is_manager
         
         # Return user info with session token
         user_data = user.to_dict()

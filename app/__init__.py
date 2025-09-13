@@ -40,6 +40,10 @@ def create_app(config_class=Config):
     from app.routes.ledger import bp as legacy_ledger_bp
     app.register_blueprint(legacy_ledger_bp, url_prefix='/api/legacy')
     
+    # Register dashboard routes
+    from app.routes.dashboard import bp as dashboard_bp
+    app.register_blueprint(dashboard_bp)
+    
     # Template routes
     @app.route('/')
     def index():
@@ -55,61 +59,18 @@ def create_app(config_class=Config):
     
     @app.route('/dashboard')
     def dashboard():
+        """Redirect to appropriate dashboard based on user role"""
         from flask import session, redirect, url_for
-        from app.models import User, Asset, Fraction, Ownership, ValueHistory
-        from sqlalchemy import func, desc
         
         # Check if user is logged in
         if 'user_id' not in session:
             return redirect(url_for('login_page'))
         
-        user_id = session['user_id']
-        
-        # Query all assets where the current user owns fractions
-        user_holdings = db.session.query(
-            Asset.asset_id,
-            Asset.name,
-            Asset.description,
-            Asset.available_fractions,
-            func.count(Ownership.fractions_fraction_id).label('fractions_owned'),
-            func.max(ValueHistory.asset_value).label('latest_asset_value'),
-            func.max(Ownership.acquired_at).label('latest_purchase_date')
-        ).join(
-            Fraction, Asset.asset_id == Fraction.assets_asset_id
-        ).join(
-            Ownership, Fraction.fraction_id == Ownership.fractions_fraction_id
-        ).outerjoin(
-            ValueHistory, Asset.asset_id == ValueHistory.assets_asset_id
-        ).filter(
-            Ownership.users_user_id == user_id
-        ).group_by(
-            Asset.asset_id, Asset.name, Asset.description, Asset.available_fractions
-        ).all()
-        
-        # Process holdings data
-        holdings_data = []
-        for holding in user_holdings:
-            # Calculate fraction value using the database function logic
-            if holding.latest_asset_value and holding.available_fractions and holding.available_fractions > 0:
-                fraction_value = float(holding.latest_asset_value) / holding.available_fractions
-            else:
-                fraction_value = 0.0
-            
-            # Calculate total holding value
-            total_value = fraction_value * holding.fractions_owned
-            
-            holdings_data.append({
-                'asset_id': holding.asset_id,
-                'name': holding.name,
-                'description': holding.description,
-                'fractions_owned': holding.fractions_owned,
-                'latest_asset_value': holding.latest_asset_value or 0,
-                'fraction_value': round(fraction_value, 2),
-                'total_value': round(total_value, 2),
-                'latest_purchase_date': holding.latest_purchase_date
-            })
-        
-        return render_template('dashboard.html', holdings=holdings_data, user_id=user_id)
+        # Redirect based on user role
+        if session.get('is_admin', False):
+            return redirect(url_for('dashboard.admin_dashboard'))
+        else:
+            return redirect(url_for('dashboard.user_dashboard'))
     
     # API documentation route
     @app.route('/api')

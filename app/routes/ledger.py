@@ -71,6 +71,7 @@ def create_trade():
         
         # Create transaction record
         transaction = Transaction(
+            transaction_id=None,  # Let auto-increment handle this
             quantity=quantity,
             unit_price=unit_price,
             currency=currency,

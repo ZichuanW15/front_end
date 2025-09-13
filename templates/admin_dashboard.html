@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Provision-it{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">Admin Dashboard</h1>
+            <div class="text-muted">
+                <small>Welcome, {{ username }} (Admin)</small>
+            </div>
+        </div>
+        
+        <!-- Platform Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-2">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Users</h5>
+                        <h3 class="card-text">{{ stats.total_users }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Assets</h5>
+                        <h3 class="card-text">{{ stats.total_assets }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Fractions</h5>
+                        <h3 class="card-text">{{ "{:,}".format(stats.total_fractions) }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Transactions</h5>
+                        <h3 class="card-text">{{ "{:,}".format(stats.total_transactions) }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-secondary text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Ownership Records</h5>
+                        <h3 class="card-text">{{ "{:,}".format(stats.total_ownership_records) }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-dark text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Total Value</h5>
+                        <h3 class="card-text">${{ "{:,.0f}".format(assets_data.values() | sum(attribute='latest_value') or 0) }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Actions -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Create New Asset</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="/admin/create_asset">
+                            <div class="mb-3">
+                                <label for="asset_name" class="form-label">Asset Name</label>
+                                <input type="text" class="form-control" id="asset_name" name="asset_name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="initial_value" class="form-label">Initial Value ($)</label>
+                                <input type="number" class="form-control" id="initial_value" name="initial_value" min="1" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="total_fractions" class="form-label">Total Fractions</label>
+                                <input type="number" class="form-control" id="total_fractions" name="total_fractions" min="1" max="100000" required>
+                            </div>
+                            
+                            <!-- Ownership Assignment Section -->
+                            <div class="mb-3">
+                                <label class="form-label">Initial Ownership Assignment (Optional)</label>
+                                <div id="ownership-container">
+                                    <!-- Ownership assignments will be added here dynamically -->
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="addOwnershipAssignment()">
+                                    <i class="fas fa-plus"></i> Add User
+                                </button>
+                                <small class="text-muted d-block mt-1">
+                                    Leave empty to assign all fractions to admin (you)
+                                </small>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Create Asset</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Update Asset Value</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" id="updateValueForm">
+                            <div class="mb-3">
+                                <label for="asset_select" class="form-label">Select Asset</label>
+                                <select class="form-select" id="asset_select" name="asset_id" required>
+                                    <option value="">Choose an asset...</option>
+                                    {% for asset_id, asset in assets_data.items() %}
+                                    <option value="{{ asset_id }}">{{ asset.name }} (Current: ${{ "{:,.0f}".format(asset.latest_value or 0) }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new_value" class="form-label">New Value ($)</label>
+                                <input type="number" class="form-control" id="new_value" name="new_value" min="1" required>
+                            </div>
+                            <button type="submit" class="btn btn-warning">Update Value</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assets Overview -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Assets Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Description</th>
+                                <th>Available Fractions</th>
+                                <th>Current Value</th>
+                                <th>Fraction Value</th>
+                                <th>Created</th>
+                                <th>Last Updated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asset_id, asset in assets_data.items() %}
+                            <tr>
+                                <td>
+                                    <strong>{{ asset.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">ID: {{ asset_id }}</small>
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ asset.description or 'No description' }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ "{:,}".format(asset.available_fractions or 0) }}</span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold">${{ "{:,.0f}".format(asset.latest_value or 0) }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-success fw-bold">${{ "{:.2f}".format(asset.fraction_value or 0) }}</span>
+                                </td>
+                                <td>
+                                    {% if asset.created_at %}
+                                        <small class="text-muted">{{ asset.created_at.strftime('%Y-%m-%d') }}</small>
+                                    {% else %}
+                                        <small class="text-muted">Unknown</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if asset.value_updated %}
+                                        <small class="text-muted">{{ asset.value_updated.strftime('%Y-%m-%d %H:%M') }}</small>
+                                    {% else %}
+                                        <small class="text-muted">Never</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                                            onclick="viewAssetDetails({{ asset_id }})">
+                                        View Details
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Users -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Recent Users</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Manager</th>
+                                        <th>Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in recent_users %}
+                                    <tr>
+                                        <td>{{ user.username }}</td>
+                                        <td>{{ user.email or 'No email' }}</td>
+                                        <td>
+                                            {% if user.is_manager %}
+                                                <span class="badge bg-success">Yes</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if user.create_time %}
+                                                <small>{{ user.create_time.strftime('%Y-%m-%d') }}</small>
+                                            {% else %}
+                                                <small>Unknown</small>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Transactions -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Recent Transactions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Asset</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Price</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tx in recent_transactions %}
+                                    <tr>
+                                        <td>{{ tx.asset_name }}</td>
+                                        <td>{{ tx.from_owner }}</td>
+                                        <td>{{ tx.to_owner }}</td>
+                                        <td>${{ "{:.2f}".format(tx.unit_price or 0) }}</td>
+                                        <td>
+                                            {% if tx.trade_time %}
+                                                <small>{{ tx.trade_time.strftime('%m-%d %H:%M') }}</small>
+                                            {% else %}
+                                                <small>Unknown</small>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let ownershipCounter = 0;
+
+// Get all users for ownership assignment dropdown
+const allUsers = [
+    {% for user in recent_users %}
+    {id: {{ user.user_id }}, username: "{{ user.username }}"}{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+document.getElementById('updateValueForm').addEventListener('submit', function(e) {
+    const assetId = document.getElementById('asset_select').value;
+    const newValue = document.getElementById('new_value').value;
+    
+    if (!assetId) {
+        e.preventDefault();
+        alert('Please select an asset');
+        return;
+    }
+    
+    // Update form action with asset ID
+    this.action = `/admin/update_asset_value/${assetId}`;
+});
+
+// Handle asset creation form submission
+document.querySelector('form[method="POST"]').addEventListener('submit', function(e) {
+    // Collect ownership assignments
+    const ownershipData = {};
+    const ownershipRows = document.querySelectorAll('.ownership-row');
+    
+    ownershipRows.forEach(row => {
+        const userId = row.querySelector('.user-select').value;
+        const fractionCount = row.querySelector('.fraction-count').value;
+        
+        if (userId && fractionCount && fractionCount > 0) {
+            ownershipData[`user${userId}_id`] = parseInt(fractionCount);
+        }
+    });
+    
+    // Create hidden input for ownership data
+    if (Object.keys(ownershipData).length > 0) {
+        const ownershipInput = document.createElement('input');
+        ownershipInput.type = 'hidden';
+        ownershipInput.name = 'ownership_data';
+        ownershipInput.value = JSON.stringify(ownershipData);
+        this.appendChild(ownershipInput);
+    }
+});
+
+function addOwnershipAssignment() {
+    ownershipCounter++;
+    
+    const container = document.getElementById('ownership-container');
+    const row = document.createElement('div');
+    row.className = 'ownership-row row mb-2';
+    row.id = `ownership-row-${ownershipCounter}`;
+    
+    row.innerHTML = `
+        <div class="col-md-5">
+            <select class="form-select user-select" required>
+                <option value="">Select User...</option>
+                ${allUsers.map(user => `<option value="${user.id}">${user.username} (ID: ${user.id})</option>`).join('')}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <input type="number" class="form-control fraction-count" min="1" placeholder="Fractions" required>
+        </div>
+        <div class="col-md-3">
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeOwnershipAssignment(${ownershipCounter})">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        </div>
+    `;
+    
+    container.appendChild(row);
+}
+
+function removeOwnershipAssignment(counter) {
+    const row = document.getElementById(`ownership-row-${counter}`);
+    if (row) {
+        row.remove();
+    }
+}
+
+function viewAssetDetails(assetId) {
+    // Load asset details via API
+    fetch(`/api/v1/assets/${assetId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const asset = data.data;
+                alert(`Asset: ${asset.name}\nDescription: ${asset.description}\nAvailable Fractions: ${asset.available_fractions}`);
+            } else {
+                alert('Error loading asset details: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading asset details');
+        });
+}
+</script>
+{% endblock %}

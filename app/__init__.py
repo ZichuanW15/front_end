@@ -15,6 +15,11 @@ db = SQLAlchemy()
 # Import models to register them with SQLAlchemy
 from . import models
 
+# Import services and controllers to ensure they're available
+from . import services
+from . import controllers
+from . import views
+
 
 def create_app(config_name=None):
     """

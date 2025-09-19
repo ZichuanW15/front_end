@@ -1,14 +1,16 @@
 """
 Health check Blueprint for API monitoring and status verification.
+Uses MVC architecture with controllers and views.
 """
 
-from flask import Blueprint, jsonify
-from sqlalchemy import text
-from app import db
-from datetime import datetime
+from flask import Blueprint
+from app.controllers.health_controller import HealthController
 
 # Create Blueprint instance
 bp = Blueprint('health', __name__)
+
+# Initialize controller
+health_controller = HealthController()
 
 
 @bp.route('/health')
@@ -19,12 +21,7 @@ def health():
     Returns:
         JSON response with API status and timestamp
     """
-    return jsonify({
-        'status': 'ok',
-        'timestamp': datetime.utcnow().isoformat(),
-        'service': 'API Backbone',
-        'version': '1.0.0'
-    })
+    return health_controller.get_basic_health()
 
 
 @bp.route('/health/db')
@@ -35,21 +32,7 @@ def health_db():
     Returns:
         JSON response with database connection status
     """
-    try:
-        # Test database connection
-        db.session.execute(text('SELECT 1'))
-        db_status = 'connected'
-        error = None
-    except Exception as e:
-        db_status = 'disconnected'
-        error = str(e)
-    
-    return jsonify({
-        'status': 'ok' if db_status == 'connected' else 'error',
-        'database': db_status,
-        'timestamp': datetime.utcnow().isoformat(),
-        'error': error
-    }), 200 if db_status == 'connected' else 503
+    return health_controller.get_database_health()
 
 
 @bp.route('/health/detailed')
@@ -60,27 +43,4 @@ def health_detailed():
     Returns:
         JSON response with comprehensive system status
     """
-    try:
-        # Test database connection
-        db.session.execute(text('SELECT 1'))
-        db_status = 'connected'
-        db_error = None
-    except Exception as e:
-        db_status = 'disconnected'
-        db_error = str(e)
-    
-    # Overall status
-    overall_status = 'ok' if db_status == 'connected' else 'degraded'
-    
-    return jsonify({
-        'status': overall_status,
-        'timestamp': datetime.utcnow().isoformat(),
-        'service': 'API Backbone',
-        'version': '1.0.0',
-        'components': {
-            'database': {
-                'status': db_status,
-                'error': db_error
-            }
-        }
-    }), 200 if overall_status == 'ok' else 503
+    return health_controller.get_detailed_health()

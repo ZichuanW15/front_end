@@ -174,22 +174,6 @@ Instead of using `db.create_all()`, the backbone executes the `schema_postgres.s
 - **Triggers**: Automatic fraction value updates, manager approval validation
 - **Indexes**: Performance optimization indexes
 
-### Available Commands
-
-```bash
-# Initialize database with schema.sql
-flask init-db
-
-# Drop all tables and functions
-flask drop-db
-
-# Reset database (drop and recreate)
-flask reset-db
-
-# Initialize with sample data
-flask init-sample-data
-```
-
 ### Database Schema
 
 The schema includes the complete fractional ownership platform structure:
@@ -251,16 +235,6 @@ The models in `app/models.py` already match the schema structure. To add new mod
 - `DevelopmentConfig` - Development settings
 - `ProductionConfig` - Production settings  
 - `TestingConfig` - Testing settings
-
-### Environment Setup
-
-```bash
-# Set production environment
-export FLASK_ENV=production
-export FLASK_DEBUG=false
-export SECRET_KEY=your-production-secret-key
-export DATABASE_URL=postgresql://user:pass@host:5432/dbname
-```
 
 ## 🤝 Collaborative Development
 

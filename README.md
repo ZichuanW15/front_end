@@ -130,7 +130,7 @@ Database name [provision_it_v2]:
 Database user [postgres]: 
 Database password: 
 [SUCCESS] .env file created with database configuration
-[INFO] Database URL: postgresql://postgres:***@localhost:5432/api_backbone
+[INFO] Database URL: postgresql://postgres:***@localhost:5432/provision_it_v2
 ```
 
 **Features:**
@@ -251,18 +251,6 @@ The models in `app/models.py` already match the schema structure. To add new mod
 - `DevelopmentConfig` - Development settings
 - `ProductionConfig` - Production settings  
 - `TestingConfig` - Testing settings
-
-## 🚀 Production Deployment
-
-### Using Gunicorn
-
-```bash
-# Install gunicorn
-pip install gunicorn
-
-# Run with gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 run:app
-```
 
 ### Environment Setup
 

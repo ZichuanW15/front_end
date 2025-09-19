@@ -1,0 +1,1 @@
+# Routes package - Blueprints are auto-discovered from this directory

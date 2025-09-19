@@ -1,0 +1,20 @@
+# Flask API Backbone - Minimal Dependencies
+# ==========================================
+
+# Core Flask Framework
+Flask>=2.3.0,<4.0.0
+Werkzeug>=2.3.0,<4.0.0
+
+# Database
+Flask-SQLAlchemy>=3.0.0,<4.0.0
+psycopg2-binary>=2.9.0,<3.0.0
+
+# Environment Configuration
+python-dotenv>=1.0.0,<2.0.0
+
+# Development & Testing
+pytest>=7.0.0,<8.0.0
+pytest-flask>=1.2.0,<2.0.0
+
+# Production Server (optional)
+gunicorn>=20.0.0,<22.0.0

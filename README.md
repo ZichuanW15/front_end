@@ -16,7 +16,7 @@ A minimal, modular, and extensible Flask + SQLAlchemy backend skeleton for colla
 ## 📁 Project Structure
 
 ```
-api-backbone/
+provision_it_v2/
 ├── app/
 │   ├── __init__.py            # App factory with Blueprint auto-discovery
 │   ├── models.py              # SQLAlchemy models matching schema.sql
@@ -44,8 +44,8 @@ api-backbone/
 
 #### For Unix/Linux/macOS:
 ```bash
-# Clone or copy the api-backbone directory
-cd api-backbone
+# Clone or copy the provision_it_v2 directory
+cd provision_it_v2
 
 # Run the automated setup script
 ./setup_env.sh
@@ -53,8 +53,8 @@ cd api-backbone
 
 #### For Windows:
 ```cmd
-REM Clone or copy the api-backbone directory
-cd api-backbone
+REM Clone or copy the provision_it_v2 directory
+cd provision_it_v2
 
 REM Run the automated setup script
 setup_env.bat
@@ -76,8 +76,8 @@ The setup scripts will automatically:
 #### 1. Setup Environment
 
 ```bash
-# Clone or copy the api-backbone directory
-cd api-backbone
+# Clone or copy the provision_it_v2 directory
+cd provision_it_v2
 
 # Create virtual environment
 python -m venv venv

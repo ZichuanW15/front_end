@@ -167,7 +167,7 @@ The API backbone uses the same database initialization approach as the original 
 
 ### Schema-Based Initialization
 
-Instead of using `db.create_all()`, the backbone executes the `schema.sql` file which includes:
+Instead of using `db.create_all()`, the backbone executes the `schema_postgres.sql` file which includes:
 
 - **Tables**: Users, Assets, Fractions, Ownership, Transactions, ValueHistory
 - **Functions**: Manager approval checks, fraction value calculations
@@ -229,7 +229,7 @@ def get_user(user_id):
 
 The models in `app/models.py` already match the schema structure. To add new models:
 
-1. Add the table to `schema.sql`
+1. Add the table to `schema_postgres.sql`
 2. Add the corresponding SQLAlchemy model to `app/models.py`
 3. Update the `init_db` process if needed
 
@@ -276,7 +276,7 @@ export DATABASE_URL=postgresql://user:pass@host:5432/dbname
 ### Adding Features
 
 - **New APIs**: Drop a `.py` file in `app/routes/` with a Blueprint named `bp`
-- **New Models**: Add to `app/models.py` and update `schema.sql`
+- **New Models**: Add to `app/models.py` and update `schema_postgres.sql`
 - **New Tests**: Add to `tests/` directory
 - **No core file changes needed** for new API routes!
 
@@ -298,8 +298,8 @@ Basic health check.
 
 ### Schema Initialization Issues
 
-1. **Check schema.sql exists**: `ls -la schema.sql`
-2. **Verify SQL syntax**: Test with `psql -f schema.sql`
+1. **Check schema.sql exists**: `ls -la schema_postgres.sql`
+2. **Verify SQL syntax**: Test with `psql -f schema_postgres.sql`
 3. **Check permissions**: Ensure database user has CREATE privileges
 4. **Review logs**: Check Flask application logs for SQL errors
 

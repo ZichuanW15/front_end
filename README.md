@@ -9,11 +9,15 @@ A minimal, modular, and extensible Flask + SQLAlchemy backend skeleton for colla
 - **Database Ready**: PostgreSQL integration with SQLAlchemy
 - **Schema-Based Init**: Uses SQL schema file for database initialization (like the original project)
 - **Health Checks**: Built-in health monitoring endpoints
+<<<<<<< HEAD
 - **User Authentication**: Complete user signup, login, logout, and session management
 - **User Management**: Profile updates, user deletion with authorization controls
 - **Session Management**: Secure session handling with token-based authentication
 - **Authorization**: Role-based access control with admin privileges
 - **Testing**: Comprehensive test suite including authentication and user management tests
+=======
+- **Testing**: Pytest configuration with database connectivity tests
+>>>>>>> newrepo/frontend
 - **Environment Config**: `.env` file support for configuration
 - **Collaborative**: Multiple developers can add features without conflicts
 
@@ -24,6 +28,7 @@ provision_it_v2/
 ├── app/
 │   ├── __init__.py            # App factory with Blueprint auto-discovery
 │   ├── models.py              # SQLAlchemy models matching schema.sql
+<<<<<<< HEAD
 │   ├── decorators.py          # Authentication and validation decorators
 │   ├── controllers/           # MVC Controllers
 │   │   ├── auth_controller.py # Authentication controller
@@ -49,6 +54,21 @@ provision_it_v2/
 ├── test_auth_demo.py          # Demo script for testing auth endpoints
 ├── requirements.txt           # Dependencies
 ├── .env                       # Environment configuration template
+=======
+│   └── routes/
+│       ├── __init__.py        # Routes package
+│       └── health.py          # Health check endpoints
+├── tests/
+│   ├── __init__.py            # Tests package
+│   └── test_db.py             # Database connectivity tests
+├── config.py                  # Configuration management
+├── schema_postgres.sql        # Database schema with tables, functions, triggers
+├── import_postgress.sql       # Database insert data
+├── init_db_postgress.py       # initialising database based on config 
+├── run.py                     # Application entry point with SQL-based init
+├── requirements.txt           # Dependencies
+├── .env                       # Environment configuration template (auto created)
+>>>>>>> newrepo/frontend
 ├── setup_env.sh               # Automated setup script for Unix/Linux/macOS
 ├── setup_env.bat              # Automated setup script for Windows
 └── README.md                  # This file
@@ -272,6 +292,7 @@ The models in `app/models.py` already match the schema structure. To add new mod
 
 ## 📝 API Documentation
 
+<<<<<<< HEAD
 ### Authentication Endpoints
 
 #### POST /api/auth/signup
@@ -408,11 +429,14 @@ Delete user account. Requires authentication and ownership or admin privileges.
 }
 ```
 
+=======
+>>>>>>> newrepo/frontend
 ### Health Endpoints
 
 #### GET /health
 Basic health check.
 
+<<<<<<< HEAD
 ## 🧪 Testing
 
 ### Running Tests
@@ -463,6 +487,8 @@ The test suite covers:
 - ✅ Error handling and edge cases
 - ✅ Unauthorized access prevention
 
+=======
+>>>>>>> newrepo/frontend
 ## 🐛 Troubleshooting
 
 ### Database Connection Issues

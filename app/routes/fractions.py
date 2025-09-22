@@ -7,7 +7,11 @@ from flask import Blueprint
 from app.controllers.fraction_controller import FractionController
 
 # Create Blueprint instance
+<<<<<<< HEAD
 bp = Blueprint('fractions', __name__, url_prefix='/fractions')
+=======
+bp = Blueprint('fractions', __name__, url_prefix='/api/fractions')
+>>>>>>> newrepo/frontend
 
 # Initialize controller
 fraction_controller = FractionController()

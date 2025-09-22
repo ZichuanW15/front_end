@@ -7,7 +7,11 @@ from flask import Blueprint
 from app.controllers.transaction_controller import TransactionController
 
 # Create Blueprint instance
+<<<<<<< HEAD
 bp = Blueprint('transactions', __name__, url_prefix='/transactions')
+=======
+bp = Blueprint('transactions', __name__, url_prefix='/api/transactions')
+>>>>>>> newrepo/frontend
 
 # Initialize controller
 transaction_controller = TransactionController()

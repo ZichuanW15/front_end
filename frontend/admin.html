@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Panel - Asset Trading Platform</title>
+  <link rel="stylesheet" href="common.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="container">
+      <div class="nav-content">
+        <h1>Admin Panel</h1>
+        <div class="nav-links">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="browsing.html">Browse Assets</a>
+          <a href="trading.html">Trading</a>
+          <a href="portfolio.html">My Assets</a>
+          <a href="valuehistory.html">Value History</a>
+          <a href="admin.html" class="active">Admin</a>
+          <button onclick="logout()" class="small">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <h2>System Management</h2>
+        <p class="text-muted">Manage users, assets and system settings</p>
+      </div>
+      <div class="row">
+        <button onclick="refreshData()" class="small">Refresh Data</button>
+        <button onclick="showAddAssetModal()" class="primary small">Add Asset</button>
+      </div>
+    </div>
+
+    <!-- Admin Stats -->
+    <div class="grid">
+      <div class="card">
+        <h3>User Statistics</h3>
+        <div style="font-size: 24px; font-weight: bold; color: var(--accent);" id="totalUsers">0</div>
+        <p class="text-muted">Total Users</p>
+      </div>
+      
+      <div class="card">
+        <h3>Asset Statistics</h3>
+        <div style="font-size: 24px; font-weight: bold;" id="totalAssets">0</div>
+        <p class="text-muted">Total Assets</p>
+      </div>
+      
+      <div class="card">
+        <h3>Transaction Statistics</h3>
+        <div style="font-size: 24px; font-weight: bold;" id="totalTransactions">0</div>
+        <p class="text-muted">Total Transactions</p>
+      </div>
+      
+      <div class="card">
+        <h3>System Status</h3>
+        <div id="systemStatus" class="badge success">Normal</div>
+        <p class="text-muted">Running Status</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="card">
+      <div class="row" style="border-bottom: 1px solid var(--border); margin-bottom: 20px;">
+        <button onclick="showTab('users')" id="usersTab" class="small" style="margin-right: 10px;">User Management</button>
+        <button onclick="showTab('assets')" id="assetsTab" class="small" style="margin-right: 10px;">Asset Management</button>
+        <button onclick="showTab('transactions')" id="transactionsTab" class="small">Transaction Management</button>
+      </div>
+
+      <!-- Users Tab -->
+      <div id="usersContent" class="tab-content">
+        <div class="row" style="justify-content: space-between; margin-bottom: 20px;">
+          <h3>User List</h3>
+          <button onclick="showAddUserModal()" class="primary small">Add User</button>
+        </div>
+        <div id="usersTable">
+          <div class="text-muted text-center" style="padding: 40px;">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Assets Tab -->
+      <div id="assetsContent" class="tab-content" style="display: none;">
+        <div class="row" style="justify-content: space-between; margin-bottom: 20px;">
+          <h3>Asset List</h3>
+          <button onclick="showAddAssetModal()" class="primary small">Add Asset</button>
+        </div>
+        <div id="assetsTable">
+          <div class="text-muted text-center" style="padding: 40px;">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transactions Tab -->
+      <div id="transactionsContent" class="tab-content" style="display: none;">
+        <div class="row" style="justify-content: space-between; margin-bottom: 20px;">
+          <h3>Transaction Records</h3>
+          <div class="row">
+            <select id="transactionFilter" onchange="filterTransactions()">
+              <option value="all">All Transactions</option>
+              <option value="buy">Buy</option>
+              <option value="sell">Sell</option>
+              <option value="transfer">Transfer</option>
+            </select>
+          </div>
+        </div>
+        <div id="transactionsTable">
+          <div class="text-muted text-center" style="padding: 40px;">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add User Modal -->
+  <div id="addUserModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 400px; max-width: 90vw;">
+      <h3>Add User</h3>
+      <form id="addUserForm">
+        <label>Username</label>
+        <input type="text" id="newUserName" required>
+        
+        <label>Email</label>
+        <input type="email" id="newUserEmail" required>
+        
+        <label>Password</label>
+        <input type="password" id="newUserPassword" required>
+        
+        <label>
+          <input type="checkbox" id="newUserIsManager"> Admin Privileges
+        </label>
+        
+        <div class="row" style="margin-top: 20px;">
+          <button type="button" onclick="hideAddUserModal()" class="col">Cancel</button>
+          <button type="submit" class="primary col">Add User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Asset Modal -->
+  <div id="addAssetModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 500px; max-width: 90vw;">
+      <h3>Add Asset</h3>
+      <form id="addAssetForm">
+        <label>Asset Name</label>
+        <input type="text" id="newAssetName" required>
+        
+        <label>Asset Description</label>
+        <textarea id="newAssetDescription" rows="3"></textarea>
+        
+        <label>Total Units (Maximum Fractions)</label>
+        <input type="number" id="newAssetTotalUnits" required min="1" placeholder="Maximum number of fractions">
+        
+        <label>Minimum Units</label>
+        <input type="number" id="newAssetMinUnits" required min="1">
+        
+        <label>Maximum Units</label>
+        <input type="number" id="newAssetMaxUnits" required min="1">
+        
+        <label>Total Value (¥)</label>
+        <input type="number" id="newAssetTotalValue" required min="0" step="0.01">
+        
+        <div class="row" style="margin-top: 20px;">
+          <button type="button" onclick="hideAddAssetModal()" class="col">Cancel</button>
+          <button type="submit" class="primary col">Add Asset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API = location.origin;
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    let currentTab = 'users';
+    
+    // Check if user is manager
+    if (!user.is_manager) {
+      alert('You do not have admin privileges');
+      location.href = 'dashboard.html';
+    }
+
+    async function fetchAdminData() {
+      try {
+        // Fetch users
+        const usersRes = await fetch(`${API}/users`);
+        const users = await usersRes.json();
+        
+        // Fetch assets
+        const assetsRes = await fetch(`${API}/assets`);
+        const assets = await assetsRes.json();
+        
+        // Fetch transactions
+        const transactionsRes = await fetch(`${API}/transactions`);
+        const transactions = await transactionsRes.json();
+        
+        updateAdminStats(users, assets, transactions);
+        updateUsersTable(users);
+        updateAssetsTable(assets);
+        updateTransactionsTable(transactions);
+      } catch (error) {
+        console.error('Error fetching admin data:', error);
+        showError('Failed to load data, please try again later');
+      }
+    }
+
+    function updateAdminStats(users, assets, transactions) {
+      document.getElementById('totalUsers').textContent = users.length || 0;
+      document.getElementById('totalAssets').textContent = assets.length || 0;
+      document.getElementById('totalTransactions').textContent = transactions.length || 0;
+    }
+
+    function updateUsersTable(users) {
+      const container = document.getElementById('usersTable');
+      
+      if (!users || users.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">No user data available</p>';
+        return;
+      }
+      
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Created At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${users.map(u => `
+              <tr>
+                <td>${u.user_id}</td>
+                <td>${u.user_name}</td>
+                <td>${u.email}</td>
+                <td><span class="badge ${u.is_manager ? 'warning' : 'info'}">${u.is_manager ? 'Admin' : 'User'}</span></td>
+                <td>${new Date(u.created_at).toLocaleDateString()}</td>
+                <td>
+                  <button onclick="editUser(${u.user_id})" class="small">Edit</button>
+                  <button onclick="deleteUser(${u.user_id})" class="small danger">Delete</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function updateAssetsTable(assets) {
+      const container = document.getElementById('assetsTable');
+      
+      if (!assets || assets.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">No asset data available</p>';
+        return;
+      }
+      
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Asset Name</th>
+              <th>Total Units</th>
+              <th>Total Value</th>
+              <th>Created At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${assets.map(a => `
+              <tr>
+                <td>${a.asset_id}</td>
+                <td>${a.asset_name}</td>
+                <td>${a.total_unit}</td>
+                <td>¥${parseFloat(a.total_value).toLocaleString()}</td>
+                <td>${new Date(a.created_at).toLocaleDateString()}</td>
+                <td>
+                  <button onclick="editAsset(${a.asset_id})" class="small">Edit</button>
+                  <button onclick="deleteAsset(${a.asset_id})" class="small danger">Delete</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function updateTransactionsTable(transactions) {
+      const container = document.getElementById('transactionsTable');
+      
+      if (!transactions || transactions.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">No transaction data available</p>';
+        return;
+      }
+      
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Transaction ID</th>
+              <th>Type</th>
+              <th>Units</th>
+              <th>Transaction Time</th>
+              <th>From</th>
+              <th>To</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${transactions.map(tx => `
+              <tr>
+                <td>${tx.transaction_id}</td>
+                <td><span class="badge info">${tx.transaction_type || 'Trade'}</span></td>
+                <td>${tx.unit_moved}</td>
+                <td>${new Date(tx.transaction_at).toLocaleString()}</td>
+                <td>${tx.from_owner_id}</td>
+                <td>${tx.to_owner_id}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function showTab(tabName) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.style.display = 'none';
+      });
+      
+      // Remove active class from all tabs
+      document.querySelectorAll('[id$="Tab"]').forEach(tab => {
+        tab.classList.remove('primary');
+      });
+      
+      // Show selected tab
+      document.getElementById(tabName + 'Content').style.display = 'block';
+      document.getElementById(tabName + 'Tab').classList.add('primary');
+      
+      currentTab = tabName;
+    }
+
+    function showAddUserModal() {
+      document.getElementById('addUserModal').style.display = 'block';
+    }
+
+    function hideAddUserModal() {
+      document.getElementById('addUserModal').style.display = 'none';
+      document.getElementById('addUserForm').reset();
+    }
+
+    function showAddAssetModal() {
+      document.getElementById('addAssetModal').style.display = 'block';
+    }
+
+    function hideAddAssetModal() {
+      document.getElementById('addAssetModal').style.display = 'none';
+      document.getElementById('addAssetForm').reset();
+    }
+
+    async function addUser(event) {
+      event.preventDefault();
+      
+      const formData = {
+        user_name: document.getElementById('newUserName').value,
+        email: document.getElementById('newUserEmail').value,
+        password: document.getElementById('newUserPassword').value,
+        is_manager: document.getElementById('newUserIsManager').checked
+      };
+      
+      try {
+        const response = await fetch(`${API}/users`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+          hideAddUserModal();
+          refreshData();
+          showMessage('User added successfully', true);
+        } else {
+          const error = await response.json();
+          showMessage(error.error || 'Failed to add user', false);
+        }
+      } catch (error) {
+        showMessage('Network error, please try again later', false);
+      }
+    }
+
+    async function addAsset(event) {
+      event.preventDefault();
+      
+      const formData = {
+        asset_name: document.getElementById('newAssetName').value,
+        description: document.getElementById('newAssetDescription').value,
+        total_unit: parseInt(document.getElementById('newAssetTotalUnits').value),
+        unit_min: parseInt(document.getElementById('newAssetMinUnits').value),
+        unit_max: parseInt(document.getElementById('newAssetMaxUnits').value),
+        total_value: parseFloat(document.getElementById('newAssetTotalValue').value)
+      };
+      
+      try {
+        const response = await fetch(`${API}/assets`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+          hideAddAssetModal();
+          refreshData();
+          showMessage('Asset added successfully', true);
+        } else {
+          const error = await response.json();
+          showMessage(error.error || 'Failed to add asset', false);
+        }
+      } catch (error) {
+        showMessage('Network error, please try again later', false);
+      }
+    }
+
+    function refreshData() {
+      fetchAdminData();
+    }
+
+    function showError(message) {
+      showMessage(message, false);
+    }
+
+    function showMessage(message, isSuccess) {
+      const msg = document.createElement('div');
+      msg.className = `msg ${isSuccess ? 'ok' : 'err'}`;
+      msg.textContent = message;
+      msg.style.position = 'fixed';
+      msg.style.top = '20px';
+      msg.style.right = '20px';
+      msg.style.zIndex = '1001';
+      document.body.appendChild(msg);
+      
+      setTimeout(() => {
+        document.body.removeChild(msg);
+      }, 3000);
+    }
+
+    function logout() {
+      sessionStorage.removeItem('user');
+      location.href = 'login.html';
+    }
+
+    // Event listeners
+    document.getElementById('addUserForm').addEventListener('submit', addUser);
+    document.getElementById('addAssetForm').addEventListener('submit', addAsset);
+
+    // Load data on page load
+    fetchAdminData();
+  </script>
+</body>
+</html>
+

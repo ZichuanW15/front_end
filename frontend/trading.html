@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Trading Center - Asset Trading Platform</title>
+  <link rel="stylesheet" href="common.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="container">
+      <div class="nav-content">
+        <h1>Trading Center</h1>
+        <div class="nav-links">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="browsing.html">Browse Assets</a>
+          <a href="trading.html" class="active">Trading</a>
+          <a href="portfolio.html">My Assets</a>
+          <a href="valuehistory.html">Value History</a>
+          <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
+          <button onclick="logout()" class="small">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <h2>Asset Trading</h2>
+        <p class="text-muted">Buy and sell asset shares, manage your portfolio</p>
+      </div>
+      <div class="row">
+        <button onclick="refreshData()" class="small">Refresh Data</button>
+        <button onclick="showCreateOrderModal()" class="primary small">Create Order</button>
+      </div>
+    </div>
+
+    <!-- Trading Tabs -->
+    <div class="card">
+      <div class="row" style="border-bottom: 1px solid var(--border); margin-bottom: 20px;">
+        <button onclick="showTradingTab('market')" id="marketTab" class="small" style="margin-right: 10px;">Market Data</button>
+        <button onclick="showTradingTab('buy')" id="buyTab" class="small" style="margin-right: 10px;">Buy</button>
+        <button onclick="showTradingTab('sell')" id="sellTab" class="small" style="margin-right: 10px;">Sell</button>
+        <button onclick="showTradingTab('orders')" id="ordersTab" class="small">My Orders</button>
+      </div>
+
+      <!-- Market Tab -->
+      <div id="marketContent" class="tab-content">
+        <div class="row" style="justify-content: space-between; margin-bottom: 20px;">
+          <h3>Market Data</h3>
+          <div class="row">
+            <select id="assetFilter" onchange="filterAssets()">
+              <option value="all">All Assets</option>
+              <option value="real_estate">Real Estate</option>
+              <option value="stocks">Stocks</option>
+              <option value="commodities">Commodities</option>
+            </select>
+            <input type="text" id="searchAssets" placeholder="Search assets..." onkeyup="searchAssets()" style="margin-left: 10px; width: 200px;">
+          </div>
+        </div>
+        <div id="marketTable">
+          <div class="text-muted text-center" style="padding: 40px;">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buy Tab -->
+      <div id="buyContent" class="tab-content" style="display: none;">
+        <h3>Buy Assets</h3>
+        <div class="grid">
+          <div class="card">
+            <h4>Select Asset</h4>
+            <select id="buyAssetSelect" onchange="updateBuyInfo()">
+              <option value="">Please select an asset to buy</option>
+            </select>
+            <div id="buyAssetInfo" style="margin-top: 15px; display: none;">
+              <div class="row">
+                <div class="col">
+                  <div class="text-muted">Current Price</div>
+                  <div id="buyCurrentPrice" style="font-size: 18px; font-weight: bold;">¥0</div>
+                </div>
+                <div class="col">
+                  <div class="text-muted">Available Units</div>
+                  <div id="buyAvailableUnits" style="font-size: 18px; font-weight: bold;">0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <h4>Transaction Details</h4>
+            <label>Units to Buy</label>
+            <input type="number" id="buyUnits" min="1" onchange="calculateBuyTotal()">
+            
+            <label>Total Amount</label>
+            <input type="text" id="buyTotal" readonly style="background: #1a1a1a;">
+            
+            <button onclick="executeBuyOrder()" class="primary" style="width: 100%; margin-top: 15px;">Confirm Buy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sell Tab -->
+      <div id="sellContent" class="tab-content" style="display: none;">
+        <h3>Sell Assets</h3>
+        <div class="grid">
+          <div class="card">
+            <h4>My Holdings</h4>
+            <select id="sellAssetSelect" onchange="updateSellInfo()">
+              <option value="">Please select an asset to sell</option>
+            </select>
+            <div id="sellAssetInfo" style="margin-top: 15px; display: none;">
+              <div class="row">
+                <div class="col">
+                  <div class="text-muted">Units Held</div>
+                  <div id="sellHeldUnits" style="font-size: 18px; font-weight: bold;">0</div>
+                </div>
+                <div class="col">
+                  <div class="text-muted">Current Price</div>
+                  <div id="sellCurrentPrice" style="font-size: 18px; font-weight: bold;">¥0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <h4>Transaction Details</h4>
+            <label>Units to Sell</label>
+            <input type="number" id="sellUnits" min="1" onchange="calculateSellTotal()">
+            
+            <label>Expected Income</label>
+            <input type="text" id="sellTotal" readonly style="background: #1a1a1a;">
+            
+            <button onclick="executeSellOrder()" class="primary" style="width: 100%; margin-top: 15px;">Confirm Sell</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orders Tab -->
+      <div id="ordersContent" class="tab-content" style="display: none;">
+        <div class="row" style="justify-content: space-between; margin-bottom: 20px;">
+          <h3>My Orders</h3>
+          <div class="row">
+            <select id="orderFilter" onchange="filterOrders()">
+              <option value="all">All Orders</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div id="ordersTable">
+          <div class="text-muted text-center" style="padding: 40px;">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Order Modal -->
+  <div id="createOrderModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 500px; max-width: 90vw;">
+      <h3>创建交易订单</h3>
+      <form id="createOrderForm">
+        <label>交易类型</label>
+        <select id="orderType" onchange="updateOrderForm()">
+          <option value="buy">买入</option>
+          <option value="sell">卖出</option>
+        </select>
+        
+        <label>选择资产</label>
+        <select id="orderAssetSelect">
+          <option value="">请选择资产</option>
+        </select>
+        
+        <label>单位数量</label>
+        <input type="number" id="orderUnits" min="1" required>
+        
+        <label>价格类型</label>
+        <select id="priceType" onchange="updatePriceInput()">
+          <option value="market">市价单</option>
+          <option value="limit">限价单</option>
+        </select>
+        
+        <div id="limitPriceDiv" style="display: none;">
+          <label>限价 (¥)</label>
+          <input type="number" id="limitPrice" min="0" step="0.01">
+        </div>
+        
+        <div class="row" style="margin-top: 20px;">
+          <button type="button" onclick="hideCreateOrderModal()" class="col">取消</button>
+          <button type="submit" class="primary col">创建订单</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API = location.origin;
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    let currentTab = 'market';
+    let assets = [];
+    let userHoldings = [];
+    let orders = [];
+    
+    // Check if user is manager
+    if (user.is_manager) {
+      document.getElementById('adminLink').style.display = 'inline-block';
+    }
+
+    async function fetchTradingData() {
+      try {
+        // Fetch assets
+        const assetsRes = await fetch(`${API}/assets`);
+        assets = await assetsRes.json();
+        
+        // Fetch user holdings
+        const holdingsRes = await fetch(`${API}/users/${user.user_id}/fractions`);
+        userHoldings = await holdingsRes.json();
+        
+        // Fetch user orders
+        const ordersRes = await fetch(`${API}/transactions?user_id=${user.user_id}`);
+        orders = await ordersRes.json();
+        
+        updateMarketTable();
+        updateBuyForm();
+        updateSellForm();
+        updateOrdersTable();
+      } catch (error) {
+        console.error('Error fetching trading data:', error);
+        showError('加载数据失败，请稍后重试');
+      }
+    }
+
+    function updateMarketTable() {
+      const container = document.getElementById('marketTable');
+      
+      if (!assets || assets.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">暂无资产数据</p>';
+        return;
+      }
+      
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>资产名称</th>
+              <th>当前价格</th>
+              <th>涨跌幅</th>
+              <th>可用单位</th>
+              <th>总价值</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${assets.map(asset => {
+              const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
+              const change = (Math.random() * 10 - 5).toFixed(2);
+              return `
+                <tr>
+                  <td>
+                    <div style="font-weight: 500;">${asset.asset_name}</div>
+                    <div class="text-muted" style="font-size: 12px;">ID: ${asset.asset_id}</div>
+                  </td>
+                  <td>¥${price.toFixed(2)}</td>
+                  <td class="${change > 0 ? 'text-success' : 'text-error'}">${change > 0 ? '+' : ''}${change}%</td>
+                  <td>${asset.total_unit}</td>
+                  <td>¥${parseFloat(asset.total_value).toLocaleString()}</td>
+                  <td>
+                    <button onclick="quickBuy(${asset.asset_id})" class="small success">买入</button>
+                    <button onclick="quickSell(${asset.asset_id})" class="small danger">卖出</button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function updateBuyForm() {
+      const select = document.getElementById('buyAssetSelect');
+      select.innerHTML = '<option value="">请选择要买入的资产</option>';
+      
+      assets.forEach(asset => {
+        const option = document.createElement('option');
+        option.value = asset.asset_id;
+        option.textContent = `${asset.asset_name} - ¥${(parseFloat(asset.total_value) / parseInt(asset.total_unit)).toFixed(2)}/单位`;
+        select.appendChild(option);
+      });
+    }
+
+    function updateSellForm() {
+      const select = document.getElementById('sellAssetSelect');
+      select.innerHTML = '<option value="">请选择要卖出的资产</option>';
+      
+      // Group holdings by asset
+      const holdingsByAsset = {};
+      userHoldings.forEach(holding => {
+        if (!holdingsByAsset[holding.asset_id]) {
+          holdingsByAsset[holding.asset_id] = 0;
+        }
+        holdingsByAsset[holding.asset_id] += holding.units;
+      });
+      
+      Object.keys(holdingsByAsset).forEach(assetId => {
+        const asset = assets.find(a => a.asset_id == assetId);
+        if (asset) {
+          const option = document.createElement('option');
+          option.value = assetId;
+          option.textContent = `${asset.asset_name} - 持有 ${holdingsByAsset[assetId]} 单位`;
+          select.appendChild(option);
+        }
+      });
+    }
+
+    function updateOrdersTable() {
+      const container = document.getElementById('ordersTable');
+      
+      if (!orders || orders.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">暂无订单数据</p>';
+        return;
+      }
+      
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>订单ID</th>
+              <th>资产</th>
+              <th>类型</th>
+              <th>单位数</th>
+              <th>价格</th>
+              <th>状态</th>
+              <th>时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${orders.map(order => {
+              const asset = assets.find(a => a.asset_id == order.asset_id);
+              return `
+                <tr>
+                  <td>${order.transaction_id}</td>
+                  <td>${asset ? asset.asset_name : '未知资产'}</td>
+                  <td><span class="badge ${order.transaction_type === 'buy' ? 'success' : 'error'}">${order.transaction_type || '交易'}</span></td>
+                  <td>${order.unit_moved}</td>
+                  <td>¥${(Math.random() * 1000).toFixed(2)}</td>
+                  <td><span class="badge success">已完成</span></td>
+                  <td>${new Date(order.transaction_at).toLocaleString()}</td>
+                  <td>
+                    <button onclick="viewOrder(${order.transaction_id})" class="small">查看</button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function showTradingTab(tabName) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.style.display = 'none';
+      });
+      
+      // Remove active class from all tabs
+      document.querySelectorAll('[id$="Tab"]').forEach(tab => {
+        tab.classList.remove('primary');
+      });
+      
+      // Show selected tab
+      document.getElementById(tabName + 'Content').style.display = 'block';
+      document.getElementById(tabName + 'Tab').classList.add('primary');
+      
+      currentTab = tabName;
+    }
+
+    function updateBuyInfo() {
+      const assetId = document.getElementById('buyAssetSelect').value;
+      const asset = assets.find(a => a.asset_id == assetId);
+      
+      if (asset) {
+        const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
+        document.getElementById('buyCurrentPrice').textContent = `¥${price.toFixed(2)}`;
+        document.getElementById('buyAvailableUnits').textContent = asset.total_unit;
+        document.getElementById('buyAssetInfo').style.display = 'block';
+      } else {
+        document.getElementById('buyAssetInfo').style.display = 'none';
+      }
+    }
+
+    function calculateBuyTotal() {
+      const units = parseInt(document.getElementById('buyUnits').value) || 0;
+      const assetId = document.getElementById('buyAssetSelect').value;
+      const asset = assets.find(a => a.asset_id == assetId);
+      
+      if (asset) {
+        const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
+        const total = units * price;
+        document.getElementById('buyTotal').value = `¥${total.toFixed(2)}`;
+      }
+    }
+
+    function updateSellInfo() {
+      const assetId = document.getElementById('sellAssetSelect').value;
+      const asset = assets.find(a => a.asset_id == assetId);
+      
+      if (asset) {
+        const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
+        const holdings = userHoldings.filter(h => h.asset_id == assetId);
+        const totalUnits = holdings.reduce((sum, h) => sum + h.units, 0);
+        
+        document.getElementById('sellCurrentPrice').textContent = `¥${price.toFixed(2)}`;
+        document.getElementById('sellHeldUnits').textContent = totalUnits;
+        document.getElementById('sellAssetInfo').style.display = 'block';
+        
+        // Update max units for sell input
+        document.getElementById('sellUnits').max = totalUnits;
+      } else {
+        document.getElementById('sellAssetInfo').style.display = 'none';
+      }
+    }
+
+    function calculateSellTotal() {
+      const units = parseInt(document.getElementById('sellUnits').value) || 0;
+      const assetId = document.getElementById('sellAssetSelect').value;
+      const asset = assets.find(a => a.asset_id == assetId);
+      
+      if (asset) {
+        const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
+        const total = units * price;
+        document.getElementById('sellTotal').value = `¥${total.toFixed(2)}`;
+      }
+    }
+
+    async function executeBuyOrder() {
+      const assetId = document.getElementById('buyAssetSelect').value;
+      const units = parseInt(document.getElementById('buyUnits').value);
+      
+      if (!assetId || !units) {
+        showMessage('请填写完整的买入信息', false);
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API}/transactions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            asset_id: assetId,
+            units: units,
+            transaction_type: 'buy',
+            from_owner_id: null, // System
+            to_owner_id: user.user_id
+          })
+        });
+        
+        if (response.ok) {
+          showMessage('买入订单创建成功', true);
+          refreshData();
+        } else {
+          const error = await response.json();
+          showMessage(error.error || '买入失败', false);
+        }
+      } catch (error) {
+        showMessage('网络错误，请稍后重试', false);
+      }
+    }
+
+    async function executeSellOrder() {
+      const assetId = document.getElementById('sellAssetSelect').value;
+      const units = parseInt(document.getElementById('sellUnits').value);
+      
+      if (!assetId || !units) {
+        showMessage('请填写完整的卖出信息', false);
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API}/transactions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            asset_id: assetId,
+            units: units,
+            transaction_type: 'sell',
+            from_owner_id: user.user_id,
+            to_owner_id: null // System
+          })
+        });
+        
+        if (response.ok) {
+          showMessage('卖出订单创建成功', true);
+          refreshData();
+        } else {
+          const error = await response.json();
+          showMessage(error.error || '卖出失败', false);
+        }
+      } catch (error) {
+        showMessage('网络错误，请稍后重试', false);
+      }
+    }
+
+    function showCreateOrderModal() {
+      // Populate asset select
+      const select = document.getElementById('orderAssetSelect');
+      select.innerHTML = '<option value="">请选择资产</option>';
+      assets.forEach(asset => {
+        const option = document.createElement('option');
+        option.value = asset.asset_id;
+        option.textContent = asset.asset_name;
+        select.appendChild(option);
+      });
+      
+      document.getElementById('createOrderModal').style.display = 'block';
+    }
+
+    function hideCreateOrderModal() {
+      document.getElementById('createOrderModal').style.display = 'none';
+      document.getElementById('createOrderForm').reset();
+    }
+
+    function updateOrderForm() {
+      const orderType = document.getElementById('orderType').value;
+      // Update form based on order type
+    }
+
+    function updatePriceInput() {
+      const priceType = document.getElementById('priceType').value;
+      const limitPriceDiv = document.getElementById('limitPriceDiv');
+      limitPriceDiv.style.display = priceType === 'limit' ? 'block' : 'none';
+    }
+
+    function refreshData() {
+      fetchTradingData();
+    }
+
+    function showError(message) {
+      showMessage(message, false);
+    }
+
+    function showMessage(message, isSuccess) {
+      const msg = document.createElement('div');
+      msg.className = `msg ${isSuccess ? 'ok' : 'err'}`;
+      msg.textContent = message;
+      msg.style.position = 'fixed';
+      msg.style.top = '20px';
+      msg.style.right = '20px';
+      msg.style.zIndex = '1001';
+      document.body.appendChild(msg);
+      
+      setTimeout(() => {
+        document.body.removeChild(msg);
+      }, 3000);
+    }
+
+    function logout() {
+      sessionStorage.removeItem('user');
+      location.href = 'login.html';
+    }
+
+    // Load data on page load
+    fetchTradingData();
+  </script>
+</body>
+</html>
+

@@ -7,7 +7,11 @@ from flask import Blueprint
 from app.controllers.asset_controller import AssetController
 
 # Create Blueprint instance
+<<<<<<< HEAD
 bp = Blueprint('assets', __name__, url_prefix='/assets')
+=======
+bp = Blueprint('assets', __name__, url_prefix='/api/assets')
+>>>>>>> newrepo/frontend
 
 # Initialize controller
 asset_controller = AssetController()

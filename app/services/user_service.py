@@ -56,6 +56,7 @@ class UserService:
         return User.query.get(user_id)
     
     @staticmethod
+<<<<<<< HEAD
     def get_user_by_username(username: str) -> Optional[User]:
         """
         Get user by username.
@@ -69,6 +70,8 @@ class UserService:
         return User.query.filter_by(user_name=username).first()
     
     @staticmethod
+=======
+>>>>>>> newrepo/frontend
     def get_user_by_email(email: str) -> Optional[User]:
         """
         Get user by email.
@@ -110,14 +113,18 @@ class UserService:
             
         Returns:
             Updated User or None if not found
+<<<<<<< HEAD
             
         Raises:
             ValueError: If uniqueness constraints are violated
+=======
+>>>>>>> newrepo/frontend
         """
         user = User.query.get(user_id)
         if not user:
             return None
         
+<<<<<<< HEAD
         # Check uniqueness for username if being updated
         if 'user_name' in user_data and user_data['user_name'] != user.user_name:
             existing_user = UserService.get_user_by_username(user_data['user_name'])
@@ -132,6 +139,10 @@ class UserService:
         
         # Update allowed fields
         allowed_fields = ['user_name', 'email', 'is_manager', 'password']
+=======
+        # Update allowed fields
+        allowed_fields = ['user_name', 'email', 'is_manager']
+>>>>>>> newrepo/frontend
         for field in allowed_fields:
             if field in user_data:
                 setattr(user, field, user_data[field])

@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Value History - Asset Trading Platform</title>
+  <link rel="stylesheet" href="common.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="container">
+      <div class="nav-content">
+        <h1>Value History</h1>
+        <div class="nav-links">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="browsing.html">Browse Assets</a>
+          <a href="trading.html">Trading</a>
+          <a href="portfolio.html">My Assets</a>
+          <a href="valuehistory.html" class="active">Value History</a>
+          <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
+          <button onclick="logout()" class="small">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <h2>Value History Analysis</h2>
+        <p class="text-muted">View asset value trends and historical data</p>
+      </div>
+      <div class="row">
+        <button onclick="refreshData()" class="small">Refresh Data</button>
+        <button onclick="exportData()" class="small">Export Data</button>
+      </div>
+    </div>
+
+    <!-- Asset Selection -->
+    <div class="card">
+      <div class="row" style="margin-bottom: 20px;">
+        <div class="col">
+          <label>选择资产</label>
+          <select id="assetSelect" onchange="updateAssetHistory()">
+            <option value="">请选择要查看的资产</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>时间范围</label>
+          <select id="timeRange" onchange="updateTimeRange()">
+            <option value="7d">最近7天</option>
+            <option value="30d" selected>最近30天</option>
+            <option value="90d">最近90天</option>
+            <option value="1y">最近1年</option>
+            <option value="all">全部时间</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>图表类型</label>
+          <select id="chartType" onchange="updateChartType()">
+            <option value="line" selected>折线图</option>
+            <option value="bar">柱状图</option>
+            <option value="area">面积图</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Value Summary -->
+    <div class="grid" id="valueSummary" style="display: none;">
+      <div class="card">
+        <h3>当前价值</h3>
+        <div style="font-size: 24px; font-weight: bold; color: var(--accent);" id="currentValue">¥0</div>
+        <p class="text-muted">每单位价格</p>
+      </div>
+      
+      <div class="card">
+        <h3>24小时变化</h3>
+        <div style="font-size: 24px; font-weight: bold;" id="dailyChange">+0%</div>
+        <p class="text-muted">较昨日</p>
+      </div>
+      
+      <div class="card">
+        <h3>7天变化</h3>
+        <div style="font-size: 24px; font-weight: bold;" id="weeklyChange">+0%</div>
+        <p class="text-muted">较上周</p>
+      </div>
+      
+      <div class="card">
+        <h3>30天变化</h3>
+        <div style="font-size: 24px; font-weight: bold;" id="monthlyChange">+0%</div>
+        <p class="text-muted">较上月</p>
+      </div>
+    </div>
+
+    <!-- Chart Container -->
+    <div class="card">
+      <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3>价值趋势图</h3>
+        <div class="row">
+          <button onclick="toggleFullscreen()" class="small">全屏</button>
+          <button onclick="downloadChart()" class="small">下载图表</button>
+        </div>
+      </div>
+      <div style="position: relative; height: 400px;">
+        <canvas id="valueChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Historical Data Table -->
+    <div class="card">
+      <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3>历史数据</h3>
+        <div class="row">
+          <select id="tableFilter" onchange="filterTable()">
+            <option value="all">所有数据</option>
+            <option value="7d">最近7天</option>
+            <option value="30d">最近30天</option>
+            <option value="90d">最近90天</option>
+          </select>
+        </div>
+      </div>
+      <div id="historyTable">
+        <div class="text-muted text-center" style="padding: 40px;">
+          <div class="spinner"></div>
+          <p>加载历史数据中...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="card">
+      <h3>性能指标</h3>
+      <div class="grid">
+        <div class="card">
+          <h4>最高价</h4>
+          <div style="font-size: 20px; font-weight: bold; color: var(--success);" id="highestPrice">¥0</div>
+          <p class="text-muted" id="highestPriceDate">-</p>
+        </div>
+        
+        <div class="card">
+          <h4>最低价</h4>
+          <div style="font-size: 20px; font-weight: bold; color: var(--error);" id="lowestPrice">¥0</div>
+          <p class="text-muted" id="lowestPriceDate">-</p>
+        </div>
+        
+        <div class="card">
+          <h4>平均价</h4>
+          <div style="font-size: 20px; font-weight: bold;" id="averagePrice">¥0</div>
+          <p class="text-muted">期间平均</p>
+        </div>
+        
+        <div class="card">
+          <h4>波动率</h4>
+          <div style="font-size: 20px; font-weight: bold;" id="volatility">0%</div>
+          <p class="text-muted">价格波动</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Market Comparison -->
+    <div class="card">
+      <h3>市场对比</h3>
+      <div class="grid">
+        <div class="card">
+          <h4>相对表现</h4>
+          <div style="font-size: 18px; font-weight: bold;" id="relativePerformance">+0%</div>
+          <p class="text-muted">vs 市场平均</p>
+        </div>
+        
+        <div class="card">
+          <h4>风险评级</h4>
+          <div id="riskRating" class="badge info">中等</div>
+          <p class="text-muted">投资风险</p>
+        </div>
+        
+        <div class="card">
+          <h4>推荐评级</h4>
+          <div id="recommendation" class="badge success">买入</div>
+          <p class="text-muted">投资建议</p>
+        </div>
+        
+        <div class="card">
+          <h4>交易量</h4>
+          <div style="font-size: 18px; font-weight: bold;" id="tradingVolume">0</div>
+          <p class="text-muted">最近30天</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = location.origin;
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    let assets = [];
+    let selectedAsset = null;
+    let valueHistory = [];
+    let chart = null;
+    
+    // Check if user is manager
+    if (user.is_manager) {
+      document.getElementById('adminLink').style.display = 'inline-block';
+    }
+
+    async function fetchAssets() {
+      try {
+        const response = await fetch(`${API}/assets`);
+        assets = await response.json();
+        
+        const select = document.getElementById('assetSelect');
+        select.innerHTML = '<option value="">请选择要查看的资产</option>';
+        
+        assets.forEach(asset => {
+          const option = document.createElement('option');
+          option.value = asset.asset_id;
+          option.textContent = `${asset.asset_name} - ¥${(parseFloat(asset.total_value) / parseInt(asset.total_unit)).toFixed(2)}/单位`;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error fetching assets:', error);
+        showError('加载资产数据失败，请稍后重试');
+      }
+    }
+
+    async function fetchValueHistory(assetId, timeRange) {
+      try {
+        // Mock value history data - in real app, this would come from the API
+        const days = getDaysForRange(timeRange);
+        const basePrice = parseFloat(assets.find(a => a.asset_id == assetId).total_value) / 
+                         parseInt(assets.find(a => a.asset_id == assetId).total_unit);
+        
+        valueHistory = generateMockHistory(basePrice, days);
+        updateValueSummary();
+        updateChart();
+        updateHistoryTable();
+        updatePerformanceMetrics();
+        updateMarketComparison();
+      } catch (error) {
+        console.error('Error fetching value history:', error);
+        showError('加载历史数据失败，请稍后重试');
+      }
+    }
+
+    function generateMockHistory(basePrice, days) {
+      const history = [];
+      let currentPrice = basePrice;
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      
+      for (let i = 0; i < days; i++) {
+        const date = new Date(startDate);
+        date.setDate(date.getDate() + i);
+        
+        // Generate realistic price movement
+        const change = (Math.random() - 0.5) * 0.1; // ±5% daily change
+        currentPrice *= (1 + change);
+        
+        history.push({
+          date: date.toISOString().split('T')[0],
+          value: currentPrice,
+          volume: Math.floor(Math.random() * 1000) + 100
+        });
+      }
+      
+      return history;
+    }
+
+    function getDaysForRange(timeRange) {
+      switch (timeRange) {
+        case '7d': return 7;
+        case '30d': return 30;
+        case '90d': return 90;
+        case '1y': return 365;
+        case 'all': return 365;
+        default: return 30;
+      }
+    }
+
+    function updateValueSummary() {
+      if (valueHistory.length === 0) return;
+      
+      const current = valueHistory[valueHistory.length - 1];
+      const yesterday = valueHistory[valueHistory.length - 2] || current;
+      const weekAgo = valueHistory[Math.max(0, valueHistory.length - 8)] || current;
+      const monthAgo = valueHistory[Math.max(0, valueHistory.length - 31)] || current;
+      
+      document.getElementById('currentValue').textContent = `¥${current.value.toFixed(2)}`;
+      
+      const dailyChange = ((current.value - yesterday.value) / yesterday.value * 100).toFixed(2);
+      const weeklyChange = ((current.value - weekAgo.value) / weekAgo.value * 100).toFixed(2);
+      const monthlyChange = ((current.value - monthAgo.value) / monthAgo.value * 100).toFixed(2);
+      
+      document.getElementById('dailyChange').textContent = `${dailyChange > 0 ? '+' : ''}${dailyChange}%`;
+      document.getElementById('dailyChange').className = dailyChange > 0 ? 'text-success' : 'text-error';
+      
+      document.getElementById('weeklyChange').textContent = `${weeklyChange > 0 ? '+' : ''}${weeklyChange}%`;
+      document.getElementById('weeklyChange').className = weeklyChange > 0 ? 'text-success' : 'text-error';
+      
+      document.getElementById('monthlyChange').textContent = `${monthlyChange > 0 ? '+' : ''}${monthlyChange}%`;
+      document.getElementById('monthlyChange').className = monthlyChange > 0 ? 'text-success' : 'text-error';
+      
+      document.getElementById('valueSummary').style.display = 'block';
+    }
+
+    function updateChart() {
+      const ctx = document.getElementById('valueChart').getContext('2d');
+      const chartType = document.getElementById('chartType').value;
+      
+      if (chart) {
+        chart.destroy();
+      }
+      
+      const data = {
+        labels: valueHistory.map(h => new Date(h.date).toLocaleDateString()),
+        datasets: [{
+          label: '单位价格 (¥)',
+          data: valueHistory.map(h => h.value),
+          borderColor: '#f7c948',
+          backgroundColor: chartType === 'area' ? 'rgba(247, 201, 72, 0.1)' : 'transparent',
+          fill: chartType === 'area',
+          tension: 0.4
+        }]
+      };
+      
+      const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              color: '#eee'
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: '#a0a0a0'
+            },
+            grid: {
+              color: '#2a2a2a'
+            }
+          },
+          y: {
+            ticks: {
+              color: '#a0a0a0',
+              callback: function(value) {
+                return '¥' + value.toFixed(2);
+              }
+            },
+            grid: {
+              color: '#2a2a2a'
+            }
+          }
+        }
+      };
+      
+      chart = new Chart(ctx, {
+        type: chartType === 'area' ? 'line' : chartType,
+        data: data,
+        options: options
+      });
+    }
+
+    function updateHistoryTable() {
+      const container = document.getElementById('historyTable');
+      
+      if (valueHistory.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">暂无历史数据</p>';
+        return;
+      }
+      
+      const filteredHistory = filterHistoryByRange(valueHistory);
+      
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>单位价格</th>
+              <th>日变化</th>
+              <th>变化率</th>
+              <th>交易量</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredHistory.map((h, index) => {
+              const prevValue = index > 0 ? filteredHistory[index - 1].value : h.value;
+              const change = h.value - prevValue;
+              const changePercent = ((change / prevValue) * 100).toFixed(2);
+              
+              return `
+                <tr>
+                  <td>${new Date(h.date).toLocaleDateString()}</td>
+                  <td>¥${h.value.toFixed(2)}</td>
+                  <td class="${change > 0 ? 'text-success' : 'text-error'}">${change > 0 ? '+' : ''}¥${change.toFixed(2)}</td>
+                  <td class="${change > 0 ? 'text-success' : 'text-error'}">${change > 0 ? '+' : ''}${changePercent}%</td>
+                  <td>${h.volume}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function filterHistoryByRange(history) {
+      const filter = document.getElementById('tableFilter').value;
+      const days = getDaysForRange(filter);
+      return history.slice(-days);
+    }
+
+    function updatePerformanceMetrics() {
+      if (valueHistory.length === 0) return;
+      
+      const values = valueHistory.map(h => h.value);
+      const highest = Math.max(...values);
+      const lowest = Math.min(...values);
+      const average = values.reduce((sum, val) => sum + val, 0) / values.length;
+      
+      // Calculate volatility (standard deviation)
+      const variance = values.reduce((sum, val) => sum + Math.pow(val - average, 2), 0) / values.length;
+      const volatility = Math.sqrt(variance) / average * 100;
+      
+      const highestIndex = values.indexOf(highest);
+      const lowestIndex = values.indexOf(lowest);
+      
+      document.getElementById('highestPrice').textContent = `¥${highest.toFixed(2)}`;
+      document.getElementById('highestPriceDate').textContent = new Date(valueHistory[highestIndex].date).toLocaleDateString();
+      
+      document.getElementById('lowestPrice').textContent = `¥${lowest.toFixed(2)}`;
+      document.getElementById('lowestPriceDate').textContent = new Date(valueHistory[lowestIndex].date).toLocaleDateString();
+      
+      document.getElementById('averagePrice').textContent = `¥${average.toFixed(2)}`;
+      document.getElementById('volatility').textContent = `${volatility.toFixed(2)}%`;
+    }
+
+    function updateMarketComparison() {
+      // Mock market comparison data
+      const performance = (Math.random() - 0.5) * 20; // ±10% vs market
+      const riskLevel = Math.random();
+      const recommendation = Math.random();
+      
+      document.getElementById('relativePerformance').textContent = `${performance > 0 ? '+' : ''}${performance.toFixed(1)}%`;
+      document.getElementById('relativePerformance').className = performance > 0 ? 'text-success' : 'text-error';
+      
+      const riskRating = riskLevel < 0.3 ? '低' : riskLevel < 0.7 ? '中等' : '高';
+      const riskClass = riskLevel < 0.3 ? 'success' : riskLevel < 0.7 ? 'warning' : 'error';
+      document.getElementById('riskRating').textContent = riskRating;
+      document.getElementById('riskRating').className = `badge ${riskClass}`;
+      
+      const rec = recommendation < 0.3 ? '卖出' : recommendation < 0.7 ? '持有' : '买入';
+      const recClass = recommendation < 0.3 ? 'error' : recommendation < 0.7 ? 'warning' : 'success';
+      document.getElementById('recommendation').textContent = rec;
+      document.getElementById('recommendation').className = `badge ${recClass}`;
+      
+      document.getElementById('tradingVolume').textContent = Math.floor(Math.random() * 10000) + 1000;
+    }
+
+    function updateAssetHistory() {
+      const assetId = document.getElementById('assetSelect').value;
+      const timeRange = document.getElementById('timeRange').value;
+      
+      if (!assetId) {
+        document.getElementById('valueSummary').style.display = 'none';
+        document.getElementById('historyTable').innerHTML = '<p class="text-muted text-center">请选择一个资产</p>';
+        if (chart) {
+          chart.destroy();
+          chart = null;
+        }
+        return;
+      }
+      
+      selectedAsset = assets.find(a => a.asset_id == assetId);
+      fetchValueHistory(assetId, timeRange);
+    }
+
+    function updateTimeRange() {
+      if (selectedAsset) {
+        updateAssetHistory();
+      }
+    }
+
+    function updateChartType() {
+      if (chart) {
+        updateChart();
+      }
+    }
+
+    function filterTable() {
+      updateHistoryTable();
+    }
+
+    function toggleFullscreen() {
+      const chartContainer = document.getElementById('valueChart').parentElement;
+      if (chartContainer.requestFullscreen) {
+        chartContainer.requestFullscreen();
+      }
+    }
+
+    function downloadChart() {
+      if (chart) {
+        const url = chart.toBase64Image();
+        const link = document.createElement('a');
+        link.download = `asset-value-chart-${selectedAsset?.asset_name || 'unknown'}.png`;
+        link.href = url;
+        link.click();
+      }
+    }
+
+    function exportData() {
+      if (valueHistory.length === 0) {
+        showMessage('没有数据可导出', false);
+        return;
+      }
+      
+      const csv = [
+        '日期,单位价格,交易量',
+        ...valueHistory.map(h => `${h.date},${h.value.toFixed(2)},${h.volume}`)
+      ].join('\n');
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = `asset-value-history-${selectedAsset?.asset_name || 'unknown'}.csv`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function refreshData() {
+      if (selectedAsset) {
+        updateAssetHistory();
+      } else {
+        fetchAssets();
+      }
+    }
+
+    function showError(message) {
+      showMessage(message, false);
+    }
+
+    function showMessage(message, isSuccess) {
+      const msg = document.createElement('div');
+      msg.className = `msg ${isSuccess ? 'ok' : 'err'}`;
+      msg.textContent = message;
+      msg.style.position = 'fixed';
+      msg.style.top = '20px';
+      msg.style.right = '20px';
+      msg.style.zIndex = '1001';
+      document.body.appendChild(msg);
+      
+      setTimeout(() => {
+        document.body.removeChild(msg);
+      }, 3000);
+    }
+
+    function logout() {
+      sessionStorage.removeItem('user');
+      location.href = 'login.html';
+    }
+
+    // Load data on page load
+    fetchAssets();
+  </script>
+</body>
+</html>
+

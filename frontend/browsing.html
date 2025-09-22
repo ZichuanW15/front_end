@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Browse Assets - Asset Trading Platform</title>
+  <link rel="stylesheet" href="common.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="container">
+      <div class="nav-content">
+        <h1>Browse Assets</h1>
+        <div class="nav-links">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="browsing.html" class="active">Browse Assets</a>
+          <a href="trading.html">Trading</a>
+          <a href="portfolio.html">My Assets</a>
+          <a href="valuehistory.html">Value History</a>
+          <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
+          <button onclick="logout()" class="small">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <h2>Asset Market</h2>
+        <p class="text-muted">Explore and discover quality investment opportunities</p>
+      </div>
+      <div class="row">
+        <button onclick="refreshData()" class="small">Refresh Data</button>
+        <button onclick="toggleView()" class="small" id="viewToggle">List View</button>
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="card">
+      <div class="row" style="margin-bottom: 20px;">
+        <div class="col">
+          <input type="text" id="searchInput" placeholder="Search asset name or description..." onkeyup="searchAssets()" style="width: 100%;">
+        </div>
+        <div class="col" style="max-width: 200px;">
+          <select id="categoryFilter" onchange="filterAssets()">
+            <option value="all">All Categories</option>
+            <option value="real_estate">Real Estate</option>
+            <option value="stocks">Stocks</option>
+            <option value="commodities">Commodities</option>
+            <option value="crypto">Cryptocurrency</option>
+            <option value="bonds">Bonds</option>
+          </select>
+        </div>
+        <div class="col" style="max-width: 200px;">
+          <select id="sortBy" onchange="sortAssets()">
+            <option value="name">Sort by Name</option>
+            <option value="price">Sort by Price</option>
+            <option value="value">Sort by Total Value</option>
+            <option value="units">Sort by Units</option>
+            <option value="created">Sort by Created Date</option>
+          </select>
+        </div>
+        <div class="col" style="max-width: 150px;">
+          <select id="sortOrder" onchange="sortAssets()">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Price Range Filter -->
+      <div class="row">
+        <div class="col">
+          <label>Price Range (¥)</label>
+          <div class="row">
+            <input type="number" id="minPrice" placeholder="Min Price" onchange="filterAssets()" style="width: 48%;">
+            <input type="number" id="maxPrice" placeholder="Max Price" onchange="filterAssets()" style="width: 48%;">
+          </div>
+        </div>
+        <div class="col">
+          <label>Unit Range</label>
+          <div class="row">
+            <input type="number" id="minUnits" placeholder="Min Units" onchange="filterAssets()" style="width: 48%;">
+            <input type="number" id="maxUnits" placeholder="Max Units" onchange="filterAssets()" style="width: 48%;">
+          </div>
+        </div>
+        <div class="col" style="max-width: 200px;">
+          <button onclick="clearFilters()" class="small" style="width: 100%; margin-top: 20px;">Clear Filters</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Asset Statistics -->
+    <div class="grid">
+      <div class="card">
+        <h3>Total Assets</h3>
+        <div style="font-size: 24px; font-weight: bold; color: var(--accent);" id="totalAssets">0</div>
+        <p class="text-muted">Investable Assets</p>
+      </div>
+      
+      <div class="card">
+        <h3>Average Price</h3>
+        <div style="font-size: 24px; font-weight: bold;" id="avgPrice">¥0</div>
+        <p class="text-muted">Average Price per Unit</p>
+      </div>
+      
+      <div class="card">
+        <h3>Total Market Value</h3>
+        <div style="font-size: 24px; font-weight: bold;" id="totalMarketValue">¥0</div>
+        <p class="text-muted">Total Value of All Assets</p>
+      </div>
+      
+      <div class="card">
+        <h3>Popular Category</h3>
+        <div style="font-size: 24px; font-weight: bold;" id="topCategory">-</div>
+        <p class="text-muted">Most Popular Investment Category</p>
+      </div>
+    </div>
+
+    <!-- Assets Display -->
+    <div id="assetsContainer">
+      <div class="text-muted text-center" style="padding: 40px;">
+        <div class="spinner"></div>
+        <p>Loading asset data...</p>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="card" id="paginationContainer" style="display: none;">
+      <div class="row" style="justify-content: center; align-items: center;">
+        <button onclick="previousPage()" class="small" id="prevBtn" disabled>Previous</button>
+        <span id="pageInfo" style="margin: 0 20px;">Page 1 of 1</span>
+        <button onclick="nextPage()" class="small" id="nextBtn" disabled>Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Asset Detail Modal -->
+  <div id="assetDetailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 600px; max-width: 90vw; max-height: 80vh; overflow-y: auto;">
+      <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 id="modalAssetName">Asset Details</h3>
+        <button onclick="hideAssetDetailModal()" class="small">Close</button>
+      </div>
+      
+      <div id="modalAssetContent">
+        <!-- Asset details will be populated here -->
+      </div>
+      
+      <div class="row" style="margin-top: 20px;">
+        <button onclick="quickBuyFromModal()" class="primary col" style="margin-right: 10px;">Quick Buy</button>
+        <button onclick="addToWatchlist()" class="col">Add to Watchlist</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = location.origin;
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    let allAssets = [];
+    let filteredAssets = [];
+    let currentPage = 1;
+    let itemsPerPage = 12;
+    let isGridView = true;
+    let selectedAsset = null;
+    
+    // Check if user is manager
+    if (user.is_manager) {
+      document.getElementById('adminLink').style.display = 'inline-block';
+    }
+
+    async function fetchAssets() {
+      try {
+        const response = await fetch(`${API}/assets`);
+        allAssets = await response.json();
+        filteredAssets = [...allAssets];
+        
+        updateStatistics();
+        displayAssets();
+        updatePagination();
+      } catch (error) {
+        console.error('Error fetching assets:', error);
+        showError('Failed to load asset data, please try again later');
+      }
+    }
+
+    function updateStatistics() {
+      const totalAssets = allAssets.length;
+      const totalValue = allAssets.reduce((sum, asset) => sum + parseFloat(asset.total_value), 0);
+      const avgPrice = allAssets.length > 0 ? 
+        allAssets.reduce((sum, asset) => sum + (parseFloat(asset.total_value) / parseInt(asset.total_unit)), 0) / allAssets.length : 0;
+      
+      document.getElementById('totalAssets').textContent = totalAssets;
+      document.getElementById('avgPrice').textContent = `¥${avgPrice.toFixed(2)}`;
+      document.getElementById('totalMarketValue').textContent = `¥${totalValue.toLocaleString()}`;
+      document.getElementById('topCategory').textContent = 'Real Estate'; // Mock data
+    }
+
+    function displayAssets() {
+      const container = document.getElementById('assetsContainer');
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageAssets = filteredAssets.slice(startIndex, endIndex);
+      
+      if (pageAssets.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">No assets found matching criteria</p>';
+        return;
+      }
+      
+      if (isGridView) {
+        container.innerHTML = `
+          <div class="grid">
+            ${pageAssets.map(asset => createAssetCard(asset)).join('')}
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Asset Name</th>
+                <th>Category</th>
+                <th>Unit Price</th>
+                <th>Total Units</th>
+                <th>Total Value</th>
+                <th>Created At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${pageAssets.map(asset => createAssetRow(asset)).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+    }
+
+    function createAssetCard(asset) {
+      const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
+      const change = (Math.random() * 10 - 5).toFixed(2);
+      const category = getAssetCategory(asset);
+      
+      return `
+        <div class="card" style="cursor: pointer;" onclick="showAssetDetail(${asset.asset_id})">
+          <div class="row" style="justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+            <h4 style="margin: 0;">${asset.asset_name}</h4>
+            <span class="badge info">${category}</span>
+          </div>
+          
+          <div class="row" style="margin-bottom: 10px;">
+            <div class="col">
+              <div class="text-muted">Unit Price</div>
+              <div style="font-size: 18px; font-weight: bold;">¥${price.toFixed(2)}</div>
+            </div>
+            <div class="col">
+              <div class="text-muted">Change</div>
+              <div class="${change > 0 ? 'text-success' : 'text-error'}">${change > 0 ? '+' : ''}${change}%</div>
+            </div>
+          </div>
+          
+          <div class="row" style="margin-bottom: 15px;">
+            <div class="col">
+              <div class="text-muted">Total Units</div>
+              <div>${asset.total_unit}</div>
+            </div>
+            <div class="col">
+              <div class="text-muted">Total Value</div>
+              <div>¥${parseFloat(asset.total_value).toLocaleString()}</div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <button onclick="event.stopPropagation(); quickBuy(${asset.asset_id})" class="primary small col" style="margin-right: 5px;">Buy</button>
+            <button onclick="event.stopPropagation(); addToWatchlist(${asset.asset_id})" class="small col">Watch</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function createAssetRow(asset) {
+      const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
+      const change = (Math.random() * 10 - 5).toFixed(2);
+      const category = getAssetCategory(asset);
+      
+      return `
+        <tr onclick="showAssetDetail(${asset.asset_id})" style="cursor: pointer;">
+          <td>
+            <div style="font-weight: 500;">${asset.asset_name}</div>
+            <div class="text-muted" style="font-size: 12px;">ID: ${asset.asset_id}</div>
+          </td>
+          <td><span class="badge info">${category}</span></td>
+          <td>¥${price.toFixed(2)}</td>
+          <td>${asset.total_unit}</td>
+          <td>¥${parseFloat(asset.total_value).toLocaleString()}</td>
+          <td>${new Date(asset.created_at).toLocaleDateString()}</td>
+          <td>
+            <button onclick="event.stopPropagation(); quickBuy(${asset.asset_id})" class="small success">Buy</button>
+            <button onclick="event.stopPropagation(); addToWatchlist(${asset.asset_id})" class="small">Watch</button>
+          </td>
+        </tr>
+      `;
+    }
+
+    function getAssetCategory(asset) {
+      // Mock category assignment based on asset name
+      const name = asset.asset_name.toLowerCase();
+      if (name.includes('房产') || name.includes('地产') || name.includes('房屋') || name.includes('real estate') || name.includes('property')) return 'Real Estate';
+      if (name.includes('股票') || name.includes('股份') || name.includes('stock') || name.includes('equity')) return 'Stocks';
+      if (name.includes('黄金') || name.includes('石油') || name.includes('商品') || name.includes('gold') || name.includes('oil') || name.includes('commodity')) return 'Commodities';
+      if (name.includes('比特币') || name.includes('以太坊') || name.includes('加密货币') || name.includes('bitcoin') || name.includes('crypto')) return 'Cryptocurrency';
+      if (name.includes('债券') || name.includes('国债') || name.includes('bond')) return 'Bonds';
+      return 'Other';
+    }
+
+    function searchAssets() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      filterAssets();
+    }
+
+    function filterAssets() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const category = document.getElementById('categoryFilter').value;
+      const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+      const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+      const minUnits = parseInt(document.getElementById('minUnits').value) || 0;
+      const maxUnits = parseInt(document.getElementById('maxUnits').value) || Infinity;
+      
+      filteredAssets = allAssets.filter(asset => {
+        const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
+        const assetCategory = getAssetCategory(asset);
+        
+        return (
+          (searchTerm === '' || asset.asset_name.toLowerCase().includes(searchTerm)) &&
+          (category === 'all' || assetCategory === category) &&
+          price >= minPrice && price <= maxPrice &&
+          parseInt(asset.total_unit) >= minUnits && parseInt(asset.total_unit) <= maxUnits
+        );
+      });
+      
+      currentPage = 1;
+      displayAssets();
+      updatePagination();
+    }
+
+    function sortAssets() {
+      const sortBy = document.getElementById('sortBy').value;
+      const sortOrder = document.getElementById('sortOrder').value;
+      
+      filteredAssets.sort((a, b) => {
+        let aValue, bValue;
+        
+        switch (sortBy) {
+          case 'name':
+            aValue = a.asset_name;
+            bValue = b.asset_name;
+            break;
+          case 'price':
+            aValue = parseFloat(a.total_value) / parseInt(a.total_unit);
+            bValue = parseFloat(b.total_value) / parseInt(b.total_unit);
+            break;
+          case 'value':
+            aValue = parseFloat(a.total_value);
+            bValue = parseFloat(b.total_value);
+            break;
+          case 'units':
+            aValue = parseInt(a.total_unit);
+            bValue = parseInt(b.total_unit);
+            break;
+          case 'created':
+            aValue = new Date(a.created_at);
+            bValue = new Date(b.created_at);
+            break;
+          default:
+            return 0;
+        }
+        
+        if (sortOrder === 'asc') {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
+        }
+      });
+      
+      displayAssets();
+    }
+
+    function clearFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('categoryFilter').value = 'all';
+      document.getElementById('minPrice').value = '';
+      document.getElementById('maxPrice').value = '';
+      document.getElementById('minUnits').value = '';
+      document.getElementById('maxUnits').value = '';
+      document.getElementById('sortBy').value = 'name';
+      document.getElementById('sortOrder').value = 'asc';
+      
+      filteredAssets = [...allAssets];
+      currentPage = 1;
+      displayAssets();
+      updatePagination();
+    }
+
+    function toggleView() {
+      isGridView = !isGridView;
+      document.getElementById('viewToggle').textContent = isGridView ? 'List View' : 'Grid View';
+      displayAssets();
+    }
+
+    function updatePagination() {
+      const totalPages = Math.ceil(filteredAssets.length / itemsPerPage);
+      const paginationContainer = document.getElementById('paginationContainer');
+      
+      if (totalPages <= 1) {
+        paginationContainer.style.display = 'none';
+        return;
+      }
+      
+      paginationContainer.style.display = 'block';
+      document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+      document.getElementById('prevBtn').disabled = currentPage === 1;
+      document.getElementById('nextBtn').disabled = currentPage === totalPages;
+    }
+
+    function previousPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        displayAssets();
+        updatePagination();
+      }
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(filteredAssets.length / itemsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        displayAssets();
+        updatePagination();
+      }
+    }
+
+    function showAssetDetail(assetId) {
+      const asset = allAssets.find(a => a.asset_id == assetId);
+      if (!asset) return;
+      
+      selectedAsset = asset;
+      const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
+      const change = (Math.random() * 10 - 5).toFixed(2);
+      
+      document.getElementById('modalAssetName').textContent = asset.asset_name;
+      document.getElementById('modalAssetContent').innerHTML = `
+        <div class="row" style="margin-bottom: 20px;">
+          <div class="col">
+            <div class="text-muted">Asset ID</div>
+            <div>${asset.asset_id}</div>
+          </div>
+          <div class="col">
+            <div class="text-muted">Category</div>
+            <div><span class="badge info">${getAssetCategory(asset)}</span></div>
+          </div>
+        </div>
+        
+        <div class="row" style="margin-bottom: 20px;">
+          <div class="col">
+            <div class="text-muted">Unit Price</div>
+            <div style="font-size: 24px; font-weight: bold; color: var(--accent);">¥${price.toFixed(2)}</div>
+          </div>
+          <div class="col">
+            <div class="text-muted">Change</div>
+            <div class="${change > 0 ? 'text-success' : 'text-error'}" style="font-size: 18px; font-weight: bold;">${change > 0 ? '+' : ''}${change}%</div>
+          </div>
+        </div>
+        
+        <div class="row" style="margin-bottom: 20px;">
+          <div class="col">
+            <div class="text-muted">Total Units</div>
+            <div style="font-size: 18px; font-weight: bold;">${asset.total_unit}</div>
+          </div>
+          <div class="col">
+            <div class="text-muted">Total Value</div>
+            <div style="font-size: 18px; font-weight: bold;">¥${parseFloat(asset.total_value).toLocaleString()}</div>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <div class="text-muted">Created At</div>
+          <div>${new Date(asset.created_at).toLocaleString()}</div>
+        </div>
+        
+        <div>
+            <div class="text-muted">Asset Description</div>
+          <div style="background: #1a1a1a; padding: 15px; border-radius: 8px; margin-top: 8px;">
+            ${asset.description || 'No detailed description available'}
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('assetDetailModal').style.display = 'block';
+    }
+
+    function hideAssetDetailModal() {
+      document.getElementById('assetDetailModal').style.display = 'none';
+      selectedAsset = null;
+    }
+
+    function quickBuy(assetId) {
+      // Redirect to trading page with pre-selected asset
+      sessionStorage.setItem('selectedAsset', assetId);
+      location.href = 'trading.html';
+    }
+
+    function quickBuyFromModal() {
+      if (selectedAsset) {
+        quickBuy(selectedAsset.asset_id);
+      }
+    }
+
+    function addToWatchlist(assetId) {
+      // Mock watchlist functionality
+      showMessage('Added to watchlist', true);
+    }
+
+    function refreshData() {
+      fetchAssets();
+    }
+
+    function showError(message) {
+      showMessage(message, false);
+    }
+
+    function showMessage(message, isSuccess) {
+      const msg = document.createElement('div');
+      msg.className = `msg ${isSuccess ? 'ok' : 'err'}`;
+      msg.textContent = message;
+      msg.style.position = 'fixed';
+      msg.style.top = '20px';
+      msg.style.right = '20px';
+      msg.style.zIndex = '1001';
+      document.body.appendChild(msg);
+      
+      setTimeout(() => {
+        document.body.removeChild(msg);
+      }, 3000);
+    }
+
+    function logout() {
+      sessionStorage.removeItem('user');
+      location.href = 'login.html';
+    }
+
+    // Load data on page load
+    fetchAssets();
+  </script>
+</body>
+</html>
+

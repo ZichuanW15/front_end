@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>My Assets - Asset Trading Platform</title>
+  <link rel="stylesheet" href="common.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="container">
+      <div class="nav-content">
+        <h1>My Assets</h1>
+        <div class="nav-links">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="browsing.html">Browse Assets</a>
+          <a href="trading.html">Trading</a>
+          <a href="portfolio.html" class="active">My Assets</a>
+          <a href="valuehistory.html">Value History</a>
+          <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
+          <button onclick="logout()" class="small">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <h2>Portfolio</h2>
+        <p class="text-muted">Manage your asset holdings and portfolio</p>
+      </div>
+      <div class="row">
+        <button onclick="refreshData()" class="small">Refresh Data</button>
+        <button onclick="exportPortfolio()" class="small">Export Report</button>
+        <button onclick="rebalancePortfolio()" class="primary small">Rebalance</button>
+      </div>
+    </div>
+
+    <!-- Portfolio Summary -->
+    <div class="grid">
+      <div class="card">
+        <h3>Total Asset Value</h3>
+        <div style="font-size: 28px; font-weight: bold; color: var(--accent);" id="totalPortfolioValue">¥0</div>
+        <p class="text-muted">Total Portfolio Value</p>
+        <div class="text-success" id="portfolioChange">+0% Today</div>
+      </div>
+      
+      <div class="card">
+        <h3>Assets Held</h3>
+        <div style="font-size: 24px; font-weight: bold;" id="totalAssets">0</div>
+        <p class="text-muted">Different Assets</p>
+        <div class="text-muted" id="totalUnits">0 Total Units</div>
+      </div>
+      
+      <div class="card">
+        <h3>Daily Gain</h3>
+        <div style="font-size: 24px; font-weight: bold;" id="dailyGain">¥0</div>
+        <p class="text-muted">Today's P&L</p>
+        <div class="text-success" id="dailyGainPercent">+0%</div>
+      </div>
+      
+      <div class="card">
+        <h3>Total Gain</h3>
+        <div style="font-size: 24px; font-weight: bold;" id="totalGain">¥0</div>
+        <p class="text-muted">Cumulative P&L</p>
+        <div class="text-success" id="totalGainPercent">+0%</div>
+      </div>
+    </div>
+
+    <!-- Portfolio Chart -->
+    <div class="card">
+      <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3>Portfolio Distribution</h3>
+        <div class="row">
+          <select id="chartType" onchange="updateChart()">
+            <option value="pie" selected>Pie Chart</option>
+            <option value="doughnut">Doughnut Chart</option>
+            <option value="bar">Bar Chart</option>
+          </select>
+        </div>
+      </div>
+      <div style="position: relative; height: 300px;">
+        <canvas id="portfolioChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Holdings Table -->
+    <div class="card">
+      <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3>Asset Holdings Details</h3>
+        <div class="row">
+          <select id="sortBy" onchange="sortHoldings()">
+            <option value="value">Sort by Value</option>
+            <option value="units">Sort by Units</option>
+            <option value="gain">Sort by Gain</option>
+            <option value="name">Sort by Name</option>
+          </select>
+          <select id="filterBy" onchange="filterHoldings()" style="margin-left: 10px;">
+            <option value="all">All Assets</option>
+            <option value="profitable">Profitable Assets</option>
+            <option value="losing">Losing Assets</option>
+            <option value="top5">Top 5 Holdings</option>
+          </select>
+        </div>
+      </div>
+      <div id="holdingsTable">
+        <div class="text-muted text-center" style="padding: 40px;">
+          <div class="spinner"></div>
+          <p>Loading holdings data...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="card">
+      <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3>Recent Transactions</h3>
+        <button onclick="location.href='trading.html'" class="small">View All</button>
+      </div>
+      <div id="recentTransactions">
+        <div class="text-muted text-center" style="padding: 40px;">
+          <div class="spinner"></div>
+          <p>Loading transaction records...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Analysis -->
+    <div class="card">
+      <h3>Investment Performance Analysis</h3>
+      <div class="grid">
+        <div class="card">
+          <h4>Sharpe Ratio</h4>
+          <div style="font-size: 20px; font-weight: bold;" id="sharpeRatio">0.00</div>
+          <p class="text-muted">Risk-Adjusted Return</p>
+        </div>
+        
+        <div class="card">
+          <h4>Max Drawdown</h4>
+          <div style="font-size: 20px; font-weight: bold; color: var(--error);" id="maxDrawdown">-0%</div>
+          <p class="text-muted">Maximum Loss</p>
+        </div>
+        
+        <div class="card">
+          <h4>Volatility</h4>
+          <div style="font-size: 20px; font-weight: bold;" id="volatility">0%</div>
+          <p class="text-muted">Price Volatility</p>
+        </div>
+        
+        <div class="card">
+          <h4>Win Rate</h4>
+          <div style="font-size: 20px; font-weight: bold;" id="winRate">0%</div>
+          <p class="text-muted">Profitable Trade Ratio</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Asset Detail Modal -->
+    <div id="assetDetailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 600px; max-width: 90vw; max-height: 80vh; overflow-y: auto;">
+        <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3 id="modalAssetName">Asset Details</h3>
+          <button onclick="hideAssetDetailModal()" class="small">Close</button>
+        </div>
+        
+        <div id="modalAssetContent">
+          <!-- Asset details will be populated here -->
+        </div>
+        
+        <div class="row" style="margin-top: 20px;">
+          <button onclick="sellAsset()" class="danger col" style="margin-right: 10px;">Sell</button>
+          <button onclick="viewHistory()" class="col">View History</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = location.origin;
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    let portfolioData = [];
+    let allAssets = [];
+    let transactions = [];
+    let chart = null;
+    let selectedAsset = null;
+    
+    // Check if user is manager
+    if (user.is_manager) {
+      document.getElementById('adminLink').style.display = 'inline-block';
+    }
+
+    async function fetchPortfolioData() {
+      try {
+        // Fetch user holdings
+        const holdingsRes = await fetch(`${API}/users/${user.user_id}/fractions`);
+        const holdings = await holdingsRes.json();
+        
+        // Fetch all assets for reference
+        const assetsRes = await fetch(`${API}/assets`);
+        allAssets = await assetsRes.json();
+        
+        // Fetch recent transactions
+        const transactionsRes = await fetch(`${API}/transactions?user_id=${user.user_id}&limit=10`);
+        transactions = await transactionsRes.json();
+        
+        // Process portfolio data
+        portfolioData = processPortfolioData(holdings, allAssets);
+        
+        updatePortfolioSummary();
+        updateChart();
+        updateHoldingsTable();
+        updateRecentTransactions();
+        updatePerformanceAnalysis();
+      } catch (error) {
+        console.error('Error fetching portfolio data:', error);
+        showError('加载投资组合数据失败，请稍后重试');
+      }
+    }
+
+    function processPortfolioData(holdings, assets) {
+      const portfolio = [];
+      const holdingsByAsset = {};
+      
+      // Group holdings by asset
+      holdings.forEach(holding => {
+        if (!holdingsByAsset[holding.asset_id]) {
+          holdingsByAsset[holding.asset_id] = 0;
+        }
+        holdingsByAsset[holding.asset_id] += holding.units;
+      });
+      
+      // Create portfolio entries
+      Object.keys(holdingsByAsset).forEach(assetId => {
+        const asset = assets.find(a => a.asset_id == assetId);
+        if (asset) {
+          const units = holdingsByAsset[assetId];
+          const currentPrice = parseFloat(asset.total_value) / parseInt(asset.total_unit);
+          const currentValue = units * currentPrice;
+          const costBasis = currentValue * (0.8 + Math.random() * 0.4); // Mock cost basis
+          const gain = currentValue - costBasis;
+          const gainPercent = (gain / costBasis) * 100;
+          
+          portfolio.push({
+            asset_id: asset.asset_id,
+            asset_name: asset.asset_name,
+            units: units,
+            current_price: currentPrice,
+            current_value: currentValue,
+            cost_basis: costBasis,
+            gain: gain,
+            gain_percent: gainPercent,
+            category: getAssetCategory(asset)
+          });
+        }
+      });
+      
+      return portfolio;
+    }
+
+    function getAssetCategory(asset) {
+      const name = asset.asset_name.toLowerCase();
+      if (name.includes('房产') || name.includes('地产')) return '房地产';
+      if (name.includes('股票') || name.includes('股份')) return '股票';
+      if (name.includes('黄金') || name.includes('石油')) return '商品';
+      if (name.includes('比特币') || name.includes('以太坊')) return '加密货币';
+      return '其他';
+    }
+
+    function updatePortfolioSummary() {
+      const totalValue = portfolioData.reduce((sum, item) => sum + item.current_value, 0);
+      const totalCost = portfolioData.reduce((sum, item) => sum + item.cost_basis, 0);
+      const totalGain = totalValue - totalCost;
+      const totalGainPercent = (totalGain / totalCost) * 100;
+      
+      // Mock daily change
+      const dailyChange = (Math.random() - 0.5) * 0.1;
+      const dailyGain = totalValue * dailyChange;
+      
+      document.getElementById('totalPortfolioValue').textContent = `¥${totalValue.toLocaleString()}`;
+      document.getElementById('totalAssets').textContent = portfolioData.length;
+      document.getElementById('totalUnits').textContent = portfolioData.reduce((sum, item) => sum + item.units, 0);
+      
+      document.getElementById('dailyGain').textContent = `¥${dailyGain.toFixed(2)}`;
+      document.getElementById('dailyGainPercent').textContent = `${dailyChange > 0 ? '+' : ''}${(dailyChange * 100).toFixed(2)}%`;
+      document.getElementById('dailyGainPercent').className = dailyChange > 0 ? 'text-success' : 'text-error';
+      
+      document.getElementById('totalGain').textContent = `¥${totalGain.toFixed(2)}`;
+      document.getElementById('totalGainPercent').textContent = `${totalGainPercent > 0 ? '+' : ''}${totalGainPercent.toFixed(2)}%`;
+      document.getElementById('totalGainPercent').className = totalGainPercent > 0 ? 'text-success' : 'text-error';
+      
+      document.getElementById('portfolioChange').textContent = `${dailyChange > 0 ? '+' : ''}${(dailyChange * 100).toFixed(2)}% 今日`;
+      document.getElementById('portfolioChange').className = dailyChange > 0 ? 'text-success' : 'text-error';
+    }
+
+    function updateChart() {
+      const ctx = document.getElementById('portfolioChart').getContext('2d');
+      const chartType = document.getElementById('chartType').value;
+      
+      if (chart) {
+        chart.destroy();
+      }
+      
+      const data = {
+        labels: portfolioData.map(item => item.asset_name),
+        datasets: [{
+          data: portfolioData.map(item => item.current_value),
+          backgroundColor: [
+            '#f7c948', '#6fd37f', '#ff6b6b', '#2196f3', '#ffa726',
+            '#9c27b0', '#00bcd4', '#8bc34a', '#ff5722', '#607d8b'
+          ],
+          borderColor: '#1b1b1b',
+          borderWidth: 2
+        }]
+      };
+      
+      const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              color: '#eee',
+              usePointStyle: true
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.parsed;
+                const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
+                const percentage = ((value / total) * 100).toFixed(1);
+                return `${context.label}: ¥${value.toLocaleString()} (${percentage}%)`;
+              }
+            }
+          }
+        }
+      };
+      
+      chart = new Chart(ctx, {
+        type: chartType === 'doughnut' ? 'doughnut' : chartType === 'bar' ? 'bar' : 'pie',
+        data: data,
+        options: options
+      });
+    }
+
+    function updateHoldingsTable() {
+      const container = document.getElementById('holdingsTable');
+      
+      if (portfolioData.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">暂无持有资产</p>';
+        return;
+      }
+      
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>资产名称</th>
+              <th>持有单位</th>
+              <th>当前价格</th>
+              <th>当前价值</th>
+              <th>成本基础</th>
+              <th>收益/亏损</th>
+              <th>收益率</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${portfolioData.map(item => `
+              <tr onclick="showAssetDetail(${item.asset_id})" style="cursor: pointer;">
+                <td>
+                  <div style="font-weight: 500;">${item.asset_name}</div>
+                  <div class="text-muted" style="font-size: 12px;">${item.category}</div>
+                </td>
+                <td>${item.units.toLocaleString()}</td>
+                <td>¥${item.current_price.toFixed(2)}</td>
+                <td>¥${item.current_value.toLocaleString()}</td>
+                <td>¥${item.cost_basis.toLocaleString()}</td>
+                <td class="${item.gain > 0 ? 'text-success' : 'text-error'}">
+                  ${item.gain > 0 ? '+' : ''}¥${item.gain.toFixed(2)}
+                </td>
+                <td class="${item.gain_percent > 0 ? 'text-success' : 'text-error'}">
+                  ${item.gain_percent > 0 ? '+' : ''}${item.gain_percent.toFixed(2)}%
+                </td>
+                <td>
+                  <button onclick="event.stopPropagation(); quickSell(${item.asset_id})" class="small danger">卖出</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function updateRecentTransactions() {
+      const container = document.getElementById('recentTransactions');
+      
+      if (transactions.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">暂无交易记录</p>';
+        return;
+      }
+      
+      container.innerHTML = transactions.map(tx => {
+        const asset = allAssets.find(a => a.asset_id == tx.asset_id);
+        return `
+          <div class="row" style="padding: 12px; border-bottom: 1px solid var(--border);">
+            <div class="col">
+              <div style="font-weight: 500;">${asset ? asset.asset_name : '未知资产'}</div>
+              <div class="text-muted" style="font-size: 12px;">${new Date(tx.transaction_at).toLocaleString()}</div>
+            </div>
+            <div class="col text-center">
+              <span class="badge ${tx.transaction_type === 'buy' ? 'success' : 'error'}">
+                ${tx.transaction_type === 'buy' ? '买入' : '卖出'}
+              </span>
+            </div>
+            <div class="col text-right">
+              <div class="${tx.unit_moved > 0 ? 'text-success' : 'text-error'}">
+                ${tx.unit_moved > 0 ? '+' : ''}${tx.unit_moved} 单位
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updatePerformanceAnalysis() {
+      // Mock performance metrics
+      const sharpeRatio = (Math.random() * 2).toFixed(2);
+      const maxDrawdown = -(Math.random() * 20).toFixed(1);
+      const volatility = (Math.random() * 30 + 10).toFixed(1);
+      const winRate = (Math.random() * 40 + 30).toFixed(1);
+      
+      document.getElementById('sharpeRatio').textContent = sharpeRatio;
+      document.getElementById('maxDrawdown').textContent = `${maxDrawdown}%`;
+      document.getElementById('volatility').textContent = `${volatility}%`;
+      document.getElementById('winRate').textContent = `${winRate}%`;
+    }
+
+    function sortHoldings() {
+      const sortBy = document.getElementById('sortBy').value;
+      
+      portfolioData.sort((a, b) => {
+        switch (sortBy) {
+          case 'value':
+            return b.current_value - a.current_value;
+          case 'units':
+            return b.units - a.units;
+          case 'gain':
+            return b.gain - a.gain;
+          case 'name':
+            return a.asset_name.localeCompare(b.asset_name);
+          default:
+            return 0;
+        }
+      });
+      
+      updateHoldingsTable();
+    }
+
+    function filterHoldings() {
+      const filter = document.getElementById('filterBy').value;
+      let filteredData = [...portfolioData];
+      
+      switch (filter) {
+        case 'profitable':
+          filteredData = portfolioData.filter(item => item.gain > 0);
+          break;
+        case 'losing':
+          filteredData = portfolioData.filter(item => item.gain < 0);
+          break;
+        case 'top5':
+          filteredData = portfolioData
+            .sort((a, b) => b.current_value - a.current_value)
+            .slice(0, 5);
+          break;
+      }
+      
+      // Temporarily replace portfolioData for display
+      const originalData = portfolioData;
+      portfolioData = filteredData;
+      updateHoldingsTable();
+      portfolioData = originalData;
+    }
+
+    function showAssetDetail(assetId) {
+      const asset = portfolioData.find(a => a.asset_id == assetId);
+      if (!asset) return;
+      
+      selectedAsset = asset;
+      
+      document.getElementById('modalAssetName').textContent = asset.asset_name;
+      document.getElementById('modalAssetContent').innerHTML = `
+        <div class="row" style="margin-bottom: 20px;">
+          <div class="col">
+            <div class="text-muted">持有单位</div>
+            <div style="font-size: 24px; font-weight: bold;">${asset.units.toLocaleString()}</div>
+          </div>
+          <div class="col">
+            <div class="text-muted">当前价格</div>
+            <div style="font-size: 24px; font-weight: bold; color: var(--accent);">¥${asset.current_price.toFixed(2)}</div>
+          </div>
+        </div>
+        
+        <div class="row" style="margin-bottom: 20px;">
+          <div class="col">
+            <div class="text-muted">当前价值</div>
+            <div style="font-size: 20px; font-weight: bold;">¥${asset.current_value.toLocaleString()}</div>
+          </div>
+          <div class="col">
+            <div class="text-muted">成本基础</div>
+            <div style="font-size: 20px; font-weight: bold;">¥${asset.cost_basis.toLocaleString()}</div>
+          </div>
+        </div>
+        
+        <div class="row" style="margin-bottom: 20px;">
+          <div class="col">
+            <div class="text-muted">收益/亏损</div>
+            <div style="font-size: 20px; font-weight: bold;" class="${asset.gain > 0 ? 'text-success' : 'text-error'}">
+              ${asset.gain > 0 ? '+' : ''}¥${asset.gain.toFixed(2)}
+            </div>
+          </div>
+          <div class="col">
+            <div class="text-muted">收益率</div>
+            <div style="font-size: 20px; font-weight: bold;" class="${asset.gain_percent > 0 ? 'text-success' : 'text-error'}">
+              ${asset.gain_percent > 0 ? '+' : ''}${asset.gain_percent.toFixed(2)}%
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="text-muted">资产类别</div>
+          <div><span class="badge info">${asset.category}</span></div>
+        </div>
+      `;
+      
+      document.getElementById('assetDetailModal').style.display = 'block';
+    }
+
+    function hideAssetDetailModal() {
+      document.getElementById('assetDetailModal').style.display = 'none';
+      selectedAsset = null;
+    }
+
+    function quickSell(assetId) {
+      sessionStorage.setItem('selectedAsset', assetId);
+      location.href = 'trading.html';
+    }
+
+    function sellAsset() {
+      if (selectedAsset) {
+        quickSell(selectedAsset.asset_id);
+      }
+    }
+
+    function viewHistory() {
+      if (selectedAsset) {
+        sessionStorage.setItem('selectedAsset', selectedAsset.asset_id);
+        location.href = 'valuehistory.html';
+      }
+    }
+
+    function rebalancePortfolio() {
+      showMessage('重新平衡功能开发中...', false);
+    }
+
+    function exportPortfolio() {
+      const csv = [
+        '资产名称,持有单位,当前价格,当前价值,成本基础,收益,收益率',
+        ...portfolioData.map(item => 
+          `${item.asset_name},${item.units},${item.current_price.toFixed(2)},${item.current_value.toFixed(2)},${item.cost_basis.toFixed(2)},${item.gain.toFixed(2)},${item.gain_percent.toFixed(2)}%`
+        )
+      ].join('\n');
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = `portfolio-${new Date().toISOString().split('T')[0]}.csv`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function refreshData() {
+      fetchPortfolioData();
+    }
+
+    function showError(message) {
+      showMessage(message, false);
+    }
+
+    function showMessage(message, isSuccess) {
+      const msg = document.createElement('div');
+      msg.className = `msg ${isSuccess ? 'ok' : 'err'}`;
+      msg.textContent = message;
+      msg.style.position = 'fixed';
+      msg.style.top = '20px';
+      msg.style.right = '20px';
+      msg.style.zIndex = '1001';
+      document.body.appendChild(msg);
+      
+      setTimeout(() => {
+        document.body.removeChild(msg);
+      }, 3000);
+    }
+
+    function logout() {
+      sessionStorage.removeItem('user');
+      location.href = 'login.html';
+    }
+
+    // Load data on page load
+    fetchPortfolioData();
+  </script>
+</body>
+</html>
+

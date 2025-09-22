@@ -7,7 +7,7 @@ from flask import Blueprint
 from app.controllers.transaction_controller import TransactionController
 
 # Create Blueprint instance
-bp = Blueprint('transactions', __name__, url_prefix='/api/transactions')
+bp = Blueprint('transactions', __name__, url_prefix='/transactions')
 
 # Initialize controller
 transaction_controller = TransactionController()

@@ -7,7 +7,7 @@ from flask import Blueprint
 from app.controllers.user_controller import UserController
 
 # Create Blueprint instance
-bp = Blueprint('users', __name__, url_prefix='/api/users')
+bp = Blueprint('users', __name__, url_prefix='/users')
 
 # Initialize controller
 user_controller = UserController()

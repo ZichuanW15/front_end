@@ -7,7 +7,7 @@ from flask import Blueprint
 from app.controllers.asset_controller import AssetController
 
 # Create Blueprint instance
-bp = Blueprint('assets', __name__, url_prefix='/api/assets')
+bp = Blueprint('assets', __name__, url_prefix='/assets')
 
 # Initialize controller
 asset_controller = AssetController()

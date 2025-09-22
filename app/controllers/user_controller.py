@@ -5,6 +5,7 @@ User controller for handling user-related requests.
 from flask import request
 from app.services.user_service import UserService
 from app.views.user_view import UserView
+from app.decorators import require_json, require_login, require_ownership_or_admin
 
 
 class UserController:
@@ -14,6 +15,7 @@ class UserController:
         self.user_service = UserService()
         self.user_view = UserView()
     
+    @require_json
     def create_user(self):
         """
         Handle user creation request.
@@ -23,8 +25,6 @@ class UserController:
         """
         try:
             user_data = request.get_json()
-            if not user_data:
-                return self.user_view.render_error("No JSON data provided", 400)
             
             user = self.user_service.create_user(user_data)
             return self.user_view.render_user_created(user)
@@ -68,6 +68,8 @@ class UserController:
         except Exception as e:
             return self.user_view.render_error(str(e), 500)
     
+    @require_json
+    @require_ownership_or_admin('user_id')
     def update_user(self, user_id):
         """
         Handle user update request.
@@ -80,17 +82,18 @@ class UserController:
         """
         try:
             user_data = request.get_json()
-            if not user_data:
-                return self.user_view.render_error("No JSON data provided", 400)
             
             user = self.user_service.update_user(user_id, user_data)
             if not user:
                 return self.user_view.render_error("User not found", 404)
             
             return self.user_view.render_user_updated(user)
+        except ValueError as e:
+            return self.user_view.render_error(str(e), 400)
         except Exception as e:
             return self.user_view.render_error(str(e), 500)
     
+    @require_ownership_or_admin('user_id')
     def delete_user(self, user_id):
         """
         Handle user deletion request.

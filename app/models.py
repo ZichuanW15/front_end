@@ -4,14 +4,12 @@ These models match the provided PostgreSQL schema.
 """
 
 from sqlalchemy import Column, Integer, Text, String, Boolean, DateTime, ForeignKey, BigInteger
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
+from app import db
 
-Base = declarative_base()
 
-
-class User(Base):
+class User(db.Model):
     """User model for authentication and authorization."""
     __tablename__ = 'Users'
     
@@ -40,7 +38,7 @@ class User(Base):
         return f'<User {self.user_name}>'
 
 
-class Asset(Base):
+class Asset(db.Model):
     """Asset model for fractional ownership assets."""
     __tablename__ = 'Assets'
     
@@ -54,7 +52,6 @@ class Asset(Base):
     
     # Relationships
     fractions = relationship('Fraction', backref='asset')
-    transactions = relationship('Transaction', backref='asset')
     
     def to_dict(self):
         return {
@@ -71,7 +68,7 @@ class Asset(Base):
         return f'<Asset {self.asset_name}>'
 
 
-class Fraction(Base):
+class Fraction(db.Model):
     """Fraction model for individual asset fractions."""
     __tablename__ = 'Fractions'
     
@@ -104,7 +101,7 @@ class Fraction(Base):
         return f'<Fraction {self.fraction_id}>'
 
 
-class Transaction(Base):
+class Transaction(db.Model):
     """Transaction model for fraction trading."""
     __tablename__ = 'Transactions'
     

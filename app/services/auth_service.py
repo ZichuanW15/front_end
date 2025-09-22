@@ -1,0 +1,125 @@
+"""
+Authentication service for user authentication business logic.
+"""
+
+from flask import session
+from app import db
+from app.models import User
+from app.services.user_service import UserService
+from app.decorators import create_user_session, clear_user_session
+from datetime import datetime
+from typing import Optional, Tuple, Dict, Any
+
+
+class AuthService:
+    """Service class for authentication operations."""
+    
+    @staticmethod
+    def signup_user(user_data: Dict[str, Any]) -> Tuple[User, Dict[str, Any]]:
+        """
+        Create a new user and establish session.
+        
+        Args:
+            user_data: Dictionary containing user information
+            
+        Returns:
+            Tuple of (User, session_data)
+            
+        Raises:
+            ValueError: If user already exists or validation fails
+        """
+        username = user_data['username']
+        email = user_data['email']
+        password = user_data['password']
+        
+        # Check if username already exists
+        existing_user = UserService.get_user_by_username(username)
+        if existing_user:
+            raise ValueError("Username already exists")
+        
+        # Check if email already exists
+        existing_email = UserService.get_user_by_email(email)
+        if existing_email:
+            raise ValueError("Email already exists")
+        
+        # Create user data for UserService
+        create_data = {
+            'user_name': username,
+            'email': email,
+            'password': password,  # Note: In production, hash this password
+            'is_manager': user_data.get('is_manager', False)
+        }
+        
+        # Create user
+        user = UserService.create_user(create_data)
+        
+        # Create session
+        session_data = create_user_session(user)
+        
+        return user, session_data
+    
+    @staticmethod
+    def login_user(username: str, password: str) -> Tuple[Optional[User], Optional[Dict[str, Any]]]:
+        """
+        Authenticate user and establish session.
+        
+        Args:
+            username: Username
+            password: Password (plaintext for now)
+            
+        Returns:
+            Tuple of (User, session_data) or (None, None) if authentication fails
+        """
+        # Get user by username
+        user = UserService.get_user_by_username(username)
+        if not user:
+            return None, None
+        
+        # Verify password (plaintext comparison for now)
+        if user.password != password:
+            return None, None
+        
+        # Create session
+        session_data = create_user_session(user)
+        
+        return user, session_data
+    
+    @staticmethod
+    def logout_user() -> None:
+        """
+        Logout current user and clear session.
+        """
+        clear_user_session()
+    
+    @staticmethod
+    def get_current_user() -> Optional[User]:
+        """
+        Get current logged-in user.
+        
+        Returns:
+            User or None if not logged in
+        """
+        if 'user_id' not in session:
+            return None
+        
+        return UserService.get_user_by_id(session['user_id'])
+    
+    @staticmethod
+    def is_authenticated() -> bool:
+        """
+        Check if user is currently authenticated.
+        
+        Returns:
+            True if user is authenticated, False otherwise
+        """
+        return 'user_id' in session and 'session_token' in session
+    
+    @staticmethod
+    def is_admin() -> bool:
+        """
+        Check if current user has admin privileges.
+        
+        Returns:
+            True if user is admin, False otherwise
+        """
+        return session.get('is_admin', False)

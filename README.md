@@ -9,7 +9,11 @@ A minimal, modular, and extensible Flask + SQLAlchemy backend skeleton for colla
 - **Database Ready**: PostgreSQL integration with SQLAlchemy
 - **Schema-Based Init**: Uses SQL schema file for database initialization (like the original project)
 - **Health Checks**: Built-in health monitoring endpoints
-- **Testing**: Pytest configuration with database connectivity tests
+- **User Authentication**: Complete user signup, login, logout, and session management
+- **User Management**: Profile updates, user deletion with authorization controls
+- **Session Management**: Secure session handling with token-based authentication
+- **Authorization**: Role-based access control with admin privileges
+- **Testing**: Comprehensive test suite including authentication and user management tests
 - **Environment Config**: `.env` file support for configuration
 - **Collaborative**: Multiple developers can add features without conflicts
 
@@ -20,19 +24,31 @@ provision_it_v2/
 ├── app/
 │   ├── __init__.py            # App factory with Blueprint auto-discovery
 │   ├── models.py              # SQLAlchemy models matching schema.sql
-│   └── routes/
-│       ├── __init__.py        # Routes package
+│   ├── decorators.py          # Authentication and validation decorators
+│   ├── controllers/           # MVC Controllers
+│   │   ├── auth_controller.py # Authentication controller
+│   │   └── user_controller.py # User management controller
+│   ├── services/              # MVC Services (business logic)
+│   │   ├── auth_service.py    # Authentication service
+│   │   └── user_service.py    # User management service
+│   ├── views/                 # MVC Views (response formatting)
+│   │   ├── auth_view.py       # Authentication view
+│   │   └── user_view.py       # User management view
+│   └── routes/                # URL routing
+│       ├── auth.py            # Authentication endpoints
+│       ├── users.py           # User management endpoints
 │       └── health.py          # Health check endpoints
 ├── tests/
-│   ├── __init__.py            # Tests package
-│   └── test_db.py             # Database connectivity tests
+│   ├── test_db.py             # Database connectivity tests
+│   └── test_user_api.py       # Authentication and user management tests
 ├── config.py                  # Configuration management
 ├── schema_postgres.sql        # Database schema with tables, functions, triggers
-├── import_postgress.sql       # Database insert data
-├── init_db_postgress.py       # initialising database based on config 
-├── run.py                     # Application entry point with SQL-based init
+├── import_postgres.sql        # Database insert data
+├── init_db_postgres.py        # Database initialization
+├── run.py                     # Application entry point
+├── test_auth_demo.py          # Demo script for testing auth endpoints
 ├── requirements.txt           # Dependencies
-├── .env                       # Environment configuration template (auto created)
+├── .env                       # Environment configuration template
 ├── setup_env.sh               # Automated setup script for Unix/Linux/macOS
 ├── setup_env.bat              # Automated setup script for Windows
 └── README.md                  # This file
@@ -256,10 +272,196 @@ The models in `app/models.py` already match the schema structure. To add new mod
 
 ## 📝 API Documentation
 
+### Authentication Endpoints
+
+#### POST /api/auth/signup
+Create a new user account.
+
+**Request Body:**
+```json
+{
+  "username": "testuser",
+  "email": "test@example.com", 
+  "password": "password123",
+  "is_manager": false
+}
+```
+
+**Response (201):**
+```json
+{
+  "user": {
+    "user_id": 1,
+    "user_name": "testuser",
+    "email": "test@example.com",
+    "is_manager": false,
+    "created_at": "2024-01-01T00:00:00"
+  },
+  "session": {
+    "user_id": 1,
+    "username": "testuser",
+    "session_token": "abc123...",
+    "is_admin": false
+  },
+  "message": "User registered successfully",
+  "status": "success"
+}
+```
+
+#### POST /api/auth/login
+Authenticate user and create session.
+
+**Request Body:**
+```json
+{
+  "username": "testuser",
+  "password": "password123"
+}
+```
+
+**Response (200):**
+```json
+{
+  "user": {
+    "user_id": 1,
+    "user_name": "testuser",
+    "email": "test@example.com",
+    "is_manager": false,
+    "created_at": "2024-01-01T00:00:00"
+  },
+  "session": {
+    "user_id": 1,
+    "username": "testuser", 
+    "session_token": "abc123...",
+    "is_admin": false
+  },
+  "message": "Login successful",
+  "status": "success"
+}
+```
+
+#### POST /api/auth/logout
+Logout current user and clear session.
+
+**Response (200):**
+```json
+{
+  "message": "Logout successful",
+  "status": "success"
+}
+```
+
+#### GET /api/auth/me
+Get current logged-in user information.
+
+**Response (200):**
+```json
+{
+  "user": {
+    "user_id": 1,
+    "user_name": "testuser",
+    "email": "test@example.com",
+    "is_manager": false,
+    "created_at": "2024-01-01T00:00:00"
+  },
+  "status": "success"
+}
+```
+
+### User Management Endpoints
+
+#### PUT /api/users/{user_id}
+Update user profile. Requires authentication and ownership or admin privileges.
+
+**Request Body:**
+```json
+{
+  "user_name": "newusername",
+  "email": "newemail@example.com",
+  "password": "newpassword123"
+}
+```
+
+**Response (200):**
+```json
+{
+  "user": {
+    "user_id": 1,
+    "user_name": "newusername",
+    "email": "newemail@example.com",
+    "is_manager": false,
+    "created_at": "2024-01-01T00:00:00"
+  },
+  "message": "User updated successfully",
+  "status": "success"
+}
+```
+
+#### DELETE /api/users/{user_id}
+Delete user account. Requires authentication and ownership or admin privileges.
+
+**Response (200):**
+```json
+{
+  "message": "User deleted successfully",
+  "status": "success"
+}
+```
+
 ### Health Endpoints
 
 #### GET /health
 Basic health check.
+
+## 🧪 Testing
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run specific test file
+pytest tests/test_user_api.py
+
+# Run with verbose output
+pytest -v
+
+# Run with coverage
+pytest --cov=app
+```
+
+### Test Demo Script
+
+A demo script is included to test the authentication endpoints:
+
+```bash
+# Make sure the Flask server is running first
+python run.py
+
+# In another terminal, run the demo
+python test_auth_demo.py
+```
+
+The demo script will test:
+- User signup (including duplicate validation)
+- User login and session creation
+- Profile updates
+- Authorization checks
+- Logout functionality
+- Error handling
+
+### Test Coverage
+
+The test suite covers:
+- ✅ User signup with validation
+- ✅ User login and authentication
+- ✅ Session management
+- ✅ Profile updates with authorization
+- ✅ User deletion with authorization
+- ✅ Admin privilege checks
+- ✅ Error handling and edge cases
+- ✅ Unauthorized access prevention
 
 ## 🐛 Troubleshooting
 

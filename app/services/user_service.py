@@ -56,6 +56,19 @@ class UserService:
         return User.query.get(user_id)
     
     @staticmethod
+    def get_user_by_username(username: str) -> Optional[User]:
+        """
+        Get user by username.
+        
+        Args:
+            username: Username
+            
+        Returns:
+            User or None if not found
+        """
+        return User.query.filter_by(user_name=username).first()
+    
+    @staticmethod
     def get_user_by_email(email: str) -> Optional[User]:
         """
         Get user by email.
@@ -97,13 +110,28 @@ class UserService:
             
         Returns:
             Updated User or None if not found
+            
+        Raises:
+            ValueError: If uniqueness constraints are violated
         """
         user = User.query.get(user_id)
         if not user:
             return None
         
+        # Check uniqueness for username if being updated
+        if 'user_name' in user_data and user_data['user_name'] != user.user_name:
+            existing_user = UserService.get_user_by_username(user_data['user_name'])
+            if existing_user and existing_user.user_id != user_id:
+                raise ValueError("Username already exists")
+        
+        # Check uniqueness for email if being updated
+        if 'email' in user_data and user_data['email'] != user.email:
+            existing_email = UserService.get_user_by_email(user_data['email'])
+            if existing_email and existing_email.user_id != user_id:
+                raise ValueError("Email already exists")
+        
         # Update allowed fields
-        allowed_fields = ['user_name', 'email', 'is_manager']
+        allowed_fields = ['user_name', 'email', 'is_manager', 'password']
         for field in allowed_fields:
             if field in user_data:
                 setattr(user, field, user_data[field])

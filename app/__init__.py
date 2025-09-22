@@ -32,11 +32,7 @@ def create_app(config_name=None):
     Returns:
         Flask: Configured Flask application instance
     """
-<<<<<<< HEAD
-    app = Flask(__name__)
-=======
     app = Flask(__name__, static_folder='../frontend', static_url_path='/frontend')
->>>>>>> newrepo/frontend
     
     # Load configuration
     config_name = config_name or os.environ.get('FLASK_ENV', 'default')

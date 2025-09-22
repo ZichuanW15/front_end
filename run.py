@@ -221,8 +221,4 @@ if __name__ == '__main__':
     print(f"   Database health: http://{host}:{port}/health/db")
     print("   Press Ctrl+C to stop")
     
-<<<<<<< HEAD
     app.run(debug=debug, host=host, port=port)
-=======
-    app.run(debug=debug, host=host, port=port)
->>>>>>> newrepo/frontend

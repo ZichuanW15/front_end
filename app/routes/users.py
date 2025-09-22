@@ -7,11 +7,7 @@ from flask import Blueprint
 from app.controllers.user_controller import UserController
 
 # Create Blueprint instance
-<<<<<<< HEAD
 bp = Blueprint('users', __name__, url_prefix='/users')
-=======
-bp = Blueprint('users', __name__, url_prefix='/api/users')
->>>>>>> newrepo/frontend
 
 # Initialize controller
 user_controller = UserController()

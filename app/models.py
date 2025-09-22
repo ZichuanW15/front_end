@@ -8,16 +8,11 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from app import db
 
-<<<<<<< HEAD
-
-class User(db.Model):
-=======
 # Use Flask-SQLAlchemy's Model base class
 Base = db.Model
 
 
 class User(Base):
->>>>>>> newrepo/frontend
     """User model for authentication and authorization."""
     __tablename__ = 'Users'
     
@@ -46,11 +41,7 @@ class User(Base):
         return f'<User {self.user_name}>'
 
 
-<<<<<<< HEAD
-class Asset(db.Model):
-=======
 class Asset(Base):
->>>>>>> newrepo/frontend
     """Asset model for fractional ownership assets."""
     __tablename__ = 'Assets'
     
@@ -64,10 +55,7 @@ class Asset(Base):
     
     # Relationships
     fractions = relationship('Fraction', backref='asset')
-<<<<<<< HEAD
-=======
     transactions = relationship('Transaction', backref='asset')
->>>>>>> newrepo/frontend
     
     def to_dict(self):
         return {
@@ -84,11 +72,7 @@ class Asset(Base):
         return f'<Asset {self.asset_name}>'
 
 
-<<<<<<< HEAD
-class Fraction(db.Model):
-=======
 class Fraction(Base):
->>>>>>> newrepo/frontend
     """Fraction model for individual asset fractions."""
     __tablename__ = 'Fractions'
     
@@ -121,20 +105,12 @@ class Fraction(Base):
         return f'<Fraction {self.fraction_id}>'
 
 
-<<<<<<< HEAD
-class Transaction(db.Model):
-    """Transaction model for fraction trading."""
-    __tablename__ = 'Transactions'
-    
-    transaction_id = Column(BigInteger, primary_key=True)
-=======
 class Transaction(Base):
     """Transaction model for fraction trading."""
     __tablename__ = 'Transactions'
     
     transaction_id = Column(BigInteger, primary_key=True, autoincrement=True)
     asset_id = Column(BigInteger, ForeignKey('Assets.asset_id'), nullable=False)
->>>>>>> newrepo/frontend
     fraction_id = Column(BigInteger, ForeignKey('Fractions.fraction_id'), nullable=False)
     unit_moved = Column(BigInteger, nullable=False)
     transaction_type = Column(Text)
@@ -145,10 +121,7 @@ class Transaction(Base):
     def to_dict(self):
         return {
             'transaction_id': self.transaction_id,
-<<<<<<< HEAD
-=======
             'asset_id': self.asset_id,
->>>>>>> newrepo/frontend
             'fraction_id': self.fraction_id,
             'unit_moved': self.unit_moved,
             'transaction_type': self.transaction_type,

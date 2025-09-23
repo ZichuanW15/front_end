@@ -17,6 +17,7 @@
           <a href="trading.html">Trading</a>
           <a href="portfolio.html">My Assets</a>
           <a href="valuehistory.html">Value History</a>
+          <a href="profile.html">Profile</a>
           <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
           <button onclick="logout()" class="small">Logout</button>
         </div>
@@ -87,7 +88,7 @@
   </div>
 
   <script>
-    const API = location.origin;
+    const API = 'http://localhost:5001'; // Backend API server
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     
     // Check if user is manager
@@ -99,16 +100,22 @@
 
     async function fetchDashboardData() {
       try {
-        // Fetch user portfolio
-        const portfolioRes = await fetch(`${API}/users/${user.user_id}/portfolio`);
-        const portfolio = await portfolioRes.json();
+        // Fetch user data
+        const userRes = await fetch(`${API}/users/${user.user_id}`, {
+          credentials: 'include'
+        });
+        const userData = await userRes.json();
         
         // Fetch recent transactions
-        const transactionsRes = await fetch(`${API}/transactions?user_id=${user.user_id}&limit=5`);
+        const transactionsRes = await fetch(`${API}/transactions?user_id=${user.user_id}&limit=5`, {
+          credentials: 'include'
+        });
         const transactions = await transactionsRes.json();
         
         // Fetch top assets
-        const assetsRes = await fetch(`${API}/assets?limit=5`);
+        const assetsRes = await fetch(`${API}/assets?limit=5`, {
+          credentials: 'include'
+        });
         const assets = await assetsRes.json();
         
         updateDashboard(portfolio, transactions, assets);
@@ -205,8 +212,16 @@
       container.innerHTML = `<div class="msg err">${message}</div>`;
     }
 
-    function logout() {
-      sessionStorage.removeItem('user');
+    async function logout() {
+      try {
+        await fetch(`${API}/auth/logout`, { 
+        method: 'POST',
+        credentials: 'include'
+      });
+      } catch (e) {
+        console.error('Logout error:', e);
+      }
+      sessionStorage.clear();
       location.href = 'login.html';
     }
 

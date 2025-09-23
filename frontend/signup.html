@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sign Up - Asset Trading Platform</title>
+  <link rel="stylesheet" href="common.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Create Account</h1>
+      <form id="signupForm">
+        <label>Username</label>
+        <input id="username" placeholder="Choose a username" required>
+        
+        <label>Email</label>
+        <input id="email" type="email" placeholder="your@email.com" required>
+        
+        <label>Password</label>
+        <input id="password" type="password" placeholder="••••••" required>
+        
+        <div class="row">
+          <button class="primary" type="submit" id="btnSignup">Create Account</button>
+          <button type="button" id="btnBackToLogin">Back to Login</button>
+        </div>
+        <div style="text-align: center; margin-top: 15px;">
+          <a href="login.html" style="color: var(--accent); text-decoration: none;">Already have an account? Login here</a>
+        </div>
+        <div id="msg" class="msg muted">Please fill in all fields to create your account</div>
+      </form>
+    </div>
+  </div>
+
+<script>
+const API = 'http://localhost:5001'; // Backend API server
+const el = id => document.getElementById(id);
+const setMsg = (txt, ok=null) => {
+  const m = el('msg'); m.textContent = txt; m.className = 'msg ' + (ok===null?'muted': ok?'ok':'err');
+};
+
+function validateForm() {
+  const username = el('username').value.trim();
+  const email = el('email').value.trim();
+  const password = el('password').value;
+  
+  if (!username || !email || !password) {
+    setMsg('Please fill in all fields', false);
+    return false;
+  }
+  
+  if (username.length < 3) {
+    setMsg('Username must be at least 3 characters long', false);
+    return false;
+  }
+  
+  // Basic email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    setMsg('Please enter a valid email address', false);
+    return false;
+  }
+  
+  return true;
+}
+
+async function signup() {
+  if (!validateForm()) return;
+  
+  const username = el('username').value.trim();
+  const email = el('email').value.trim();
+  const password = el('password').value;
+  
+  setMsg('Creating account...', null);
+  
+  try {
+    const r = await fetch(`${API}/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // Include cookies for session-based auth
+      body: JSON.stringify({ username, email, password })
+    });
+    
+    const data = await r.json().catch(() => ({}));
+    
+    if (r.ok && data.status === 'success') {
+      setMsg('Account created successfully! Redirecting to login...', true);
+      // Store user info if provided
+      if (data.user) {
+        sessionStorage.setItem('user', JSON.stringify(data.user));
+      }
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        location.href = 'login.html';
+      }, 2000);
+    } else {
+      setMsg(data.message || data.error || `Signup failed (${r.status})`, false);
+    }
+  } catch (e) {
+    setMsg('Network error, please try again later', false);
+  }
+}
+
+function backToLogin() {
+  location.href = 'login.html';
+}
+
+// Event listeners
+el('btnSignup').onclick = (e) => {
+  e.preventDefault();
+  signup();
+};
+
+el('btnBackToLogin').onclick = backToLogin;
+
+// Form submission
+el('signupForm').onsubmit = (e) => {
+  e.preventDefault();
+  signup();
+};
+
+// Clear error styling on input
+['username', 'email', 'password'].forEach(id => {
+  el(id).oninput = () => {
+    el(id).style.borderColor = '#303030';
+  };
+});
+</script>
+</body>
+</html>

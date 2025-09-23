@@ -7,6 +7,7 @@ import os
 import importlib
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 from config import config
 
 # Initialize extensions
@@ -38,8 +39,17 @@ def create_app(config_name=None):
     config_name = config_name or os.environ.get('FLASK_ENV', 'default')
     app.config.from_object(config[config_name])
     
+    # Configure session cookie settings for better compatibility
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Allow cross-site requests
+    app.config['SESSION_COOKIE_DOMAIN'] = None  # Allow cookies on localhost
+    
     # Initialize extensions with app
     db.init_app(app)
+    
+    # Enable CORS for frontend
+    CORS(app, origins=['http://localhost:3000', 'http://127.0.0.1:3000', 'http://127.0.0.1:5001', 'http://localhost:5001', 'file://'], supports_credentials=True)
     
     # Register error handlers
     register_error_handlers(app)

@@ -170,7 +170,7 @@ echo # Flask Configuration >> .env
 echo FLASK_ENV=development >> .env
 echo FLASK_DEBUG=true >> .env
 echo FLASK_HOST=127.0.0.1 >> .env
-echo FLASK_PORT=5000 >> .env
+echo FLASK_PORT=5001 >> .env
 echo. >> .env
 echo # Security >> .env
 echo SECRET_KEY=!SECRET_KEY! >> .env
@@ -248,9 +248,9 @@ echo   psql -h localhost -U username -d provision_it_v2 -f schema_postgres.sql -
 echo   psql -h localhost -U username -d provision_it_v2 -f import_postgres.sql  - Import data
 echo.
 call :print_status "Health check endpoints (after running the app):"
-echo   http://localhost:5000/health
-echo   http://localhost:5000/health/db
-echo   http://localhost:5000/health/detailed
+echo   http://localhost:5001/health
+echo   http://localhost:5001/health/db
+echo   http://localhost:5001/health/detailed
 echo.
 goto :eof
 

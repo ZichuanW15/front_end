@@ -55,3 +55,15 @@ def get_current_user():
         JSON response with current user data
     """
     return auth_controller.get_current_user()
+
+
+@bp.route('/verify', methods=['POST'])
+def verify_token():
+    """
+    Verify session token and return user information.
+    Workaround for browsers that don't send session cookies properly.
+    
+    Returns:
+        JSON response with user data
+    """
+    return auth_controller.verify_token()

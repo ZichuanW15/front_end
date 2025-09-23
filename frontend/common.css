@@ -321,3 +321,98 @@ tr:hover {
 .p-2 { padding: 16px; }
 .p-3 { padding: 24px; }
 
+/* Profile page styles */
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-item label {
+  font-weight: 600;
+  color: #666;
+}
+
+.info-item span {
+  color: #555;
+  font-weight: 400;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.form-group small {
+  display: block;
+  margin-top: 5px;
+  color: #333;
+  font-size: 12px;
+}
+
+/* Additional profile page improvements */
+.text-muted {
+  color: #333 !important;
+  font-weight: 400;
+}
+
+.card h3 {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.danger {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.danger:hover {
+  background-color: #c82333;
+}
+
+.secondary {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.secondary:hover {
+  background-color: #5a6268;
+}
+

@@ -206,7 +206,7 @@ def main():
     print("  1. Your database is ready with the new schema")
     print("  2. Start your Flask application")
     print("  3. Test the endpoints")
-    print(f"  4. Health check: http://localhost:5000/health")
+    print(f"  4. Health check: http://localhost:5001/health")
 
 
 if __name__ == "__main__":

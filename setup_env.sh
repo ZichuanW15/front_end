@@ -146,7 +146,7 @@ setup_env_file() {
 FLASK_ENV=development
 FLASK_DEBUG=true
 FLASK_HOST=127.0.0.1
-FLASK_PORT=5000
+FLASK_PORT=5001
 
 # Security
 SECRET_KEY=$SECRET_KEY
@@ -221,9 +221,9 @@ show_final_instructions() {
     echo "  psql -h localhost -U robertwang -d provision_it -f import_postgres.sql  - Import data"
     echo
     print_status "Health check endpoints (after running the app):"
-    echo "  http://localhost:5000/health"
-    echo "  http://localhost:5000/health/db"
-    echo "  http://localhost:5000/health/detailed"
+echo "  http://localhost:5001/health"
+echo "  http://localhost:5001/health/db"
+echo "  http://localhost:5001/health/detailed"
     echo
 }
 
@@ -402,7 +402,7 @@ setup_env_file() {
 FLASK_ENV=development
 FLASK_DEBUG=true
 FLASK_HOST=127.0.0.1
-FLASK_PORT=5000
+FLASK_PORT=5001
 
 # Security
 SECRET_KEY=$SECRET_KEY
@@ -477,9 +477,9 @@ show_final_instructions() {
     echo "  psql -h localhost -U robertwang -d provision_it -f import_postgres.sql  - Import data"
     echo
     print_status "Health check endpoints (after running the app):"
-    echo "  http://localhost:5000/health"
-    echo "  http://localhost:5000/health/db"
-    echo "  http://localhost:5000/health/detailed"
+echo "  http://localhost:5001/health"
+echo "  http://localhost:5001/health/db"
+echo "  http://localhost:5001/health/detailed"
     echo
 }
 

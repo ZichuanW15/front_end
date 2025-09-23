@@ -88,14 +88,34 @@ class TransactionController:
         """
         Handle get all transactions request.
         
+        Query Parameters:
+            page: Page number (default: 1)
+            per_page: Items per page (default: 20)
+            user_id: Filter by user ID (optional)
+            limit: Limit number of results (optional)
+        
         Returns:
             Response: JSON response with transactions list
         """
         try:
             page = request.args.get('page', 1, type=int)
             per_page = request.args.get('per_page', 20, type=int)
+            user_id = request.args.get('user_id', type=int)
+            limit = request.args.get('limit', type=int)
             
-            transactions = self.transaction_service.get_all_transactions(page, per_page)
+            # If user_id is provided, get transactions by user
+            if user_id:
+                transactions = self.transaction_service.get_transactions_by_user(user_id)
+                # Apply limit if provided
+                if limit:
+                    transactions = transactions[:limit]
+            else:
+                # Otherwise get all transactions with pagination
+                transactions = self.transaction_service.get_all_transactions(page, per_page)
+                # Apply limit if provided
+                if limit:
+                    transactions = transactions[:limit]
+            
             return self.transaction_view.render_transactions_list(transactions)
         except Exception as e:
             return self.transaction_view.render_error(str(e), 500)

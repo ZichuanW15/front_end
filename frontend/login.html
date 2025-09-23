@@ -16,14 +16,16 @@
       <input id="password" type="password" placeholder="••••••">
       <div class="row">
         <button class="primary" id="btnLogin">Login</button>
-        <button id="btnRegister">Register</button>
+      </div>
+      <div style="text-align: center; margin-top: 15px;">
+        <a href="signup.html" style="color: var(--accent); text-decoration: none;">Don't have an account? Sign up here</a>
       </div>
       <div id="msg" class="msg muted">Please enter username and password</div>
     </div>
   </div>
 
 <script>
-const API = location.origin; // 同源后端
+const API = 'http://localhost:5001'; // Backend API server
 const el = id => document.getElementById(id);
 const setMsg = (txt, ok=null) => {
   const m = el('msg'); m.textContent = txt; m.className = 'msg ' + (ok===null?'muted': ok?'ok':'err');
@@ -37,50 +39,27 @@ async function login(){
   try{
     const r = await fetch(`${API}/auth/login`, {
       method:'POST', headers:{'Content-Type':'application/json'},
+      credentials: 'include', // Include cookies for session-based auth
       body: JSON.stringify({login, password})
     });
     const data = await r.json().catch(()=>({}));
-    if(r.ok && data.ok){
+    if(r.ok && data.status === 'success'){
       // 登录成功 → 进入仪表板
       setMsg('Login successful, redirecting...', true);
       // 可把简单用户信息存起来用于欢迎文案
       sessionStorage.setItem('user', JSON.stringify(data.user || {}));
+      sessionStorage.setItem('sessionToken', data.session?.session_token || '');
       location.href = 'dashboard.html'; // 目标页
     }else{
-      setMsg(data.error || `Login failed (${r.status})`, false);
+      setMsg(data.message || data.error || `Login failed (${r.status})`, false);
     }
   }catch(e){
     setMsg('Network error, please try again later', false);
   }
 }
 
-async function register(){
-  // 简单弹窗收集；你也可以做成独立注册页
-  const user_name = prompt('Please enter username');
-  if(!user_name) return;
-  const email = prompt('Please enter email');
-  if(!email) return;
-  const password = prompt('Please set password');
-  if(!password) return;
-  setMsg('Registering...', null);
-  try{
-    const r = await fetch(`${API}/auth/register`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({user_name, email, password})
-    });
-    const data = await r.json().catch(()=>({}));
-    if(r.ok && data.ok){
-      setMsg('Registration successful, please login directly.', true);
-    }else{
-      setMsg(data.error || `Registration failed (${r.status})`, false);
-    }
-  }catch(e){
-    setMsg('Network error, please try again later', false);
-  }
-}
 
 el('btnLogin').onclick = login;
-el('btnRegister').onclick = register;
 </script>
 </body>
 </html>

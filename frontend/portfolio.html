@@ -18,6 +18,7 @@
           <a href="trading.html">Trading</a>
           <a href="portfolio.html" class="active">My Assets</a>
           <a href="valuehistory.html">Value History</a>
+          <a href="profile.html">Profile</a>
           <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
           <button onclick="logout()" class="small">Logout</button>
         </div>
@@ -178,7 +179,7 @@
   </div>
 
   <script>
-    const API = location.origin;
+    const API = 'http://localhost:5001'; // Backend API server
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     let portfolioData = [];
     let allAssets = [];
@@ -606,8 +607,13 @@
       }, 3000);
     }
 
-    function logout() {
-      sessionStorage.removeItem('user');
+    async function logout() {
+      try {
+        await fetch(`${API}/auth/logout`, { method: 'POST' });
+      } catch (e) {
+        console.error('Logout error:', e);
+      }
+      sessionStorage.clear();
       location.href = 'login.html';
     }
 

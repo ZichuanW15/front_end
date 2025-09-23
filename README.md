@@ -132,7 +132,7 @@ python run.py
 flask run
 ```
 
-The API will be available at `http://127.0.0.1:5000`
+The API will be available at `http://127.0.0.1:5001`
 
 ## 🔧 Interactive .env Configuration
 
@@ -242,7 +242,7 @@ The models in `app/models.py` already match the schema structure. To add new mod
 | `FLASK_ENV` | Flask environment | `development` |
 | `FLASK_DEBUG` | Debug mode | `true` |
 | `FLASK_HOST` | Server host | `127.0.0.1` |
-| `FLASK_PORT` | Server port | `5000` |
+| `FLASK_PORT` | Server port | `5001` |
 | `SECRET_KEY` | Flask secret key | `dev-secret-key-change-in-production` |
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://localhost/api_backbone` |
 

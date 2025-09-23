@@ -52,14 +52,17 @@ class AuthController:
         try:
             login_data = request.get_json()
             
-            # Validate required fields
-            if 'username' not in login_data or 'password' not in login_data:
-                return self.auth_view.render_error("Username and password are required", 400)
+            # Validate required fields - support both 'login' and 'username' fields
+            login_field = login_data.get('login') or login_data.get('username')
+            password = login_data.get('password')
             
-            # Authenticate user
+            if not login_field or not password:
+                return self.auth_view.render_error("Username/email and password are required", 400)
+            
+            # Authenticate user (supports both username and email)
             user, session_data = self.auth_service.login_user(
-                login_data['username'], 
-                login_data['password']
+                login_field, 
+                password
             )
             
             if not user:
@@ -101,5 +104,31 @@ class AuthController:
                 return self.auth_view.render_error("User not found", 404)
             
             return self.auth_view.render_current_user(user)
+        except Exception as e:
+            return self.auth_view.render_error(str(e), 500)
+    
+    def verify_token(self):
+        """
+        Verify session token and return user info.
+        This is a workaround for browsers that don't send session cookies properly.
+        
+        Returns:
+            Response: JSON response with user data and session info
+        """
+        try:
+            data = request.get_json()
+            if not data or 'session_token' not in data:
+                return self.auth_view.render_error("Session token required", 400)
+            
+            session_token = data['session_token']
+            
+            # Find user by session token
+            from flask import session
+            if session.get('session_token') == session_token:
+                user = self.auth_service.get_current_user()
+                if user:
+                    return self.auth_view.render_current_user(user)
+            
+            return self.auth_view.render_error("Invalid session token", 401)
         except Exception as e:
             return self.auth_view.render_error(str(e), 500)

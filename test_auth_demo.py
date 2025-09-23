@@ -9,7 +9,7 @@ import json
 import sys
 
 # Base URL for the API
-BASE_URL = 'http://localhost:5000'
+BASE_URL = 'http://localhost:5001'
 
 def make_request(method, endpoint, data=None, session=None):
     """Make HTTP request with error handling."""
@@ -179,7 +179,7 @@ def main():
     """Main function."""
     print("🚀 Flask Authentication API Demo")
     print("This script will test all the authentication endpoints.")
-    print("Make sure your Flask server is running on http://localhost:5000")
+    print("Make sure your Flask server is running on http://localhost:5001")
     
     try:
         test_auth_endpoints()

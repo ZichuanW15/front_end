@@ -59,19 +59,22 @@ class AuthService:
         return user, session_data
     
     @staticmethod
-    def login_user(username: str, password: str) -> Tuple[Optional[User], Optional[Dict[str, Any]]]:
+    def login_user(login_field: str, password: str) -> Tuple[Optional[User], Optional[Dict[str, Any]]]:
         """
         Authenticate user and establish session.
         
         Args:
-            username: Username
+            login_field: Username or email
             password: Password (plaintext for now)
             
         Returns:
             Tuple of (User, session_data) or (None, None) if authentication fails
         """
-        # Get user by username
-        user = UserService.get_user_by_username(username)
+        # Try to get user by username first, then by email
+        user = UserService.get_user_by_username(login_field)
+        if not user:
+            user = UserService.get_user_by_email(login_field)
+        
         if not user:
             return None, None
         

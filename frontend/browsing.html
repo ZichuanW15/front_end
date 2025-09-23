@@ -17,6 +17,7 @@
           <a href="trading.html">Trading</a>
           <a href="portfolio.html">My Assets</a>
           <a href="valuehistory.html">Value History</a>
+          <a href="profile.html">Profile</a>
           <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
           <button onclick="logout()" class="small">Logout</button>
         </div>
@@ -156,7 +157,7 @@
   </div>
 
   <script>
-    const API = location.origin;
+    const API = 'http://localhost:5001'; // Backend API server
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     let allAssets = [];
     let filteredAssets = [];

@@ -140,23 +140,46 @@ class UserService:
         return user
     
     @staticmethod
-    def delete_user(user_id: int) -> bool:
+    def delete_user(user_id: int) -> Dict[str, Any]:
         """
-        Delete a user.
+        Delete a user after checking ownership constraints.
         
         Args:
             user_id: User ID
             
         Returns:
-            True if deleted, False if not found
+            Dict with success status and message
         """
         user = User.query.get(user_id)
         if not user:
-            return False
+            return {"success": False, "message": "User not found"}
         
+        # Check if user owns any fractions
+        from app.models import Fraction
+        owned_fractions = Fraction.query.filter_by(owner_id=user_id, is_active=True).all()
+        if owned_fractions:
+            fraction_count = len(owned_fractions)
+            return {
+                "success": False, 
+                "message": f"Cannot delete user. User owns {fraction_count} active fraction(s). Please transfer or sell all fractions before deleting account."
+            }
+        
+        # Check if user is involved in any recent transactions (optional - for data integrity)
+        from app.models import Transaction
+        recent_transactions = Transaction.query.filter(
+            (Transaction.from_owner_id == user_id) | (Transaction.to_owner_id == user_id)
+        ).count()
+        
+        if recent_transactions > 0:
+            return {
+                "success": False,
+                "message": f"Cannot delete user. User has transaction history ({recent_transactions} transactions). Account deletion is not allowed for users with transaction history."
+            }
+        
+        # All checks passed - delete the user
         db.session.delete(user)
         db.session.commit()
-        return True
+        return {"success": True, "message": "User deleted successfully"}
     
     @staticmethod
     def get_managers() -> List[User]:

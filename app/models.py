@@ -55,7 +55,6 @@ class Asset(Base):
     
     # Relationships
     fractions = relationship('Fraction', backref='asset')
-    transactions = relationship('Transaction', backref='asset')
     
     def to_dict(self):
         return {
@@ -110,7 +109,6 @@ class Transaction(Base):
     __tablename__ = 'Transactions'
     
     transaction_id = Column(BigInteger, primary_key=True, autoincrement=True)
-    asset_id = Column(BigInteger, ForeignKey('Assets.asset_id'), nullable=False)
     fraction_id = Column(BigInteger, ForeignKey('Fractions.fraction_id'), nullable=False)
     unit_moved = Column(BigInteger, nullable=False)
     transaction_type = Column(Text)
@@ -121,7 +119,6 @@ class Transaction(Base):
     def to_dict(self):
         return {
             'transaction_id': self.transaction_id,
-            'asset_id': self.asset_id,
             'fraction_id': self.fraction_id,
             'unit_moved': self.unit_moved,
             'transaction_type': self.transaction_type,

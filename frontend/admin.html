@@ -17,6 +17,7 @@
           <a href="trading.html">Trading</a>
           <a href="portfolio.html">My Assets</a>
           <a href="valuehistory.html">Value History</a>
+          <a href="profile.html">Profile</a>
           <a href="admin.html" class="active">Admin</a>
           <button onclick="logout()" class="small">Logout</button>
         </div>
@@ -180,7 +181,7 @@
   </div>
 
   <script>
-    const API = location.origin;
+    const API = 'http://localhost:5001'; // Backend API server
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     let currentTab = 'users';
     
@@ -455,8 +456,145 @@
       }, 3000);
     }
 
-    function logout() {
-      sessionStorage.removeItem('user');
+    async function editUser(userId) {
+      // Get current user data
+      try {
+        const response = await fetch(`${API}/users/${userId}`);
+        if (!response.ok) {
+          showMessage('Failed to load user data', false);
+          return;
+        }
+        const userData = await response.json();
+        const user = userData.user;
+        
+        // Show edit modal
+        showEditUserModal(user);
+      } catch (error) {
+        showMessage('Error loading user data', false);
+      }
+    }
+
+    async function deleteUser(userId) {
+      if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+        try {
+          const response = await fetch(`${API}/users/${userId}`, {
+            method: 'DELETE'
+          });
+          
+          if (response.ok) {
+            refreshData();
+            showMessage('User deleted successfully', true);
+          } else {
+            const error = await response.json();
+            showMessage(error.message || 'Failed to delete user', false);
+          }
+        } catch (error) {
+          showMessage('Network error, please try again later', false);
+        }
+      }
+    }
+
+    function showEditUserModal(user) {
+      // Create edit modal if it doesn't exist
+      let editModal = document.getElementById('editUserModal');
+      if (!editModal) {
+        editModal = document.createElement('div');
+        editModal.id = 'editUserModal';
+        editModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;';
+        editModal.innerHTML = `
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 400px; max-width: 90vw;">
+            <h3>Edit User</h3>
+            <form id="editUserForm">
+              <label>Username</label>
+              <input type="text" id="editUserName" required>
+              
+              <label>Email</label>
+              <input type="email" id="editUserEmail" required>
+              
+              <label>Password (leave blank to keep current)</label>
+              <input type="password" id="editUserPassword">
+              
+              <label>
+                <input type="checkbox" id="editUserIsManager"> Admin Privileges
+              </label>
+              
+              <div class="row" style="margin-top: 20px;">
+                <button type="button" onclick="hideEditUserModal()" class="col">Cancel</button>
+                <button type="submit" class="primary col">Update User</button>
+              </div>
+            </form>
+          </div>
+        `;
+        document.body.appendChild(editModal);
+        
+        // Add event listener
+        document.getElementById('editUserForm').addEventListener('submit', updateUser);
+      }
+      
+      // Populate form with current user data
+      document.getElementById('editUserName').value = user.user_name || '';
+      document.getElementById('editUserEmail').value = user.email || '';
+      document.getElementById('editUserIsManager').checked = user.is_manager || false;
+      
+      // Store user ID for update
+      editModal.setAttribute('data-user-id', user.user_id);
+      
+      editModal.style.display = 'block';
+    }
+
+    function hideEditUserModal() {
+      const editModal = document.getElementById('editUserModal');
+      if (editModal) {
+        editModal.style.display = 'none';
+        document.getElementById('editUserForm').reset();
+      }
+    }
+
+    async function updateUser(event) {
+      event.preventDefault();
+      
+      const editModal = document.getElementById('editUserModal');
+      const userId = editModal.getAttribute('data-user-id');
+      
+      const formData = {
+        user_name: document.getElementById('editUserName').value,
+        email: document.getElementById('editUserEmail').value,
+        is_manager: document.getElementById('editUserIsManager').checked
+      };
+      
+      // Only include password if provided
+      const password = document.getElementById('editUserPassword').value;
+      if (password) {
+        formData.password = password;
+      }
+      
+      try {
+        const response = await fetch(`${API}/users/${userId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+          hideEditUserModal();
+          refreshData();
+          showMessage('User updated successfully', true);
+        } else {
+          const error = await response.json();
+          showMessage(error.message || 'Failed to update user', false);
+        }
+      } catch (error) {
+        showMessage('Network error, please try again later', false);
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetch(`${API}/auth/logout`, { method: 'POST' });
+      } catch (e) {
+        console.error('Logout error:', e);
+      }
+      sessionStorage.clear();
       location.href = 'login.html';
     }
 

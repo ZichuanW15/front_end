@@ -16,7 +16,7 @@
       <input id="password" type="password" placeholder="••••••">
       <div class="row">
         <button class="primary" id="btnLogin">Login</button>
-        <button id="btnRegister">Register</button>
+        <button id="btnRegister" type="button" onclick="location.assign('register.html')">Register</button>
       </div>
       <div id="msg" class="msg muted">Please enter username and password</div>
     </div>
@@ -54,33 +54,8 @@ async function login(){
   }
 }
 
-async function register(){
-  // 简单弹窗收集；你也可以做成独立注册页
-  const user_name = prompt('Please enter username');
-  if(!user_name) return;
-  const email = prompt('Please enter email');
-  if(!email) return;
-  const password = prompt('Please set password');
-  if(!password) return;
-  setMsg('Registering...', null);
-  try{
-    const r = await fetch(`${API}/auth/register`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({user_name, email, password})
-    });
-    const data = await r.json().catch(()=>({}));
-    if(r.ok && data.ok){
-      setMsg('Registration successful, please login directly.', true);
-    }else{
-      setMsg(data.error || `Registration failed (${r.status})`, false);
-    }
-  }catch(e){
-    setMsg('Network error, please try again later', false);
-  }
-}
 
 el('btnLogin').onclick = login;
-el('btnRegister').onclick = register;
 </script>
 </body>
 </html>

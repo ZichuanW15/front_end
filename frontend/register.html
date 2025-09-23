@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login - Asset Trading Platform</title>
+  <link rel="stylesheet" href="common.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Register</h1>
+      <label>Username</label>
+      <input id="username" placeholder="username">
+      <label>Email</label>
+      <input id="email" placeholder="email">
+      <label>Password</label>
+      <input id="password" type="password" placeholder="••••••">
+      <label>Confirm Password</label>
+      <input id="confirmpassword" type="password" placeholder="••••••">
+      <div id="msg" class="msg muted" style="margin:8px 0"></div>
+      <div class="row">
+        <button class="primary" id="btnRegister">Register</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const API = location.origin;
+const el = id => document.getElementById(id);
+const setMsg = (txt, ok=null) => {
+  const m = el('msg'); m.textContent = txt; m.className = 'msg ' + (ok===null?'muted': ok?'ok':'err');
+};
+const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+
+async function register() {
+  setMsg('');
+  const user_name = el('username').value.trim();
+  const email = el('email').value.trim();
+  const password = el('password').value;
+  const confirmpw = el('confirmpassword').value;
+  if (!user_name || !email || !password || !confirmpw) {
+    setMsg('All fields are required.', false); return;
+  }
+  if (!isEmail(email)) {
+    setMsg('Invalid email format.', false); return;
+  }
+  if (password !== confirmpw) {
+    setMsg('Passwords do not match.', false); return;
+  }
+  setMsg('Registering...');
+  try {
+    const res = await fetch(API + '/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_name, email, password })
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      setMsg('Registration successful! You can now login.', true);
+      setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+    } else {
+      setMsg(data.error || 'Registration failed.', false);
+    }
+  } catch (e) {
+    setMsg('Network error.', false);
+  }
+}
+
+el('btnRegister').onclick = register;
+</script>
+</body>
+</html>

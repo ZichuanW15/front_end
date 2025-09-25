@@ -25,7 +25,8 @@ CREATE TABLE "Users" (
   created_at TIMESTAMP NOT NULL,
   is_manager BOOLEAN NOT NULL,
   password VARCHAR NOT NULL,
-  email VARCHAR NOT NULL
+  email VARCHAR NOT NULL,
+  is_deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- Create Assets table (matching new schema)

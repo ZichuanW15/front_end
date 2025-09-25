@@ -125,6 +125,23 @@ class TestUserAuthentication:
         response = client.post('/api/auth/signup')
         assert response.status_code == 400
     
+    def test_signup_password_mismatch(self, client):
+        """Test signup with password confirmation mismatch."""
+        signup_data = {
+            'username': 'testuser',
+            'email': 'test@example.com',
+            'password': 'password123',
+            'confirm_password': 'different123'
+        }
+        
+        response = client.post('/api/auth/signup', 
+                             data=json.dumps(signup_data),
+                             content_type='application/json')
+        
+        assert response.status_code == 400
+        data = json.loads(response.data)
+        assert data['message'] == 'Passwords do not match'
+    
     def test_login_success(self, client, test_user_data):
         """Test successful user login."""
         # First create user

@@ -45,7 +45,7 @@ class UserService:
     @staticmethod
     def get_user_by_id(user_id: int) -> Optional[User]:
         """
-        Get user by ID.
+        Get user by ID (excluding soft-deleted users).
         
         Args:
             user_id: User ID
@@ -53,12 +53,12 @@ class UserService:
         Returns:
             User or None if not found
         """
-        return User.query.get(user_id)
+        return User.query.filter_by(user_id=user_id, is_deleted=False).first()
     
     @staticmethod
     def get_user_by_username(username: str) -> Optional[User]:
         """
-        Get user by username.
+        Get user by username (excluding soft-deleted users).
         
         Args:
             username: Username
@@ -66,12 +66,12 @@ class UserService:
         Returns:
             User or None if not found
         """
-        return User.query.filter_by(user_name=username).first()
+        return User.query.filter_by(user_name=username, is_deleted=False).first()
     
     @staticmethod
     def get_user_by_email(email: str) -> Optional[User]:
         """
-        Get user by email.
+        Get user by email (excluding soft-deleted users).
         
         Args:
             email: User email
@@ -79,12 +79,12 @@ class UserService:
         Returns:
             User or None if not found
         """
-        return User.query.filter_by(email=email).first()
+        return User.query.filter_by(email=email, is_deleted=False).first()
     
     @staticmethod
     def get_all_users(page: int = 1, per_page: int = 20) -> List[User]:
         """
-        Get all users with pagination.
+        Get all users with pagination (excluding soft-deleted users).
         
         Args:
             page: Page number
@@ -93,7 +93,7 @@ class UserService:
         Returns:
             List of User objects
         """
-        return User.query.paginate(
+        return User.query.filter_by(is_deleted=False).paginate(
             page=page, 
             per_page=per_page, 
             error_out=False
@@ -176,17 +176,58 @@ class UserService:
                 "message": f"Cannot delete user. User has transaction history ({recent_transactions} transactions). Account deletion is not allowed for users with transaction history."
             }
         
-        # All checks passed - delete the user
-        db.session.delete(user)
+        # All checks passed - soft delete the user
+        user.is_deleted = True
         db.session.commit()
         return {"success": True, "message": "User deleted successfully"}
     
     @staticmethod
     def get_managers() -> List[User]:
         """
-        Get all manager users.
+        Get all manager users (excluding soft-deleted users).
         
         Returns:
             List of manager User objects
         """
-        return User.query.filter_by(is_manager=True).all()
+        return User.query.filter_by(is_manager=True, is_deleted=False).all()
+    
+    @staticmethod
+    def get_soft_deleted_user_by_username(username: str) -> Optional[User]:
+        """
+        Get soft-deleted user by username.
+        
+        Args:
+            username: Username
+            
+        Returns:
+            User or None if not found
+        """
+        return User.query.filter_by(user_name=username, is_deleted=True).first()
+    
+    @staticmethod
+    def get_soft_deleted_user_by_email(email: str) -> Optional[User]:
+        """
+        Get soft-deleted user by email.
+        
+        Args:
+            email: User email
+            
+        Returns:
+            User or None if not found
+        """
+        return User.query.filter_by(email=email, is_deleted=True).first()
+    
+    @staticmethod
+    def reactivate_user(user: User) -> User:
+        """
+        Reactivate a soft-deleted user.
+        
+        Args:
+            user: User to reactivate
+            
+        Returns:
+            Reactivated User
+        """
+        user.is_deleted = False
+        db.session.commit()
+        return user

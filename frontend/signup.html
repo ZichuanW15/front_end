@@ -20,6 +20,9 @@
         <label>Password</label>
         <input id="password" type="password" placeholder="••••••" required>
         
+        <label>Confirm Password</label>
+        <input id="confirmPassword" type="password" placeholder="••••••" required>
+        
         <div class="row">
           <button class="primary" type="submit" id="btnSignup">Create Account</button>
           <button type="button" id="btnBackToLogin">Back to Login</button>
@@ -43,8 +46,9 @@ function validateForm() {
   const username = el('username').value.trim();
   const email = el('email').value.trim();
   const password = el('password').value;
+  const confirmPassword = el('confirmPassword').value;
   
-  if (!username || !email || !password) {
+  if (!username || !email || !password || !confirmPassword) {
     setMsg('Please fill in all fields', false);
     return false;
   }
@@ -61,6 +65,17 @@ function validateForm() {
     return false;
   }
   
+  // Password confirmation validation
+  if (password !== confirmPassword) {
+    setMsg('Passwords do not match', false);
+    return false;
+  }
+  
+  if (password.length < 4) {
+    setMsg('Password must be at least 4 characters long', false);
+    return false;
+  }
+  
   return true;
 }
 
@@ -70,6 +85,7 @@ async function signup() {
   const username = el('username').value.trim();
   const email = el('email').value.trim();
   const password = el('password').value;
+  const confirmPassword = el('confirmPassword').value;
   
   setMsg('Creating account...', null);
   
@@ -78,7 +94,7 @@ async function signup() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include', // Include cookies for session-based auth
-      body: JSON.stringify({ username, email, password })
+      body: JSON.stringify({ username, email, password, confirm_password: confirmPassword })
     });
     
     const data = await r.json().catch(() => ({}));
@@ -120,7 +136,7 @@ el('signupForm').onsubmit = (e) => {
 };
 
 // Clear error styling on input
-['username', 'email', 'password'].forEach(id => {
+['username', 'email', 'password', 'confirmPassword'].forEach(id => {
   el(id).oninput = () => {
     el(id).style.borderColor = '#303030';
   };

@@ -22,6 +22,7 @@ class User(Base):
     is_manager = Column(Boolean, nullable=False)
     password = Column(String, nullable=False)
     email = Column(String, nullable=False)
+    is_deleted = Column(Boolean, nullable=False, default=False)
     
     # Relationships
     fractions = relationship('Fraction', backref='owner')
@@ -34,7 +35,8 @@ class User(Base):
             'user_name': self.user_name,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'is_manager': self.is_manager,
-            'email': self.email
+            'email': self.email,
+            'is_deleted': self.is_deleted
         }
     
     def __repr__(self):

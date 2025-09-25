@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login - Asset Trading Platform</title>
+  <link rel="stylesheet" href="common.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Login</h1>
+      <label>Username or Email</label>
+      <input id="login" placeholder="username or email">
+      <label>Password</label>
+      <input id="password" type="password" placeholder="••••••">
+      <div class="row">
+        <button class="primary" id="btnLogin">Login</button>
+      </div>
+      <div style="text-align: center; margin-top: 15px;">
+        <a href="signup.html" style="color: var(--accent); text-decoration: none;">Don't have an account? Sign up here</a>
+      </div>
+      <div id="msg" class="msg muted">Please enter username and password</div>
+    </div>
+  </div>
+
+<script>
+const API = 'http://localhost:5001'; // Backend API server
+const el = id => document.getElementById(id);
+const setMsg = (txt, ok=null) => {
+  const m = el('msg'); m.textContent = txt; m.className = 'msg ' + (ok===null?'muted': ok?'ok':'err');
+};
+
+async function login(){
+  const login = el('login').value.trim();
+  const password = el('password').value;
+  if(!login || !password){ setMsg('Please enter complete login information', false); return; }
+  setMsg('Logging in...', null);
+  try{
+    const r = await fetch(`${API}/auth/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      credentials: 'include', // Include cookies for session-based auth
+      body: JSON.stringify({login, password})
+    });
+    const data = await r.json().catch(()=>({}));
+    if(r.ok && data.status === 'success'){
+      // 登录成功 → 进入仪表板
+      setMsg('Login successful, redirecting...', true);
+      // 可把简单用户信息存起来用于欢迎文案
+      sessionStorage.setItem('user', JSON.stringify(data.user || {}));
+      sessionStorage.setItem('sessionToken', data.session?.session_token || '');
+      location.href = 'dashboard.html'; // 目标页
+    }else{
+      setMsg(data.message || data.error || `Login failed (${r.status})`, false);
+    }
+  }catch(e){
+    setMsg('Network error, please try again later', false);
+  }
+}
+
+
+el('btnLogin').onclick = login;
+</script>
+</body>
+</html>

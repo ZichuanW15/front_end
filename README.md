@@ -120,6 +120,18 @@ createdb your_database_name
 
 # 2. Run initialization
 python init_db_postgres.py
+
+# 3. Delete database
+dropdb your_database_name
+
+# 3.1 kill all database connection of database
+psql -U your_username -d postgres
+
+-- Kill all connections to your_database
+SELECT pg_terminate_backend(pg_stat_activity.pid)
+FROM pg_stat_activity
+WHERE pg_stat_activity.datname = 'provision_it_v2'
+  AND pid <> pg_backend_pid();
 ```
 
 #### 4. Run the Application

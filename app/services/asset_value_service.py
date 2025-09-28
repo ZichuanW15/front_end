@@ -42,7 +42,7 @@ class AssetValueService:
         item = AssetValueHistory(
             asset_id = asset_id,
             value = value,
-            recorded_at = datetime.utcnow(),
+            recorded_at = recorded_at if recorded_at else datetime.utcnow(),
             source = "manual_adjust",
             adjusted_by = adjusted_by,
             adjustment_reason = reason,

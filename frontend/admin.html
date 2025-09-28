@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Admin Panel - Asset Trading Platform</title>
   <link rel="stylesheet" href="common.css">
+  <style>
+    .user-selection-item:hover {
+      background-color: var(--background) !important;
+    }
+    .user-selection-item.selected {
+      background-color: var(--accent-light) !important;
+      border-left: 4px solid var(--accent) !important;
+    }
+  </style>
 </head>
 <body>
   <nav class="nav">
@@ -28,8 +37,8 @@
   <div class="container">
     <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <div>
-        <h2>System Management</h2>
-        <p class="text-muted">Manage users, assets and system settings</p>
+        <h2>Asset Management</h2>
+        <p class="text-muted">Create assets, assign initial fractions, and manage asset values</p>
       </div>
       <div class="row">
         <button onclick="refreshData()" class="small">Refresh Data</button>
@@ -37,61 +46,16 @@
       </div>
     </div>
 
-    <!-- Admin Stats -->
-    <div class="grid">
-      <div class="card">
-        <h3>User Statistics</h3>
-        <div style="font-size: 24px; font-weight: bold; color: var(--accent);" id="totalUsers">0</div>
-        <p class="text-muted">Total Users</p>
-      </div>
-      
-      <div class="card">
-        <h3>Asset Statistics</h3>
-        <div style="font-size: 24px; font-weight: bold;" id="totalAssets">0</div>
-        <p class="text-muted">Total Assets</p>
-      </div>
-      
-      <div class="card">
-        <h3>Transaction Statistics</h3>
-        <div style="font-size: 24px; font-weight: bold;" id="totalTransactions">0</div>
-        <p class="text-muted">Total Transactions</p>
-      </div>
-      
-      <div class="card">
-        <h3>System Status</h3>
-        <div id="systemStatus" class="badge success">Normal</div>
-        <p class="text-muted">Running Status</p>
-      </div>
-    </div>
 
-    <!-- Tabs -->
-    <div class="card">
-      <div class="row" style="border-bottom: 1px solid var(--border); margin-bottom: 20px;">
-        <button onclick="showTab('users')" id="usersTab" class="small" style="margin-right: 10px;">User Management</button>
-        <button onclick="showTab('assets')" id="assetsTab" class="small" style="margin-right: 10px;">Asset Management</button>
-        <button onclick="showTab('transactions')" id="transactionsTab" class="small" style="margin-right: 10px;">Transaction Management</button>
-        <button onclick="showTab('values')" id="valuesTab" class="small">Asset Values</button>
-      </div>
+    <!-- Main Content -->
+      <div class="card">
 
-      <!-- Users Tab -->
-      <div id="usersContent" class="tab-content">
-        <div class="row" style="justify-content: space-between; margin-bottom: 20px;">
-          <h3>User List</h3>
-          <button onclick="showAddUserModal()" class="primary small">Add User</button>
-        </div>
-        <div id="usersTable">
-          <div class="text-muted text-center" style="padding: 40px;">
-            <div class="spinner"></div>
-            <p>Loading...</p>
-          </div>
-        </div>
-      </div>
 
-      <!-- Assets Tab -->
-      <div id="assetsContent" class="tab-content" style="display: none;">
+      <!-- Assets List -->
+      <div>
         <div class="row" style="justify-content: space-between; margin-bottom: 20px;">
           <h3>Asset List</h3>
-          <button onclick="showAddAssetModal()" class="primary small">Add Asset</button>
+          <button onclick="showAssetModifyModal()" class="primary small">Asset Modify</button>
         </div>
         <div id="assetsTable">
           <div class="text-muted text-center" style="padding: 40px;">
@@ -101,142 +65,154 @@
         </div>
       </div>
 
-      <!-- Transactions Tab -->
-      <div id="transactionsContent" class="tab-content" style="display: none;">
-        <div class="row" style="justify-content: space-between; margin-bottom: 20px;">
-          <h3>Transaction Records</h3>
-          <div class="row">
-            <select id="transactionFilter" onchange="filterTransactions()">
-              <option value="all">All Transactions</option>
-              <option value="buy">Buy</option>
-              <option value="sell">Sell</option>
-              <option value="transfer">Transfer</option>
-            </select>
-          </div>
-        </div>
-        <div id="transactionsTable">
-          <div class="text-muted text-center" style="padding: 40px;">
-            <div class="spinner"></div>
-            <p>Loading...</p>
-          </div>
+
         </div>
       </div>
 
-      <!-- Asset Values Tab -->
-      <div id="valuesContent" class="tab-content" style="display: none;">
-        <div class="row" style="justify-content: space-between; margin-bottom: 20px;">
-          <h3>Asset Value Management</h3>
-          <button onclick="showAdjustValueModal()" class="primary small">Adjust Asset Value</button>
-        </div>
-        
-        <!-- Asset Selection for Value History -->
-        <div class="card" style="margin-bottom: 20px;">
-          <h4>View Asset Value History</h4>
-          <div class="row">
-            <div class="col">
-              <label>Select Asset</label>
-              <select id="valueAssetSelect" onchange="loadAssetValueHistory()">
-                <option value="">Choose an asset</option>
-              </select>
-            </div>
-            <div class="col">
-              <label>Time Range</label>
-              <select id="valueTimeRange" onchange="loadAssetValueHistory()">
-                <option value="7d">Last 7 days</option>
-                <option value="30d" selected>Last 30 days</option>
-                <option value="90d">Last 90 days</option>
-                <option value="1y">Last year</option>
-                <option value="all">All time</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        
-        <div id="assetValueHistory">
-          <div class="text-muted text-center" style="padding: 40px;">
-            <p>Select an asset to view its value history</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Add User Modal -->
-  <div id="addUserModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 400px; max-width: 90vw;">
-      <h3>Add User</h3>
-      <form id="addUserForm">
-        <label>Username</label>
-        <input type="text" id="newUserName" required>
-        
-        <label>Email</label>
-        <input type="email" id="newUserEmail" required>
-        
-        <label>Password</label>
-        <input type="password" id="newUserPassword" required>
-        
-        <label>
-          <input type="checkbox" id="newUserIsManager"> Admin Privileges
-        </label>
-        
-        <div class="row" style="margin-top: 20px;">
-          <button type="button" onclick="hideAddUserModal()" class="col">Cancel</button>
-          <button type="submit" class="primary col">Add User</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <!-- Add Asset Modal -->
   <div id="addAssetModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 500px; max-width: 90vw;">
-      <h3>Add Asset</h3>
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 600px; max-width: 90vw; max-height: 90vh; overflow-y: auto;">
+      <h3>Create New Asset with Initial Fraction</h3>
+      <p class="text-muted" style="margin-bottom: 20px;">This will create an asset and assign the initial fraction to an admin user.</p>
+      
       <form id="addAssetForm">
-        <label>Asset Name</label>
-        <input type="text" id="newAssetName" required>
-        
+          <div class="row">
+          <div class="col">
+            <label>Asset Name</label>
+            <input type="text" id="newAssetName" required placeholder="Enter asset name">
+          </div>
+          <div class="col">
+            <label>Total Value (¥)</label>
+            <input type="number" id="newAssetTotalValue" required min="0" step="0.01" placeholder="0.00">
+        </div>
+      </div>
+
         <label>Asset Description</label>
-        <textarea id="newAssetDescription" rows="3"></textarea>
+        <textarea id="newAssetDescription" rows="2" placeholder="Optional description"></textarea>
         
-        <label>Total Units (Maximum Fractions)</label>
-        <input type="number" id="newAssetTotalUnits" required min="1" placeholder="Maximum number of fractions">
+          <div class="row">
+            <div class="col">
+            <label>Total Units (Available Fractions)</label>
+            <input type="number" id="newAssetTotalUnits" required min="1" placeholder="Maximum number of fractions">
+            </div>
+            <div class="col">
+            <label>Initial Fraction Owner</label>
+            <div class="row" style="align-items: center; gap: 10px;">
+              <select id="newAssetOwner" required style="flex: 1;">
+                <option value="">Select user</option>
+              </select>
+              <button type="button" onclick="showUserSelectionModal()" class="small" style="white-space: nowrap;">Browse Users</button>
+            </div>
+          </div>
+        </div>
         
-        <label>Minimum Units</label>
-        <input type="number" id="newAssetMinUnits" required min="1">
+        <div class="row">
+          <div class="col">
+            <label>Minimum Units per Fraction</label>
+            <input type="number" id="newAssetMinUnits" required min="1" placeholder="1">
+          </div>
+          <div class="col">
+            <label>Maximum Units per Fraction</label>
+            <input type="number" id="newAssetMaxUnits" required min="1" placeholder="100">
+        </div>
+      </div>
         
-        <label>Maximum Units</label>
-        <input type="number" id="newAssetMaxUnits" required min="1">
-        
-        <label>Total Value (¥)</label>
-        <input type="number" id="newAssetTotalValue" required min="0" step="0.01">
+        <div class="card" style="background: var(--background); margin: 15px 0; padding: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--accent);">Initial Fraction Details</h4>
+          <p class="text-muted" style="margin: 0; font-size: 14px;">
+            The initial fraction will be created with all available units and assigned to the selected admin user.
+            Value per unit will be calculated as: Total Value ÷ Total Units
+          </p>
+        </div>
         
         <div class="row" style="margin-top: 20px;">
           <button type="button" onclick="hideAddAssetModal()" class="col">Cancel</button>
-          <button type="submit" class="primary col">Add Asset</button>
+          <button type="submit" class="primary col">Create Asset & Fraction</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Adjust Asset Value Modal -->
-  <div id="adjustValueModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 500px; max-width: 90vw;">
-      <h3>Adjust Asset Value</h3>
-      <form id="adjustValueForm">
-        <label>Select Asset</label>
-        <select id="adjustAssetSelect" required>
-          <option value="">Choose an asset</option>
-        </select>
-        
-        <label>New Value (¥)</label>
-        <input type="number" id="adjustValue" required min="0" step="0.01" placeholder="Enter new total value">
-        
-        <label>Adjustment Reason</label>
-        <textarea id="adjustReason" rows="3" placeholder="Explain why you're adjusting this value"></textarea>
+
+  <!-- User Selection Modal -->
+  <div id="userSelectionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 700px; max-width: 90vw; max-height: 80vh; overflow-y: auto;">
+      <h3>Select User for Initial Fraction</h3>
+      <p class="text-muted" style="margin-bottom: 20px;">Choose which user will own the initial fraction of this asset.</p>
+      
+      <!-- Search and Filter -->
+      <div class="row" style="margin-bottom: 20px;">
+        <div class="col">
+          <label>Search Users</label>
+          <input type="text" id="userSearchInput" placeholder="Search by name or email..." onkeyup="filterUsers()">
+        </div>
+        <div class="col">
+          <label>Filter by Role</label>
+          <select id="userRoleFilter" onchange="filterUsers()">
+            <option value="">All Users</option>
+            <option value="admin">Admin Users</option>
+            <option value="user">Regular Users</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- User List -->
+      <div id="userSelectionList" style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+        <div class="text-muted text-center" style="padding: 40px;">
+          <div class="spinner"></div>
+          <p>Loading users...</p>
+        </div>
+      </div>
         
         <div class="row" style="margin-top: 20px;">
-          <button type="button" onclick="hideAdjustValueModal()" class="col">Cancel</button>
-          <button type="submit" class="primary col">Adjust Value</button>
+        <button type="button" onclick="hideUserSelectionModal()" class="col">Cancel</button>
+        <button type="button" onclick="confirmUserSelection()" class="primary col" id="confirmUserBtn" disabled>Select User</button>
+        </div>
+    </div>
+  </div>
+
+
+  <!-- Asset Modify Selection Modal -->
+  <div id="assetModifyModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 600px; max-width: 90vw;">
+      <h3>Modify Asset Value</h3>
+      <p class="text-muted" style="margin-bottom: 20px;">Select an asset to modify its total value.</p>
+      
+      
+      <form id="assetModifyForm">
+        <label>Select Asset to Modify</label>
+        <select id="assetModifySelect" required onchange="updateModifyAssetInfo()">
+          <option value="">Choose an asset to modify</option>
+        </select>
+        
+        <div id="modifyAssetInfo" style="display: none; background: var(--background); padding: 15px; border-radius: 8px; margin: 15px 0;">
+          <h4 style="margin: 0 0 10px 0; color: var(--accent);">Asset Information</h4>
+          <p style="margin: 0;"><strong>Asset Name:</strong> <span id="modifyAssetName">-</span></p>
+          <p style="margin: 0;"><strong>Current Value:</strong> <span id="modifyCurrentValue">-</span></p>
+          <p style="margin: 0;"><strong>Total Units:</strong> <span id="modifyTotalUnits">-</span></p>
+        </div>
+        
+        <label>New Total Value (¥) <span style="color: red;">*</span></label>
+        <input type="number" id="modifyNewValue" required min="0" step="0.01" placeholder="Enter new total value" style="border: 2px solid #ddd; padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box;" oninput="validateNewValue(this)">
+        <small style="color: #666; font-size: 12px;">Enter the NEW total value for this asset (not the current value).</small>
+        <div id="newValueError" style="color: red; font-size: 12px; margin-top: 5px; display: none;"></div>
+        
+        <label>Modification Reason <span style="color: red;">*</span></label>
+        <textarea id="modifyReason" rows="3" placeholder="Explain why you're modifying this asset value (e.g., market conditions, revaluation, etc.)" required style="border: 2px solid #ddd; padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box;" oninput="validateReason(this)"></textarea>
+        <small style="color: #666; font-size: 12px;">This field is required. Please provide a reason for the modification.</small>
+        <div id="reasonError" style="color: red; font-size: 12px; margin-top: 5px; display: none;"></div>
+        
+        <div class="card" style="background: var(--background); margin: 15px 0; padding: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--accent);">Important</h4>
+          <p class="text-muted" style="margin: 0; font-size: 14px;">
+            This modification will update the total value of the asset. All existing fractions will maintain their unit counts but their values will be recalculated based on the new total value.
+          </p>
+        </div>
+        
+        <div class="row" style="margin-top: 20px;">
+          <button type="button" onclick="hideAssetModifyModal()" class="col">Cancel</button>
+          <button type="submit" class="primary col">Update Asset Value</button>
         </div>
       </form>
     </div>
@@ -245,7 +221,6 @@
   <script>
     const API = 'http://localhost:5001'; // Backend API server
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
-    let currentTab = 'users';
     
     // Check if user is manager
     if (!user.is_manager) {
@@ -255,78 +230,38 @@
 
     async function fetchAdminData() {
       try {
-        // Fetch users
+        console.log('Fetching admin data...');
+        
+        // Fetch users (needed for user selection in asset creation)
         const usersRes = await fetch(`${API}/users`);
-        const users = await usersRes.json();
+        console.log('Users response status:', usersRes.status);
+        const usersData = await usersRes.json();
+        console.log('Users data:', usersData);
         
         // Fetch assets
         const assetsRes = await fetch(`${API}/assets`);
-        const assets = await assetsRes.json();
+        console.log('Assets response status:', assetsRes.status);
+        const assetsData = await assetsRes.json();
+        console.log('Assets data:', assetsData);
         
-        // Fetch transactions
-        const transactionsRes = await fetch(`${API}/transactions`);
-        const transactions = await transactionsRes.json();
+        // Extract the actual data from the API response
+        const users = usersData.users || [];
+        const assets = assetsData.assets || [];
+        
+        console.log('Extracted users:', users.length);
+        console.log('Extracted assets:', assets.length);
         
         // Store data globally for use in other functions
-        window.adminData = { users, assets, transactions };
+        window.adminData = { users, assets };
         
-        updateAdminStats(users, assets, transactions);
-        updateUsersTable(users);
         updateAssetsTable(assets);
-        updateTransactionsTable(transactions);
-        
-        // Populate asset select dropdowns for value management
-        populateAssetSelects(assets);
       } catch (error) {
         console.error('Error fetching admin data:', error);
         showError('Failed to load data, please try again later');
       }
     }
 
-    function updateAdminStats(users, assets, transactions) {
-      document.getElementById('totalUsers').textContent = users.length || 0;
-      document.getElementById('totalAssets').textContent = assets.length || 0;
-      document.getElementById('totalTransactions').textContent = transactions.length || 0;
-    }
 
-    function updateUsersTable(users) {
-      const container = document.getElementById('usersTable');
-      
-      if (!users || users.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center">No user data available</p>';
-        return;
-      }
-      
-      container.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Created At</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${users.map(u => `
-              <tr>
-                <td>${u.user_id}</td>
-                <td>${u.user_name}</td>
-                <td>${u.email}</td>
-                <td><span class="badge ${u.is_manager ? 'warning' : 'info'}">${u.is_manager ? 'Admin' : 'User'}</span></td>
-                <td>${new Date(u.created_at).toLocaleDateString()}</td>
-                <td>
-                  <button onclick="editUser(${u.user_id})" class="small">Edit</button>
-                  <button onclick="deleteUser(${u.user_id})" class="small danger">Delete</button>
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-    }
 
     function updateAssetsTable(assets) {
       const container = document.getElementById('assetsTable');
@@ -357,8 +292,7 @@
                 <td>¥${parseFloat(a.total_value).toLocaleString()}</td>
                 <td>${new Date(a.created_at).toLocaleDateString()}</td>
                 <td>
-                  <button onclick="editAsset(${a.asset_id})" class="small">Edit</button>
-                  <button onclick="deleteAsset(${a.asset_id})" class="small danger">Delete</button>
+                  <span class="text-muted">View only</span>
                 </td>
               </tr>
             `).join('')}
@@ -367,89 +301,169 @@
       `;
     }
 
-    function updateTransactionsTable(transactions) {
-      const container = document.getElementById('transactionsTable');
+
+
       
-      if (!transactions || transactions.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center">No transaction data available</p>';
+    function populateAllUsers() {
+      const ownerSelect = document.getElementById('newAssetOwner');
+      if (!ownerSelect || !window.adminData || !window.adminData.users) {
         return;
       }
       
-      container.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Transaction ID</th>
-              <th>Type</th>
-              <th>Units</th>
-              <th>Transaction Time</th>
-              <th>From</th>
-              <th>To</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${transactions.map(tx => `
-              <tr>
-                <td>${tx.transaction_id}</td>
-                <td><span class="badge info">${tx.transaction_type || 'Trade'}</span></td>
-                <td>${tx.unit_moved}</td>
-                <td>${new Date(tx.transaction_at).toLocaleString()}</td>
-                <td>${tx.from_owner_id}</td>
-                <td>${tx.to_owner_id}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-    }
-
-    function showTab(tabName) {
-      // Hide all tab contents
-      document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.style.display = 'none';
+      ownerSelect.innerHTML = '<option value="">Select user</option>';
+      
+      // Show all users (not just admins)
+      window.adminData.users.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.user_id;
+        option.textContent = `${user.user_name} (${user.email}) ${user.is_manager ? '[Admin]' : ''}`;
+        ownerSelect.appendChild(option);
       });
       
-      // Remove active class from all tabs
-      document.querySelectorAll('[id$="Tab"]').forEach(tab => {
-        tab.classList.remove('primary');
-      });
-      
-      // Show selected tab
-      document.getElementById(tabName + 'Content').style.display = 'block';
-      document.getElementById(tabName + 'Tab').classList.add('primary');
-      
-      currentTab = tabName;
-      
-      // Special handling for values tab
-      if (tabName === 'values') {
-        populateAssetSelects(window.adminData?.assets || []);
+      // If no users found, show warning
+      if (window.adminData.users.length === 0) {
+        ownerSelect.innerHTML = '<option value="">No users found</option>';
+        showMessage('Warning: No users found. Please create users first.', false);
       }
     }
 
-    function populateAssetSelects(assets) {
-      // Populate value asset select
-      const valueSelect = document.getElementById('valueAssetSelect');
-      if (valueSelect) {
-        valueSelect.innerHTML = '<option value="">Choose an asset</option>';
-        assets.forEach(asset => {
-          const option = document.createElement('option');
-          option.value = asset.asset_id;
-          option.textContent = `${asset.asset_name} (Current: ¥${parseFloat(asset.total_value).toLocaleString()})`;
-          valueSelect.appendChild(option);
+    // User Selection Modal Functions
+    let selectedUserId = null;
+    let allUsers = [];
+
+    function showUserSelectionModal() {
+      const modal = document.getElementById('userSelectionModal');
+      const userList = document.getElementById('userSelectionList');
+      
+      // Reset selection
+      selectedUserId = null;
+      document.getElementById('confirmUserBtn').disabled = true;
+      document.getElementById('userSearchInput').value = '';
+      document.getElementById('userRoleFilter').value = '';
+      
+      // Load users if not already loaded
+      if (!window.adminData || !window.adminData.users) {
+        userList.innerHTML = '<div class="text-muted text-center" style="padding: 40px;"><div class="spinner"></div><p>Loading users...</p></div>';
+        fetchAdminData().then(() => {
+          displayUserSelection();
         });
+      } else {
+        displayUserSelection();
       }
+      
+      modal.style.display = 'block';
     }
 
-    function showAddUserModal() {
-      document.getElementById('addUserModal').style.display = 'block';
+    function hideUserSelectionModal() {
+      document.getElementById('userSelectionModal').style.display = 'none';
     }
 
-    function hideAddUserModal() {
-      document.getElementById('addUserModal').style.display = 'none';
-      document.getElementById('addUserForm').reset();
+    function displayUserSelection() {
+      const userList = document.getElementById('userSelectionList');
+      allUsers = window.adminData.users || [];
+      
+      if (allUsers.length === 0) {
+        userList.innerHTML = '<div class="text-muted text-center" style="padding: 40px;"><p>No users found</p></div>';
+        return;
+      }
+      
+      userList.innerHTML = allUsers.map(user => `
+        <div class="user-selection-item" onclick="selectUser(${user.user_id})" style="padding: 15px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--background)'" onmouseout="this.style.backgroundColor='transparent'">
+          <div class="row" style="align-items: center;">
+            <div class="col">
+              <strong>${user.user_name}</strong>
+              <div class="text-muted" style="font-size: 14px;">${user.email}</div>
+            </div>
+            <div class="col" style="text-align: right;">
+              <span class="badge ${user.is_manager ? 'warning' : 'info'}">${user.is_manager ? 'Admin' : 'User'}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
     }
+
+    function selectUser(userId) {
+      // Remove previous selection
+      document.querySelectorAll('.user-selection-item').forEach(item => {
+        item.style.backgroundColor = 'transparent';
+        item.style.borderLeft = 'none';
+      });
+      
+      // Add selection to clicked item
+      const selectedItem = event.currentTarget;
+      selectedItem.style.backgroundColor = 'var(--accent-light)';
+      selectedItem.style.borderLeft = '4px solid var(--accent)';
+      
+      selectedUserId = userId;
+      document.getElementById('confirmUserBtn').disabled = false;
+    }
+
+    function confirmUserSelection() {
+      if (!selectedUserId) return;
+      
+      const selectedUser = allUsers.find(user => user.user_id === selectedUserId);
+      if (selectedUser) {
+        // Update the dropdown in the asset creation form
+        const ownerSelect = document.getElementById('newAssetOwner');
+        ownerSelect.value = selectedUserId;
+        
+        // Update the display text to show the selected user
+        const option = ownerSelect.querySelector(`option[value="${selectedUserId}"]`);
+        if (option) {
+          option.textContent = `${selectedUser.user_name} (${selectedUser.email}) ${selectedUser.is_manager ? '[Admin]' : ''}`;
+        }
+      }
+      
+      hideUserSelectionModal();
+    }
+
+    function filterUsers() {
+      const searchTerm = document.getElementById('userSearchInput').value.toLowerCase();
+      const roleFilter = document.getElementById('userRoleFilter').value;
+      
+      let filteredUsers = allUsers;
+      
+      // Apply search filter
+      if (searchTerm) {
+        filteredUsers = filteredUsers.filter(user => 
+          user.user_name.toLowerCase().includes(searchTerm) || 
+          user.email.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      // Apply role filter
+      if (roleFilter === 'admin') {
+        filteredUsers = filteredUsers.filter(user => user.is_manager);
+      } else if (roleFilter === 'user') {
+        filteredUsers = filteredUsers.filter(user => !user.is_manager);
+      }
+      
+      // Update display
+      const userList = document.getElementById('userSelectionList');
+      if (filteredUsers.length === 0) {
+        userList.innerHTML = '<div class="text-muted text-center" style="padding: 40px;"><p>No users match your criteria</p></div>';
+        return;
+      }
+      
+      userList.innerHTML = filteredUsers.map(user => `
+        <div class="user-selection-item" onclick="selectUser(${user.user_id})" style="padding: 15px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--background)'" onmouseout="this.style.backgroundColor='transparent'">
+          <div class="row" style="align-items: center;">
+            <div class="col">
+              <strong>${user.user_name}</strong>
+              <div class="text-muted" style="font-size: 14px;">${user.email}</div>
+            </div>
+            <div class="col" style="text-align: right;">
+              <span class="badge ${user.is_manager ? 'warning' : 'info'}">${user.is_manager ? 'Admin' : 'User'}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
 
     function showAddAssetModal() {
+      // Populate all users dropdown
+      populateAllUsers();
       document.getElementById('addAssetModal').style.display = 'block';
     }
 
@@ -458,65 +472,410 @@
       document.getElementById('addAssetForm').reset();
     }
 
-    async function addUser(event) {
-      event.preventDefault();
+    // Asset Modify Modal Functions
+    function showAssetModifyModal() {
+      console.log('=== SHOW ASSET MODIFY MODAL DEBUG ===');
+      console.log('Admin data:', window.adminData);
+      console.log('Assets available:', window.adminData?.assets);
       
-      const formData = {
-        user_name: document.getElementById('newUserName').value,
-        email: document.getElementById('newUserEmail').value,
-        password: document.getElementById('newUserPassword').value,
-        is_manager: document.getElementById('newUserIsManager').checked
-      };
+      // Populate asset select dropdown
+      const select = document.getElementById('assetModifySelect');
+      if (!select) {
+        console.error('Asset modify select element not found!');
+        showMessage('Form elements not found. Please refresh the page.', false);
+        return;
+      }
       
-      try {
-        const response = await fetch(`${API}/users`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
+      select.innerHTML = '<option value="">Choose an asset to modify</option>';
+      
+      if (window.adminData && window.adminData.assets && window.adminData.assets.length > 0) {
+        console.log('Populating asset dropdown with', window.adminData.assets.length, 'assets');
+        window.adminData.assets.forEach(asset => {
+          const option = document.createElement('option');
+          option.value = asset.asset_id;
+          option.textContent = `${asset.asset_name} (Current: ¥${parseFloat(asset.total_value).toLocaleString()})`;
+          option.setAttribute('data-asset-data', JSON.stringify(asset));
+          select.appendChild(option);
+          console.log('Added asset option:', asset.asset_name, 'ID:', asset.asset_id);
         });
-        
-        if (response.ok) {
-          hideAddUserModal();
-          refreshData();
-          showMessage('User added successfully', true);
         } else {
-          const error = await response.json();
-          showMessage(error.error || 'Failed to add user', false);
+        console.warn('No assets available for modification');
+        showMessage('No assets available for modification. Please create an asset first.', false);
+          return;
         }
-      } catch (error) {
-        showMessage('Network error, please try again later', false);
+      
+      // Hide asset info initially
+      const assetInfo = document.getElementById('modifyAssetInfo');
+      if (assetInfo) {
+        assetInfo.style.display = 'none';
+      }
+      
+      // Show the modal
+      const modal = document.getElementById('assetModifyModal');
+      if (modal) {
+        modal.style.display = 'block';
+        console.log('Asset modify modal displayed');
+        } else {
+        console.error('Asset modify modal element not found!');
+        showMessage('Modal not found. Please refresh the page.', false);
+      }
+      
+      console.log('=== SHOW ASSET MODIFY MODAL DEBUG END ===');
+    }
+
+    function hideAssetModifyModal() {
+      document.getElementById('assetModifyModal').style.display = 'none';
+      document.getElementById('assetModifyForm').reset();
+      document.getElementById('modifyAssetInfo').style.display = 'none';
+    }
+
+    function validateNewValue(input) {
+      const errorDiv = document.getElementById('newValueError');
+      const value = input.value.trim();
+      
+      if (!value) {
+        errorDiv.style.display = 'none';
+        input.style.borderColor = '#ddd';
+          return;
+        }
+      
+      const numValue = parseFloat(value);
+      if (isNaN(numValue)) {
+        errorDiv.textContent = 'Please enter a valid number';
+        errorDiv.style.display = 'block';
+        input.style.borderColor = '#f44336';
+      } else if (numValue <= 0) {
+        errorDiv.textContent = 'Please enter a positive value greater than 0';
+        errorDiv.style.display = 'block';
+        input.style.borderColor = '#f44336';
+      } else {
+        errorDiv.style.display = 'none';
+        input.style.borderColor = '#4CAF50';
       }
     }
+
+    function validateReason(input) {
+      const errorDiv = document.getElementById('reasonError');
+      const value = input.value.trim();
+      
+      if (!value) {
+        errorDiv.textContent = 'Please provide a reason for the modification';
+        errorDiv.style.display = 'block';
+        input.style.borderColor = '#f44336';
+      } else if (value.length < 5) {
+        errorDiv.textContent = 'Please provide a more detailed reason (at least 5 characters)';
+        errorDiv.style.display = 'block';
+        input.style.borderColor = '#FF9800';
+          } else {
+        errorDiv.style.display = 'none';
+        input.style.borderColor = '#4CAF50';
+      }
+    }
+
+    function updateModifyAssetInfo() {
+      const select = document.getElementById('assetModifySelect');
+      const assetInfo = document.getElementById('modifyAssetInfo');
+      
+      if (select.value) {
+        const selectedOption = select.options[select.selectedIndex];
+        const assetData = JSON.parse(selectedOption.getAttribute('data-asset-data'));
+        
+        console.log('Updating asset info for:', assetData.asset_name, 'Current value:', assetData.total_value);
+        
+        // Update asset information display
+        document.getElementById('modifyAssetName').textContent = assetData.asset_name;
+        document.getElementById('modifyCurrentValue').textContent = `¥${parseFloat(assetData.total_value).toLocaleString()}`;
+        document.getElementById('modifyTotalUnits').textContent = assetData.total_unit;
+        
+        // Clear and set the new value input to current value as starting point
+        const newValueInput = document.getElementById('modifyNewValue');
+        newValueInput.value = ''; // Clear first
+        newValueInput.placeholder = `Current: ¥${parseFloat(assetData.total_value).toLocaleString()}`;
+        newValueInput.focus(); // Focus on the input so user can type
+        
+        // Add real-time validation
+        newValueInput.addEventListener('input', function() {
+          const currentValue = parseFloat(assetData.total_value);
+          const newValue = parseFloat(this.value);
+          
+          if (newValue && newValue !== currentValue) {
+            this.style.borderColor = '#4CAF50'; // Green for valid new value
+          } else if (newValue && newValue === currentValue) {
+            this.style.borderColor = '#FF9800'; // Orange for same as current
+          } else {
+            this.style.borderColor = '#ddd'; // Default
+          }
+        });
+        
+        // Show asset info
+        assetInfo.style.display = 'block';
+        
+        console.log('Asset info updated, new value input cleared and focused');
+        } else {
+        assetInfo.style.display = 'none';
+      }
+    }
+
+    async function modifySelectedAsset(event) {
+      event.preventDefault();
+      
+      console.log('=== ASSET MODIFY DEBUG START ===');
+      console.log('User session:', user);
+      console.log('API URL:', API);
+      
+      // Add a small delay to ensure form values are captured
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const assetIdElement = document.getElementById('assetModifySelect');
+      const newValueElement = document.getElementById('modifyNewValue');
+      const reasonElement = document.getElementById('modifyReason');
+      
+      console.log('Form elements found:', {
+        assetIdElement: !!assetIdElement,
+        newValueElement: !!newValueElement,
+        reasonElement: !!reasonElement
+      });
+      
+      if (!assetIdElement || !newValueElement || !reasonElement) {
+        showMessage('Form elements not found. Please refresh the page and try again.', false);
+        return;
+      }
+      
+      const assetId = assetIdElement.value;
+      const newValueRaw = newValueElement.value;
+      const newValue = parseFloat(newValueRaw);
+      const reason = reasonElement.value;
+      
+      // Additional debugging to see what's happening
+      console.log('Element values debug:', {
+        assetIdElementValue: assetIdElement.value,
+        newValueElementValue: newValueElement.value,
+        reasonElementValue: reasonElement.value,
+        newValueElementType: newValueElement.type,
+        newValueElementName: newValueElement.name,
+        newValueElementId: newValueElement.id,
+        reasonElementType: reasonElement.type,
+        reasonElementName: reasonElement.name,
+        reasonElementId: reasonElement.id
+      });
+      
+      console.log('Raw form values:', {
+        assetId: assetId,
+        newValueRaw: newValueRaw,
+        newValue: newValue,
+        isNaN: isNaN(newValue),
+        reason: reason
+      });
+      
+      console.log('Form values:', {
+        assetId: assetId,
+        newValue: newValue,
+        reason: reason,
+        reasonTrimmed: reason.trim(),
+        reasonLength: reason.length
+      });
+      
+      // Additional debugging for the new value field
+      console.log('New value field debugging:', {
+        newValueElement: newValueElement,
+        newValueElementValue: newValueElement.value,
+        newValueElementType: newValueElement.type,
+        newValueElementPlaceholder: newValueElement.placeholder,
+        newValueElementRequired: newValueElement.required,
+        newValueElementMin: newValueElement.min,
+        newValueElementStep: newValueElement.step
+      });
+      
+      // Additional debugging for the reason field
+      console.log('Reason field debugging:', {
+        reasonElement: reasonElement,
+        reasonElementValue: reasonElement.value,
+        reasonElementType: reasonElement.type,
+        reasonElementTagName: reasonElement.tagName,
+        reasonElementPlaceholder: reasonElement.placeholder,
+        reasonElementRequired: reasonElement.required,
+        reasonElementRows: reasonElement.rows,
+        reasonElementCols: reasonElement.cols
+      });
+      
+      if (!assetId) {
+        showMessage('Please select an asset to modify', false);
+        return;
+      }
+      
+      if (!newValueRaw || newValueRaw.trim() === '') {
+        showMessage('Please enter a new value for the asset', false);
+          return;
+        }
+      
+      if (isNaN(newValue)) {
+        showMessage('Please enter a valid number for the new value', false);
+        return;
+      }
+      
+      if (newValue <= 0) {
+        showMessage('Please enter a positive value greater than 0', false);
+        return;
+      }
+      
+      // Check if the new value is different from current value
+      const selectedOption = document.getElementById('assetModifySelect').options[document.getElementById('assetModifySelect').selectedIndex];
+      const assetData = JSON.parse(selectedOption.getAttribute('data-asset-data'));
+      const currentValue = parseFloat(assetData.total_value);
+      
+      if (newValue === currentValue) {
+        showMessage('Please enter a different value than the current value', false);
+        return;
+      }
+      
+      if (!reason || reason.trim().length === 0) {
+        showMessage('Please provide a reason for the modification', false);
+        return;
+      }
+      
+      try {
+        console.log('Starting asset modification...');
+        console.log('Asset ID:', assetId, 'New Value:', newValue, 'Reason:', reason);
+        
+        showMessage('Updating asset value...', true);
+        
+        // Test API connectivity first
+        console.log('Testing API connectivity...');
+        const testResponse = await fetch(`${API}/health`);
+        console.log('Health check response:', testResponse.status);
+        
+        // Update the asset value and record history in one call
+        console.log('Sending value adjustment request to:', `${API}/assets/${assetId}/values/adjust`);
+        const response = await fetch(`${API}/assets/${assetId}/values/adjust`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            value: newValue,
+            reason: reason,
+            adjusted_by: user.user_id
+          })
+        });
+        
+        console.log('Value adjustment response status:', response.status);
+        console.log('Value adjustment response headers:', response.headers);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Value adjustment error response:', errorText);
+          let errorMessage = 'Failed to update asset value';
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.message || errorJson.error || errorMessage;
+          } catch (e) {
+            errorMessage = errorText || errorMessage;
+          }
+          throw new Error(errorMessage);
+        }
+        
+        const adjustmentResult = await response.json();
+        console.log('Asset value adjustment success:', adjustmentResult);
+        
+        // Success!
+        console.log('Asset modification completed successfully');
+        hideAssetModifyModal();
+        refreshData();
+        showMessage(`Asset value updated successfully to ¥${newValue.toLocaleString()}`, true);
+        
+      } catch (error) {
+        console.error('Error modifying asset:', error);
+        showMessage(`Error: ${error.message}`, false);
+      }
+      
+      console.log('=== ASSET MODIFY DEBUG END ===');
+    }
+
+
+
 
     async function addAsset(event) {
       event.preventDefault();
       
-      const formData = {
+      console.log('Asset creation started...');
+      
+      const assetData = {
         asset_name: document.getElementById('newAssetName').value,
-        description: document.getElementById('newAssetDescription').value,
         total_unit: parseInt(document.getElementById('newAssetTotalUnits').value),
         unit_min: parseInt(document.getElementById('newAssetMinUnits').value),
         unit_max: parseInt(document.getElementById('newAssetMaxUnits').value),
         total_value: parseFloat(document.getElementById('newAssetTotalValue').value)
       };
       
+      const ownerId = document.getElementById('newAssetOwner').value;
+      
+      console.log('Asset data:', assetData);
+      console.log('Owner ID:', ownerId);
+      
+      if (!ownerId) {
+        showMessage('Please select a user to own the initial fraction', false);
+        return;
+      }
+      
+      // Validate form data
+      if (assetData.unit_min > assetData.unit_max) {
+        showMessage('Minimum units cannot be greater than maximum units', false);
+        return;
+      }
+      
+      if (assetData.unit_max > assetData.total_unit) {
+        showMessage('Maximum units cannot be greater than total units', false);
+        return;
+      }
+      
       try {
-        const response = await fetch(`${API}/assets`, {
+        // Step 1: Create the asset
+        showMessage('Creating asset...', true);
+        const assetResponse = await fetch(`${API}/assets`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
+          body: JSON.stringify(assetData)
         });
         
-        if (response.ok) {
-          hideAddAssetModal();
-          refreshData();
-          showMessage('Asset added successfully', true);
-        } else {
-          const error = await response.json();
-          showMessage(error.error || 'Failed to add asset', false);
+        if (!assetResponse.ok) {
+          const error = await assetResponse.json();
+          throw new Error(error.message || error.error || 'Failed to create asset');
         }
+        
+        const assetResult = await assetResponse.json();
+        const assetId = assetResult.asset.asset_id;
+        
+        // Step 2: Create the initial fraction
+        showMessage('Creating initial fraction...', true);
+        const valuePerUnit = assetData.total_value / assetData.total_unit;
+        
+        const fractionData = {
+          asset_id: assetId,
+          owner_id: parseInt(ownerId),
+          parent_fraction_id: null,
+          units: assetData.total_unit,
+          is_active: true,
+          value_perunit: Math.round(valuePerUnit * 100) / 100 // Round to 2 decimal places
+        };
+        
+        const fractionResponse = await fetch(`${API}/fractions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fractionData)
+        });
+        
+        if (!fractionResponse.ok) {
+          const error = await fractionResponse.json();
+          throw new Error(error.message || error.error || 'Failed to create initial fraction');
+        }
+        
+        
+        // Success!
+        hideAddAssetModal();
+        refreshData();
+        showMessage(`Asset "${assetData.asset_name}" created successfully with initial fraction assigned to selected user`, true);
+        
       } catch (error) {
-        showMessage('Network error, please try again later', false);
+        console.error('Error creating asset:', error);
+        showMessage(`Error: ${error.message}`, false);
       }
     }
 
@@ -543,303 +902,9 @@
       }, 3000);
     }
 
-    async function editUser(userId) {
-      // Get current user data
-      try {
-        const response = await fetch(`${API}/users/${userId}`);
-        if (!response.ok) {
-          showMessage('Failed to load user data', false);
-          return;
-        }
-        const userData = await response.json();
-        const user = userData.user;
-        
-        // Show edit modal
-        showEditUserModal(user);
-      } catch (error) {
-        showMessage('Error loading user data', false);
-      }
-    }
 
-    async function deleteUser(userId) {
-      if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-        try {
-          const response = await fetch(`${API}/users/${userId}`, {
-            method: 'DELETE'
-          });
-          
-          if (response.ok) {
-            refreshData();
-            showMessage('User deleted successfully', true);
-          } else {
-            const error = await response.json();
-            showMessage(error.message || 'Failed to delete user', false);
-          }
-        } catch (error) {
-          showMessage('Network error, please try again later', false);
-        }
-      }
-    }
 
-    function showEditUserModal(user) {
-      // Create edit modal if it doesn't exist
-      let editModal = document.getElementById('editUserModal');
-      if (!editModal) {
-        editModal = document.createElement('div');
-        editModal.id = 'editUserModal';
-        editModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;';
-        editModal.innerHTML = `
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 400px; max-width: 90vw;">
-            <h3>Edit User</h3>
-            <form id="editUserForm">
-              <label>Username</label>
-              <input type="text" id="editUserName" required>
-              
-              <label>Email</label>
-              <input type="email" id="editUserEmail" required>
-              
-              <label>Password (leave blank to keep current)</label>
-              <input type="password" id="editUserPassword">
-              
-              <label>
-                <input type="checkbox" id="editUserIsManager"> Admin Privileges
-              </label>
-              
-              <div class="row" style="margin-top: 20px;">
-                <button type="button" onclick="hideEditUserModal()" class="col">Cancel</button>
-                <button type="submit" class="primary col">Update User</button>
-              </div>
-            </form>
-          </div>
-        `;
-        document.body.appendChild(editModal);
-        
-        // Add event listener
-        document.getElementById('editUserForm').addEventListener('submit', updateUser);
-      }
-      
-      // Populate form with current user data
-      document.getElementById('editUserName').value = user.user_name || '';
-      document.getElementById('editUserEmail').value = user.email || '';
-      document.getElementById('editUserIsManager').checked = user.is_manager || false;
-      
-      // Store user ID for update
-      editModal.setAttribute('data-user-id', user.user_id);
-      
-      editModal.style.display = 'block';
-    }
 
-    function hideEditUserModal() {
-      const editModal = document.getElementById('editUserModal');
-      if (editModal) {
-        editModal.style.display = 'none';
-        document.getElementById('editUserForm').reset();
-      }
-    }
-
-    // Asset Value Management Functions
-    function showAdjustValueModal() {
-      const modal = document.getElementById('adjustValueModal');
-      const select = document.getElementById('adjustAssetSelect');
-      
-      // Populate asset select
-      select.innerHTML = '<option value="">Choose an asset</option>';
-      if (window.adminData && window.adminData.assets) {
-        window.adminData.assets.forEach(asset => {
-          const option = document.createElement('option');
-          option.value = asset.asset_id;
-          option.textContent = `${asset.asset_name} (Current: ¥${parseFloat(asset.total_value).toLocaleString()})`;
-          select.appendChild(option);
-        });
-      }
-      
-      modal.style.display = 'block';
-    }
-
-    function hideAdjustValueModal() {
-      const modal = document.getElementById('adjustValueModal');
-      modal.style.display = 'none';
-      document.getElementById('adjustValueForm').reset();
-    }
-
-    async function adjustAssetValue(event) {
-      event.preventDefault();
-      
-      const assetId = document.getElementById('adjustAssetSelect').value;
-      const value = parseFloat(document.getElementById('adjustValue').value);
-      const reason = document.getElementById('adjustReason').value;
-      
-      if (!assetId || !value) {
-        showMessage('Please select an asset and enter a value', false);
-        return;
-      }
-      
-      try {
-        const response = await fetch(`${API}/assets/${assetId}/values/adjust`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            value: value,
-            reason: reason || 'Manual adjustment by admin',
-            adjusted_by: user.user_id
-          })
-        });
-        
-        if (response.ok) {
-          hideAdjustValueModal();
-          refreshData();
-          showMessage('Asset value adjusted successfully', true);
-          
-          // Refresh the value history if we're on the values tab
-          if (currentTab === 'values') {
-            loadAssetValueHistory();
-          }
-        } else {
-          const error = await response.json();
-          showMessage(error.message || 'Failed to adjust asset value', false);
-        }
-      } catch (error) {
-        showMessage('Network error, please try again later', false);
-      }
-    }
-
-    async function loadAssetValueHistory() {
-      const assetId = document.getElementById('valueAssetSelect').value;
-      const timeRange = document.getElementById('valueTimeRange').value;
-      
-      if (!assetId) {
-        document.getElementById('assetValueHistory').innerHTML = 
-          '<div class="text-muted text-center" style="padding: 40px;"><p>Select an asset to view its value history</p></div>';
-        return;
-      }
-      
-      try {
-        // Calculate date range
-        const toDate = new Date();
-        const fromDate = new Date();
-        
-        switch (timeRange) {
-          case '7d':
-            fromDate.setDate(toDate.getDate() - 7);
-            break;
-          case '30d':
-            fromDate.setDate(toDate.getDate() - 30);
-            break;
-          case '90d':
-            fromDate.setDate(toDate.getDate() - 90);
-            break;
-          case '1y':
-            fromDate.setFullYear(toDate.getFullYear() - 1);
-            break;
-          case 'all':
-            fromDate = null;
-            break;
-        }
-        
-        let apiUrl = `${API}/assets/${assetId}/values`;
-        const params = new URLSearchParams();
-        if (fromDate) {
-          params.append('from', fromDate.toISOString());
-        }
-        params.append('to', toDate.toISOString());
-        
-        if (params.toString()) {
-          apiUrl += '?' + params.toString();
-        }
-        
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.status === 'success' && data.items) {
-          displayAssetValueHistory(data.items);
-        } else {
-          throw new Error('Invalid response format');
-        }
-      } catch (error) {
-        console.error('Error loading asset value history:', error);
-        document.getElementById('assetValueHistory').innerHTML = 
-          '<div class="text-muted text-center" style="padding: 40px;"><p>Error loading value history: ' + error.message + '</p></div>';
-      }
-    }
-
-    function displayAssetValueHistory(items) {
-      const container = document.getElementById('assetValueHistory');
-      
-      if (!items || items.length === 0) {
-        container.innerHTML = '<div class="text-muted text-center" style="padding: 40px;"><p>No value history found</p></div>';
-        return;
-      }
-      
-      container.innerHTML = `
-        <div class="card">
-          <h4>Value History</h4>
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Value</th>
-                <th>Source</th>
-                <th>Reason</th>
-                <th>Adjusted By</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${items.map(item => `
-                <tr>
-                  <td>${new Date(item.recorded_at).toLocaleString()}</td>
-                  <td>¥${parseFloat(item.value).toLocaleString()}</td>
-                  <td><span class="badge ${item.source === 'manual_adjust' ? 'warning' : 'info'}">${item.source === 'manual_adjust' ? 'Manual' : 'System'}</span></td>
-                  <td>${item.reason || '-'}</td>
-                  <td>${item.adjusted_by ? `User ${item.adjusted_by}` : '-'}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      `;
-    }
-
-    async function updateUser(event) {
-      event.preventDefault();
-      
-      const editModal = document.getElementById('editUserModal');
-      const userId = editModal.getAttribute('data-user-id');
-      
-      const formData = {
-        user_name: document.getElementById('editUserName').value,
-        email: document.getElementById('editUserEmail').value,
-        is_manager: document.getElementById('editUserIsManager').checked
-      };
-      
-      // Only include password if provided
-      const password = document.getElementById('editUserPassword').value;
-      if (password) {
-        formData.password = password;
-      }
-      
-      try {
-        const response = await fetch(`${API}/users/${userId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
-        
-        if (response.ok) {
-          hideEditUserModal();
-          refreshData();
-          showMessage('User updated successfully', true);
-        } else {
-          const error = await response.json();
-          showMessage(error.message || 'Failed to update user', false);
-        }
-      } catch (error) {
-        showMessage('Network error, please try again later', false);
-      }
-    }
 
     async function logout() {
       try {
@@ -852,9 +917,8 @@
     }
 
     // Event listeners
-    document.getElementById('addUserForm').addEventListener('submit', addUser);
     document.getElementById('addAssetForm').addEventListener('submit', addAsset);
-    document.getElementById('adjustValueForm').addEventListener('submit', adjustAssetValue);
+    document.getElementById('assetModifyForm').addEventListener('submit', modifySelectedAsset);
 
     // Load data on page load
     fetchAdminData();

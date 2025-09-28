@@ -268,23 +268,11 @@
         let apiUrl = `${API}/assets/${assetId}/values`;
         const params = new URLSearchParams();
         if (fromDate) {
-          // Use simple datetime format: YYYY-MM-DD HH:MM:SS
-          const fromStr = fromDate.getFullYear() + '-' + 
-                         String(fromDate.getMonth() + 1).padStart(2, '0') + '-' + 
-                         String(fromDate.getDate()).padStart(2, '0') + ' ' +
-                         String(fromDate.getHours()).padStart(2, '0') + ':' +
-                         String(fromDate.getMinutes()).padStart(2, '0') + ':' +
-                         String(fromDate.getSeconds()).padStart(2, '0');
-          params.append('from', fromStr);
+          // Use ISO 8601 format (backend handles both formats)
+          params.append('from', fromDate.toISOString());
         }
-        // Use simple datetime format for 'to' as well
-        const toStr = toDate.getFullYear() + '-' + 
-                     String(toDate.getMonth() + 1).padStart(2, '0') + '-' + 
-                     String(toDate.getDate()).padStart(2, '0') + ' ' +
-                     String(toDate.getHours()).padStart(2, '0') + ':' +
-                     String(toDate.getMinutes()).padStart(2, '0') + ':' +
-                     String(toDate.getSeconds()).padStart(2, '0');
-        params.append('to', toStr);
+        // Use ISO 8601 format for 'to' as well
+        params.append('to', toDate.toISOString());
         
         if (params.toString()) {
           apiUrl += '?' + params.toString();

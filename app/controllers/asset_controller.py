@@ -135,23 +135,32 @@ class AssetController:
             p_from = request.args.get("from")
             p_to   = request.args.get("to")
             
+            # original code
+            # parse  = lambda s: datetime.fromisoformat(s) if s else None
+            # function to handle both simple datetime format and ISO 8601 format
             def parse_date(s):
                 if not s:
                     return None
                 try:
-                    # Handle simple datetime format: YYYY-MM-DD HH:MM:SS
-                    return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
+                    # Handle database format: YYYY-MM-DD HH:MM:SS.mmm (with milliseconds)
+                    return datetime.strptime(s, '%Y-%m-%d %H:%M:%S.%f')
                 except ValueError:
                     try:
-                        # Fallback to ISO 8601 format with timezone (Z suffix)
-                        if s.endswith('Z'):
-                            s = s[:-1] + '+00:00'
-                        return datetime.fromisoformat(s)
+                        # Handle simple format: YYYY-MM-DD HH:MM:SS (no milliseconds)
+                        return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
                     except ValueError:
-                        # Final fallback to simple format without timezone
-                        return datetime.fromisoformat(s.replace('Z', ''))
+                        try:
+                            # Handle ISO 8601 format with timezone (Z suffix)
+                            # "2025-09-29T14:45:43.752Z" → "2025-09-29T14:45:43.752+00:00"
+                            if s.endswith('Z'):
+                                s = s[:-1] + '+00:00'
+                            return datetime.fromisoformat(s)
+                        except ValueError:
+                            # Final fallback to simple format without timezone
+                            return datetime.fromisoformat(s.replace('Z', ''))
 
             items = self.asset_value_service.list_history(
+                # asset_id, parse(p_from), parse(p_to)
                 asset_id, parse_date(p_from), parse_date(p_to)
             )
             return self.asset_view.render_value_history(items, asset_id)

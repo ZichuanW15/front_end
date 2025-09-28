@@ -134,10 +134,25 @@ class AssetController:
         try:
             p_from = request.args.get("from")
             p_to   = request.args.get("to")
-            parse  = lambda s: datetime.fromisoformat(s) if s else None
+            
+            def parse_date(s):
+                if not s:
+                    return None
+                try:
+                    # Handle simple datetime format: YYYY-MM-DD HH:MM:SS
+                    return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    try:
+                        # Fallback to ISO 8601 format with timezone (Z suffix)
+                        if s.endswith('Z'):
+                            s = s[:-1] + '+00:00'
+                        return datetime.fromisoformat(s)
+                    except ValueError:
+                        # Final fallback to simple format without timezone
+                        return datetime.fromisoformat(s.replace('Z', ''))
 
             items = self.asset_value_service.list_history(
-                asset_id, parse(p_from), parse(p_to)
+                asset_id, parse_date(p_from), parse_date(p_to)
             )
             return self.asset_view.render_value_history(items, asset_id)
         except Exception as e:

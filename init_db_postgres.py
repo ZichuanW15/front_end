@@ -143,7 +143,7 @@ def verify_tables_created(database_config):
         
         result = subprocess.run(cmd, env=env, capture_output=True, text=True, check=True)
         
-        expected_tables = ['Users', 'Assets', 'Fractions', 'Transactions']
+        expected_tables = ['Users', 'Assets', 'Fractions', 'Transactions', 'AssetValueHistory']
         output = result.stdout
         
         for table in expected_tables:

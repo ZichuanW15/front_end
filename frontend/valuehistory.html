@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Value History - Asset Trading Platform</title>
+  <title>Asset Value History - Asset Trading Platform</title>
   <link rel="stylesheet" href="common.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -11,13 +11,13 @@
   <nav class="nav">
     <div class="container">
       <div class="nav-content">
-        <h1>Value History</h1>
+        <h1>Asset Value History</h1>
         <div class="nav-links">
           <a href="dashboard.html">Dashboard</a>
           <a href="browsing.html">Browse Assets</a>
           <a href="trading.html">Trading</a>
           <a href="portfolio.html">My Assets</a>
-          <a href="valuehistory.html" class="active">Value History</a>
+          <a href="valuehistory_real.html" class="active">Value History</a>
           <a href="profile.html">Profile</a>
           <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
           <button onclick="logout()" class="small">Logout</button>
@@ -29,8 +29,8 @@
   <div class="container">
     <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <div>
-        <h2>Value History Analysis</h2>
-        <p class="text-muted">View asset value trends and historical data</p>
+        <h2>Asset Value History Analysis</h2>
+        <p class="text-muted">View real asset value trends and historical data from database</p>
       </div>
       <div class="row">
         <button onclick="refreshData()" class="small">Refresh Data</button>
@@ -42,27 +42,27 @@
     <div class="card">
       <div class="row" style="margin-bottom: 20px;">
         <div class="col">
-          <label>选择资产</label>
+          <label>Select Asset</label>
           <select id="assetSelect" onchange="updateAssetHistory()">
-            <option value="">请选择要查看的资产</option>
+            <option value="">Please select an asset to view</option>
           </select>
         </div>
         <div class="col">
-          <label>时间范围</label>
+          <label>Time Range</label>
           <select id="timeRange" onchange="updateTimeRange()">
-            <option value="7d">最近7天</option>
-            <option value="30d" selected>最近30天</option>
-            <option value="90d">最近90天</option>
-            <option value="1y">最近1年</option>
-            <option value="all">全部时间</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d" selected>Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+            <option value="1y">Last year</option>
+            <option value="all">All time</option>
           </select>
         </div>
         <div class="col">
-          <label>图表类型</label>
+          <label>Chart Type</label>
           <select id="chartType" onchange="updateChartType()">
-            <option value="line" selected>折线图</option>
-            <option value="bar">柱状图</option>
-            <option value="area">面积图</option>
+            <option value="line" selected>Line Chart</option>
+            <option value="bar">Bar Chart</option>
+            <option value="area">Area Chart</option>
           </select>
         </div>
       </div>
@@ -71,37 +71,37 @@
     <!-- Current Value Summary -->
     <div class="grid" id="valueSummary" style="display: none;">
       <div class="card">
-        <h3>当前价值</h3>
+        <h3>Current Value</h3>
         <div style="font-size: 24px; font-weight: bold; color: var(--accent);" id="currentValue">¥0</div>
-        <p class="text-muted">每单位价格</p>
+        <p class="text-muted">Per unit price</p>
       </div>
       
       <div class="card">
-        <h3>24小时变化</h3>
+        <h3>Last Change</h3>
         <div style="font-size: 24px; font-weight: bold;" id="dailyChange">+0%</div>
-        <p class="text-muted">较昨日</p>
+        <p class="text-muted">From previous record</p>
       </div>
       
       <div class="card">
-        <h3>7天变化</h3>
+        <h3>Total Change</h3>
         <div style="font-size: 24px; font-weight: bold;" id="weeklyChange">+0%</div>
-        <p class="text-muted">较上周</p>
+        <p class="text-muted">From first record</p>
       </div>
       
       <div class="card">
-        <h3>30天变化</h3>
-        <div style="font-size: 24px; font-weight: bold;" id="monthlyChange">+0%</div>
-        <p class="text-muted">较上月</p>
+        <h3>Records</h3>
+        <div style="font-size: 24px; font-weight: bold;" id="monthlyChange">0</div>
+        <p class="text-muted">Total history records</p>
       </div>
     </div>
 
     <!-- Chart Container -->
     <div class="card">
       <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h3>价值趋势图</h3>
+        <h3>Value Trend Chart</h3>
         <div class="row">
-          <button onclick="toggleFullscreen()" class="small">全屏</button>
-          <button onclick="downloadChart()" class="small">下载图表</button>
+          <button onclick="toggleFullscreen()" class="small">Fullscreen</button>
+          <button onclick="downloadChart()" class="small">Download Chart</button>
         </div>
       </div>
       <div style="position: relative; height: 400px;">
@@ -112,80 +112,80 @@
     <!-- Historical Data Table -->
     <div class="card">
       <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h3>历史数据</h3>
+        <h3>Historical Data</h3>
         <div class="row">
           <select id="tableFilter" onchange="filterTable()">
-            <option value="all">所有数据</option>
-            <option value="7d">最近7天</option>
-            <option value="30d">最近30天</option>
-            <option value="90d">最近90天</option>
+            <option value="all">All Data</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="90d">Last 90 days</option>
           </select>
         </div>
       </div>
       <div id="historyTable">
         <div class="text-muted text-center" style="padding: 40px;">
           <div class="spinner"></div>
-          <p>加载历史数据中...</p>
+          <p>Loading historical data...</p>
         </div>
       </div>
     </div>
 
     <!-- Performance Metrics -->
     <div class="card">
-      <h3>性能指标</h3>
+      <h3>Performance Metrics</h3>
       <div class="grid">
         <div class="card">
-          <h4>最高价</h4>
+          <h4>Highest Value</h4>
           <div style="font-size: 20px; font-weight: bold; color: var(--success);" id="highestPrice">¥0</div>
           <p class="text-muted" id="highestPriceDate">-</p>
         </div>
         
         <div class="card">
-          <h4>最低价</h4>
+          <h4>Lowest Value</h4>
           <div style="font-size: 20px; font-weight: bold; color: var(--error);" id="lowestPrice">¥0</div>
           <p class="text-muted" id="lowestPriceDate">-</p>
         </div>
         
         <div class="card">
-          <h4>平均价</h4>
+          <h4>Average Value</h4>
           <div style="font-size: 20px; font-weight: bold;" id="averagePrice">¥0</div>
-          <p class="text-muted">期间平均</p>
+          <p class="text-muted">Mean value</p>
         </div>
         
         <div class="card">
-          <h4>波动率</h4>
+          <h4>Volatility</h4>
           <div style="font-size: 20px; font-weight: bold;" id="volatility">0%</div>
-          <p class="text-muted">价格波动</p>
+          <p class="text-muted">Price volatility</p>
         </div>
       </div>
     </div>
 
     <!-- Market Comparison -->
     <div class="card">
-      <h3>市场对比</h3>
+      <h3>Market Analysis</h3>
       <div class="grid">
         <div class="card">
-          <h4>相对表现</h4>
+          <h4>Relative Performance</h4>
           <div style="font-size: 18px; font-weight: bold;" id="relativePerformance">+0%</div>
-          <p class="text-muted">vs 市场平均</p>
+          <p class="text-muted">vs market average</p>
         </div>
         
         <div class="card">
-          <h4>风险评级</h4>
-          <div id="riskRating" class="badge info">中等</div>
-          <p class="text-muted">投资风险</p>
+          <h4>Risk Rating</h4>
+          <div id="riskRating" class="badge info">Medium</div>
+          <p class="text-muted">Risk assessment</p>
         </div>
         
         <div class="card">
-          <h4>推荐评级</h4>
-          <div id="recommendation" class="badge success">买入</div>
-          <p class="text-muted">投资建议</p>
+          <h4>Recommendation</h4>
+          <div id="recommendation" class="badge success">Hold</div>
+          <p class="text-muted">Investment advice</p>
         </div>
         
         <div class="card">
-          <h4>交易量</h4>
+          <h4>Data Points</h4>
           <div style="font-size: 18px; font-weight: bold;" id="tradingVolume">0</div>
-          <p class="text-muted">最近30天</p>
+          <p class="text-muted">Total records</p>
         </div>
       </div>
     </div>
@@ -206,75 +206,133 @@
 
     async function fetchAssets() {
       try {
+        console.log('Fetching assets from API...');
         const response = await fetch(`${API}/assets`);
-        assets = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Assets response:', data);
+        
+        // Extract assets array from the response
+        assets = data.assets || [];
         
         const select = document.getElementById('assetSelect');
-        select.innerHTML = '<option value="">请选择要查看的资产</option>';
+        select.innerHTML = '<option value="">Please select an asset to view</option>';
         
         assets.forEach(asset => {
           const option = document.createElement('option');
           option.value = asset.asset_id;
-          option.textContent = `${asset.asset_name} - ¥${(parseFloat(asset.total_value) / parseInt(asset.total_unit)).toFixed(2)}/单位`;
+          option.textContent = `${asset.asset_name} - ¥${(parseFloat(asset.total_value) / parseInt(asset.total_unit)).toFixed(2)}/unit`;
           select.appendChild(option);
         });
+        
+        console.log(`Loaded ${assets.length} assets`);
       } catch (error) {
         console.error('Error fetching assets:', error);
-        showError('加载资产数据失败，请稍后重试');
+        showError('Failed to load asset data. Please try again later.');
       }
     }
 
     async function fetchValueHistory(assetId, timeRange) {
       try {
-        // Mock value history data - in real app, this would come from the API
-        const days = getDaysForRange(timeRange);
-        const basePrice = parseFloat(assets.find(a => a.asset_id == assetId).total_value) / 
-                         parseInt(assets.find(a => a.asset_id == assetId).total_unit);
+        console.log(`Fetching value history for asset ${assetId} with time range ${timeRange}...`);
         
-        valueHistory = generateMockHistory(basePrice, days);
-        updateValueSummary();
-        updateChart();
-        updateHistoryTable();
-        updatePerformanceMetrics();
-        updateMarketComparison();
+        // Calculate date range based on timeRange selection
+        const toDate = new Date();
+        let fromDate = new Date();
+        
+        switch (timeRange) {
+          case '7d':
+            fromDate.setDate(toDate.getDate() - 7);
+            break;
+          case '30d':
+            fromDate.setDate(toDate.getDate() - 30);
+            break;
+          case '90d':
+            fromDate.setDate(toDate.getDate() - 90);
+            break;
+          case '1y':
+            fromDate.setFullYear(toDate.getFullYear() - 1);
+            break;
+          case 'all':
+            fromDate = null; // No from date means get all history
+            break;
+          default:
+            fromDate.setDate(toDate.getDate() - 30);
+        }
+        
+        // Build API URL with query parameters
+        let apiUrl = `${API}/assets/${assetId}/values`;
+        const params = new URLSearchParams();
+        if (fromDate) {
+          // Use simple datetime format: YYYY-MM-DD HH:MM:SS
+          const fromStr = fromDate.getFullYear() + '-' + 
+                         String(fromDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                         String(fromDate.getDate()).padStart(2, '0') + ' ' +
+                         String(fromDate.getHours()).padStart(2, '0') + ':' +
+                         String(fromDate.getMinutes()).padStart(2, '0') + ':' +
+                         String(fromDate.getSeconds()).padStart(2, '0');
+          params.append('from', fromStr);
+        }
+        // Use simple datetime format for 'to' as well
+        const toStr = toDate.getFullYear() + '-' + 
+                     String(toDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                     String(toDate.getDate()).padStart(2, '0') + ' ' +
+                     String(toDate.getHours()).padStart(2, '0') + ':' +
+                     String(toDate.getMinutes()).padStart(2, '0') + ':' +
+                     String(toDate.getSeconds()).padStart(2, '0');
+        params.append('to', toStr);
+        
+        if (params.toString()) {
+          apiUrl += '?' + params.toString();
+        }
+        
+        console.log('Fetching value history from:', apiUrl);
+        
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Value history response:', data);
+        
+        if (data.status === 'success' && data.items) {
+          // Convert API response to the format expected by the UI
+          valueHistory = data.items.map(item => ({
+            date: item.recorded_at.split('T')[0],
+            value: parseFloat(item.value),
+            volume: 0, // No volume data in our system
+            source: item.source,
+            reason: item.reason,
+            adjusted_by: item.adjusted_by
+          }));
+          
+          console.log(`Loaded ${valueHistory.length} value history records`);
+          
+          updateValueSummary();
+          updateChart();
+          updateHistoryTable();
+          updatePerformanceMetrics();
+          updateMarketComparison();
+        } else {
+          throw new Error('Invalid response format from API');
+        }
       } catch (error) {
         console.error('Error fetching value history:', error);
-        showError('加载历史数据失败，请稍后重试');
-      }
-    }
-
-    function generateMockHistory(basePrice, days) {
-      const history = [];
-      let currentPrice = basePrice;
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - days);
-      
-      for (let i = 0; i < days; i++) {
-        const date = new Date(startDate);
-        date.setDate(date.getDate() + i);
+        showError('Failed to load historical data. Please try again later: ' + error.message);
         
-        // Generate realistic price movement
-        const change = (Math.random() - 0.5) * 0.1; // ±5% daily change
-        currentPrice *= (1 + change);
-        
-        history.push({
-          date: date.toISOString().split('T')[0],
-          value: currentPrice,
-          volume: Math.floor(Math.random() * 1000) + 100
-        });
-      }
-      
-      return history;
-    }
-
-    function getDaysForRange(timeRange) {
-      switch (timeRange) {
-        case '7d': return 7;
-        case '30d': return 30;
-        case '90d': return 90;
-        case '1y': return 365;
-        case 'all': return 365;
-        default: return 30;
+        // Show empty state instead of mock data
+        valueHistory = [];
+        document.getElementById('valueSummary').style.display = 'none';
+        document.getElementById('historyTable').innerHTML = '<p class="text-muted text-center">No historical data available</p>';
+        if (chart) {
+          chart.destroy();
+          chart = null;
+        }
       }
     }
 
@@ -282,24 +340,26 @@
       if (valueHistory.length === 0) return;
       
       const current = valueHistory[valueHistory.length - 1];
-      const yesterday = valueHistory[valueHistory.length - 2] || current;
-      const weekAgo = valueHistory[Math.max(0, valueHistory.length - 8)] || current;
-      const monthAgo = valueHistory[Math.max(0, valueHistory.length - 31)] || current;
+      const previous = valueHistory[valueHistory.length - 2] || current;
+      const first = valueHistory[0];
       
       document.getElementById('currentValue').textContent = `¥${current.value.toFixed(2)}`;
       
-      const dailyChange = ((current.value - yesterday.value) / yesterday.value * 100).toFixed(2);
-      const weeklyChange = ((current.value - weekAgo.value) / weekAgo.value * 100).toFixed(2);
-      const monthlyChange = ((current.value - monthAgo.value) / monthAgo.value * 100).toFixed(2);
+      // Calculate change from previous record (not necessarily daily)
+      const changeFromPrevious = ((current.value - previous.value) / previous.value * 100).toFixed(2);
+      const changeFromFirst = ((current.value - first.value) / first.value * 100).toFixed(2);
       
-      document.getElementById('dailyChange').textContent = `${dailyChange > 0 ? '+' : ''}${dailyChange}%`;
-      document.getElementById('dailyChange').className = dailyChange > 0 ? 'text-success' : 'text-error';
+      // Show change from previous record
+      document.getElementById('dailyChange').textContent = `${changeFromPrevious > 0 ? '+' : ''}${changeFromPrevious}%`;
+      document.getElementById('dailyChange').className = changeFromPrevious > 0 ? 'text-success' : 'text-error';
       
-      document.getElementById('weeklyChange').textContent = `${weeklyChange > 0 ? '+' : ''}${weeklyChange}%`;
-      document.getElementById('weeklyChange').className = weeklyChange > 0 ? 'text-success' : 'text-error';
+      // Show change from first record (total change)
+      document.getElementById('weeklyChange').textContent = `${changeFromFirst > 0 ? '+' : ''}${changeFromFirst}%`;
+      document.getElementById('weeklyChange').className = changeFromFirst > 0 ? 'text-success' : 'text-error';
       
-      document.getElementById('monthlyChange').textContent = `${monthlyChange > 0 ? '+' : ''}${monthlyChange}%`;
-      document.getElementById('monthlyChange').className = monthlyChange > 0 ? 'text-success' : 'text-error';
+      // Show total records count
+      document.getElementById('monthlyChange').textContent = `${valueHistory.length} records`;
+      document.getElementById('monthlyChange').className = 'text-info';
       
       document.getElementById('valueSummary').style.display = 'block';
     }
@@ -315,7 +375,7 @@
       const data = {
         labels: valueHistory.map(h => new Date(h.date).toLocaleDateString()),
         datasets: [{
-          label: '单位价格 (¥)',
+          label: 'Unit Price (¥)',
           data: valueHistory.map(h => h.value),
           borderColor: '#f7c948',
           backgroundColor: chartType === 'area' ? 'rgba(247, 201, 72, 0.1)' : 'transparent',
@@ -368,7 +428,7 @@
       const container = document.getElementById('historyTable');
       
       if (valueHistory.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center">暂无历史数据</p>';
+        container.innerHTML = '<p class="text-muted text-center">No historical data available</p>';
         return;
       }
       
@@ -378,11 +438,13 @@
         <table>
           <thead>
             <tr>
-              <th>日期</th>
-              <th>单位价格</th>
-              <th>日变化</th>
-              <th>变化率</th>
-              <th>交易量</th>
+              <th>Date</th>
+              <th>Value</th>
+              <th>Change</th>
+              <th>Change %</th>
+              <th>Source</th>
+              <th>Reason</th>
+              <th>Adjusted By</th>
             </tr>
           </thead>
           <tbody>
@@ -391,13 +453,21 @@
               const change = h.value - prevValue;
               const changePercent = ((change / prevValue) * 100).toFixed(2);
               
+              const sourceBadge = h.source === 'manual_adjust' ? 
+                '<span class="badge warning">Manual</span>' : 
+                '<span class="badge info">System</span>';
+              
+              const reason = h.reason || '-';
+              
               return `
                 <tr>
                   <td>${new Date(h.date).toLocaleDateString()}</td>
                   <td>¥${h.value.toFixed(2)}</td>
                   <td class="${change > 0 ? 'text-success' : 'text-error'}">${change > 0 ? '+' : ''}¥${change.toFixed(2)}</td>
                   <td class="${change > 0 ? 'text-success' : 'text-error'}">${change > 0 ? '+' : ''}${changePercent}%</td>
-                  <td>${h.volume}</td>
+                  <td>${sourceBadge}</td>
+                  <td>${reason}</td>
+                  <td>${h.adjusted_by ? `User ${h.adjusted_by}` : '-'}</td>
                 </tr>
               `;
             }).join('')}
@@ -410,6 +480,16 @@
       const filter = document.getElementById('tableFilter').value;
       const days = getDaysForRange(filter);
       return history.slice(-days);
+    }
+
+    function getDaysForRange(timeRange) {
+      switch (timeRange) {
+        case '7d': return 7;
+        case '30d': return 30;
+        case '90d': return 90;
+        case 'all': return 365;
+        default: return 30;
+      }
     }
 
     function updatePerformanceMetrics() {
@@ -438,25 +518,55 @@
     }
 
     function updateMarketComparison() {
-      // Mock market comparison data
-      const performance = (Math.random() - 0.5) * 20; // ±10% vs market
-      const riskLevel = Math.random();
-      const recommendation = Math.random();
+      if (valueHistory.length === 0) return;
       
-      document.getElementById('relativePerformance').textContent = `${performance > 0 ? '+' : ''}${performance.toFixed(1)}%`;
+      // Calculate performance based on real data
+      const firstValue = valueHistory[0].value;
+      const lastValue = valueHistory[valueHistory.length - 1].value;
+      const performance = ((lastValue - firstValue) / firstValue * 100).toFixed(1);
+      
+      // Calculate risk based on volatility
+      const marketValues = valueHistory.map(h => h.value);
+      const marketAverage = marketValues.reduce((sum, val) => sum + val, 0) / marketValues.length;
+      const marketVariance = marketValues.reduce((sum, val) => sum + Math.pow(val - marketAverage, 2), 0) / marketValues.length;
+      const marketVolatility = Math.sqrt(marketVariance) / marketAverage * 100;
+      
+      // Determine risk rating based on volatility
+      let riskRating, riskClass;
+      if (marketVolatility < 5) {
+        riskRating = 'Low';
+        riskClass = 'success';
+      } else if (marketVolatility < 15) {
+        riskRating = 'Medium';
+        riskClass = 'warning';
+      } else {
+        riskRating = 'High';
+        riskClass = 'error';
+      }
+      
+      // Determine recommendation based on performance
+      let recommendation, recClass;
+      if (performance > 10) {
+        recommendation = 'Buy';
+        recClass = 'success';
+      } else if (performance > -5) {
+        recommendation = 'Hold';
+        recClass = 'warning';
+      } else {
+        recommendation = 'Sell';
+        recClass = 'error';
+      }
+      
+      document.getElementById('relativePerformance').textContent = `${performance > 0 ? '+' : ''}${performance}%`;
       document.getElementById('relativePerformance').className = performance > 0 ? 'text-success' : 'text-error';
       
-      const riskRating = riskLevel < 0.3 ? '低' : riskLevel < 0.7 ? '中等' : '高';
-      const riskClass = riskLevel < 0.3 ? 'success' : riskLevel < 0.7 ? 'warning' : 'error';
       document.getElementById('riskRating').textContent = riskRating;
       document.getElementById('riskRating').className = `badge ${riskClass}`;
       
-      const rec = recommendation < 0.3 ? '卖出' : recommendation < 0.7 ? '持有' : '买入';
-      const recClass = recommendation < 0.3 ? 'error' : recommendation < 0.7 ? 'warning' : 'success';
-      document.getElementById('recommendation').textContent = rec;
+      document.getElementById('recommendation').textContent = recommendation;
       document.getElementById('recommendation').className = `badge ${recClass}`;
       
-      document.getElementById('tradingVolume').textContent = Math.floor(Math.random() * 10000) + 1000;
+      document.getElementById('tradingVolume').textContent = valueHistory.length;
     }
 
     function updateAssetHistory() {
@@ -465,7 +575,7 @@
       
       if (!assetId) {
         document.getElementById('valueSummary').style.display = 'none';
-        document.getElementById('historyTable').innerHTML = '<p class="text-muted text-center">请选择一个资产</p>';
+        document.getElementById('historyTable').innerHTML = '<p class="text-muted text-center">Please select an asset</p>';
         if (chart) {
           chart.destroy();
           chart = null;
@@ -493,8 +603,42 @@
       updateHistoryTable();
     }
 
+    function refreshData() {
+      if (selectedAsset) {
+        updateAssetHistory();
+      } else {
+        fetchAssets();
+      }
+    }
+
+    function exportData() {
+      if (valueHistory.length === 0) {
+        showMessage('No data to export', false);
+        return;
+      }
+      
+      const csv = [
+        ['Date', 'Value', 'Source', 'Reason', 'Adjusted By'],
+        ...valueHistory.map(h => [
+          h.date,
+          h.value,
+          h.source,
+          h.reason || '',
+          h.adjusted_by || ''
+        ])
+      ].map(row => row.join(',')).join('\n');
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `asset_${selectedAsset.asset_id}_value_history.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+
     function toggleFullscreen() {
-      const chartContainer = document.getElementById('valueChart').parentElement;
+      const chartContainer = document.querySelector('#valueChart').parentElement;
       if (chartContainer.requestFullscreen) {
         chartContainer.requestFullscreen();
       }
@@ -503,38 +647,10 @@
     function downloadChart() {
       if (chart) {
         const url = chart.toBase64Image();
-        const link = document.createElement('a');
-        link.download = `asset-value-chart-${selectedAsset?.asset_name || 'unknown'}.png`;
-        link.href = url;
-        link.click();
-      }
-    }
-
-    function exportData() {
-      if (valueHistory.length === 0) {
-        showMessage('没有数据可导出', false);
-        return;
-      }
-      
-      const csv = [
-        '日期,单位价格,交易量',
-        ...valueHistory.map(h => `${h.date},${h.value.toFixed(2)},${h.volume}`)
-      ].join('\n');
-      
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = `asset-value-history-${selectedAsset?.asset_name || 'unknown'}.csv`;
-      link.href = url;
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function refreshData() {
-      if (selectedAsset) {
-        updateAssetHistory();
-      } else {
-        fetchAssets();
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `asset_${selectedAsset.asset_id}_chart.png`;
+        a.click();
       }
     }
 
@@ -558,7 +674,7 @@
     }
 
     function logout() {
-      sessionStorage.removeItem('user');
+      sessionStorage.clear();
       location.href = 'login.html';
     }
 
@@ -567,4 +683,3 @@
   </script>
 </body>
 </html>
-

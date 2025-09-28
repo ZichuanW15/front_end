@@ -69,7 +69,8 @@
       <div class="row" style="border-bottom: 1px solid var(--border); margin-bottom: 20px;">
         <button onclick="showTab('users')" id="usersTab" class="small" style="margin-right: 10px;">User Management</button>
         <button onclick="showTab('assets')" id="assetsTab" class="small" style="margin-right: 10px;">Asset Management</button>
-        <button onclick="showTab('transactions')" id="transactionsTab" class="small">Transaction Management</button>
+        <button onclick="showTab('transactions')" id="transactionsTab" class="small" style="margin-right: 10px;">Transaction Management</button>
+        <button onclick="showTab('values')" id="valuesTab" class="small">Asset Values</button>
       </div>
 
       <!-- Users Tab -->
@@ -117,6 +118,43 @@
           <div class="text-muted text-center" style="padding: 40px;">
             <div class="spinner"></div>
             <p>Loading...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Asset Values Tab -->
+      <div id="valuesContent" class="tab-content" style="display: none;">
+        <div class="row" style="justify-content: space-between; margin-bottom: 20px;">
+          <h3>Asset Value Management</h3>
+          <button onclick="showAdjustValueModal()" class="primary small">Adjust Asset Value</button>
+        </div>
+        
+        <!-- Asset Selection for Value History -->
+        <div class="card" style="margin-bottom: 20px;">
+          <h4>View Asset Value History</h4>
+          <div class="row">
+            <div class="col">
+              <label>Select Asset</label>
+              <select id="valueAssetSelect" onchange="loadAssetValueHistory()">
+                <option value="">Choose an asset</option>
+              </select>
+            </div>
+            <div class="col">
+              <label>Time Range</label>
+              <select id="valueTimeRange" onchange="loadAssetValueHistory()">
+                <option value="7d">Last 7 days</option>
+                <option value="30d" selected>Last 30 days</option>
+                <option value="90d">Last 90 days</option>
+                <option value="1y">Last year</option>
+                <option value="all">All time</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div id="assetValueHistory">
+          <div class="text-muted text-center" style="padding: 40px;">
+            <p>Select an asset to view its value history</p>
           </div>
         </div>
       </div>
@@ -180,6 +218,30 @@
     </div>
   </div>
 
+  <!-- Adjust Asset Value Modal -->
+  <div id="adjustValueModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 500px; max-width: 90vw;">
+      <h3>Adjust Asset Value</h3>
+      <form id="adjustValueForm">
+        <label>Select Asset</label>
+        <select id="adjustAssetSelect" required>
+          <option value="">Choose an asset</option>
+        </select>
+        
+        <label>New Value (¥)</label>
+        <input type="number" id="adjustValue" required min="0" step="0.01" placeholder="Enter new total value">
+        
+        <label>Adjustment Reason</label>
+        <textarea id="adjustReason" rows="3" placeholder="Explain why you're adjusting this value"></textarea>
+        
+        <div class="row" style="margin-top: 20px;">
+          <button type="button" onclick="hideAdjustValueModal()" class="col">Cancel</button>
+          <button type="submit" class="primary col">Adjust Value</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     const API = 'http://localhost:5001'; // Backend API server
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -205,10 +267,16 @@
         const transactionsRes = await fetch(`${API}/transactions`);
         const transactions = await transactionsRes.json();
         
+        // Store data globally for use in other functions
+        window.adminData = { users, assets, transactions };
+        
         updateAdminStats(users, assets, transactions);
         updateUsersTable(users);
         updateAssetsTable(assets);
         updateTransactionsTable(transactions);
+        
+        // Populate asset select dropdowns for value management
+        populateAssetSelects(assets);
       } catch (error) {
         console.error('Error fetching admin data:', error);
         showError('Failed to load data, please try again later');
@@ -351,6 +419,25 @@
       document.getElementById(tabName + 'Tab').classList.add('primary');
       
       currentTab = tabName;
+      
+      // Special handling for values tab
+      if (tabName === 'values') {
+        populateAssetSelects(window.adminData?.assets || []);
+      }
+    }
+
+    function populateAssetSelects(assets) {
+      // Populate value asset select
+      const valueSelect = document.getElementById('valueAssetSelect');
+      if (valueSelect) {
+        valueSelect.innerHTML = '<option value="">Choose an asset</option>';
+        assets.forEach(asset => {
+          const option = document.createElement('option');
+          option.value = asset.asset_id;
+          option.textContent = `${asset.asset_name} (Current: ¥${parseFloat(asset.total_value).toLocaleString()})`;
+          valueSelect.appendChild(option);
+        });
+      }
     }
 
     function showAddUserModal() {
@@ -550,6 +637,172 @@
       }
     }
 
+    // Asset Value Management Functions
+    function showAdjustValueModal() {
+      const modal = document.getElementById('adjustValueModal');
+      const select = document.getElementById('adjustAssetSelect');
+      
+      // Populate asset select
+      select.innerHTML = '<option value="">Choose an asset</option>';
+      if (window.adminData && window.adminData.assets) {
+        window.adminData.assets.forEach(asset => {
+          const option = document.createElement('option');
+          option.value = asset.asset_id;
+          option.textContent = `${asset.asset_name} (Current: ¥${parseFloat(asset.total_value).toLocaleString()})`;
+          select.appendChild(option);
+        });
+      }
+      
+      modal.style.display = 'block';
+    }
+
+    function hideAdjustValueModal() {
+      const modal = document.getElementById('adjustValueModal');
+      modal.style.display = 'none';
+      document.getElementById('adjustValueForm').reset();
+    }
+
+    async function adjustAssetValue(event) {
+      event.preventDefault();
+      
+      const assetId = document.getElementById('adjustAssetSelect').value;
+      const value = parseFloat(document.getElementById('adjustValue').value);
+      const reason = document.getElementById('adjustReason').value;
+      
+      if (!assetId || !value) {
+        showMessage('Please select an asset and enter a value', false);
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API}/assets/${assetId}/values/adjust`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            value: value,
+            reason: reason || 'Manual adjustment by admin',
+            adjusted_by: user.user_id
+          })
+        });
+        
+        if (response.ok) {
+          hideAdjustValueModal();
+          refreshData();
+          showMessage('Asset value adjusted successfully', true);
+          
+          // Refresh the value history if we're on the values tab
+          if (currentTab === 'values') {
+            loadAssetValueHistory();
+          }
+        } else {
+          const error = await response.json();
+          showMessage(error.message || 'Failed to adjust asset value', false);
+        }
+      } catch (error) {
+        showMessage('Network error, please try again later', false);
+      }
+    }
+
+    async function loadAssetValueHistory() {
+      const assetId = document.getElementById('valueAssetSelect').value;
+      const timeRange = document.getElementById('valueTimeRange').value;
+      
+      if (!assetId) {
+        document.getElementById('assetValueHistory').innerHTML = 
+          '<div class="text-muted text-center" style="padding: 40px;"><p>Select an asset to view its value history</p></div>';
+        return;
+      }
+      
+      try {
+        // Calculate date range
+        const toDate = new Date();
+        const fromDate = new Date();
+        
+        switch (timeRange) {
+          case '7d':
+            fromDate.setDate(toDate.getDate() - 7);
+            break;
+          case '30d':
+            fromDate.setDate(toDate.getDate() - 30);
+            break;
+          case '90d':
+            fromDate.setDate(toDate.getDate() - 90);
+            break;
+          case '1y':
+            fromDate.setFullYear(toDate.getFullYear() - 1);
+            break;
+          case 'all':
+            fromDate = null;
+            break;
+        }
+        
+        let apiUrl = `${API}/assets/${assetId}/values`;
+        const params = new URLSearchParams();
+        if (fromDate) {
+          params.append('from', fromDate.toISOString());
+        }
+        params.append('to', toDate.toISOString());
+        
+        if (params.toString()) {
+          apiUrl += '?' + params.toString();
+        }
+        
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.status === 'success' && data.items) {
+          displayAssetValueHistory(data.items);
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } catch (error) {
+        console.error('Error loading asset value history:', error);
+        document.getElementById('assetValueHistory').innerHTML = 
+          '<div class="text-muted text-center" style="padding: 40px;"><p>Error loading value history: ' + error.message + '</p></div>';
+      }
+    }
+
+    function displayAssetValueHistory(items) {
+      const container = document.getElementById('assetValueHistory');
+      
+      if (!items || items.length === 0) {
+        container.innerHTML = '<div class="text-muted text-center" style="padding: 40px;"><p>No value history found</p></div>';
+        return;
+      }
+      
+      container.innerHTML = `
+        <div class="card">
+          <h4>Value History</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Value</th>
+                <th>Source</th>
+                <th>Reason</th>
+                <th>Adjusted By</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map(item => `
+                <tr>
+                  <td>${new Date(item.recorded_at).toLocaleString()}</td>
+                  <td>¥${parseFloat(item.value).toLocaleString()}</td>
+                  <td><span class="badge ${item.source === 'manual_adjust' ? 'warning' : 'info'}">${item.source === 'manual_adjust' ? 'Manual' : 'System'}</span></td>
+                  <td>${item.reason || '-'}</td>
+                  <td>${item.adjusted_by ? `User ${item.adjusted_by}` : '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
     async function updateUser(event) {
       event.preventDefault();
       
@@ -601,6 +854,7 @@
     // Event listeners
     document.getElementById('addUserForm').addEventListener('submit', addUser);
     document.getElementById('addAssetForm').addEventListener('submit', addAsset);
+    document.getElementById('adjustValueForm').addEventListener('submit', adjustAssetValue);
 
     // Load data on page load
     fetchAdminData();

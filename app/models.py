@@ -136,7 +136,7 @@ class Transaction(Base):
 
 # adding new model for asset value history
 class AssetValueHistory(Base):
-    __tablename__ = 'asset_value_history'
+    __tablename__ = 'AssetValueHistory'
 
     id          = Column(BigInteger, primary_key=True, autoincrement=True)
     asset_id    = Column(BigInteger, ForeignKey('Assets.asset_id'), nullable=False)

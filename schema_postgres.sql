@@ -64,16 +64,16 @@ CREATE TABLE "Transactions" (
 );
 
 -- Create AssetValueHistory table (new table for tracking asset value changes)
-CREATE TABLE IF NOT EXISTS asset_value_history (
-  id bigserial PRIMARY KEY,
-  asset_id bigint NOT NULL REFERENCES "Assets"(asset_id),
-  value numeric(18,2) NOT NULL,
-  recorded_at timestamptz NOT NULL DEFAULT now(),
-  source text DEFAULT 'system',
-  adjusted_by bigint REFERENCES "Users"(user_id),
-  adjustment_reason text
+CREATE TABLE IF NOT EXISTS "AssetValueHistory" (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  asset_id BIGINT NOT NULL REFERENCES "Assets"(asset_id),
+  value NUMERIC(18,2) NOT NULL,
+  recorded_at TIMESTAMP NOT NULL DEFAULT now(),
+  source TEXT DEFAULT 'system',
+  adjusted_by BIGINT REFERENCES "Users"(user_id),
+  adjustment_reason TEXT
 );
-CREATE INDEX IF NOT EXISTS idx_avh_asset_time ON asset_value_history(asset_id, recorded_at);
+CREATE INDEX IF NOT EXISTS idx_avh_asset_time ON "AssetValueHistory"(asset_id, recorded_at);
 
 
 -- Create useful indexes for performance

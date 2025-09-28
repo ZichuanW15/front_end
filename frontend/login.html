@@ -44,12 +44,12 @@ async function login(){
     });
     const data = await r.json().catch(()=>({}));
     if(r.ok && data.status === 'success'){
-      // 登录成功 → 进入仪表板
+      // Login successful → redirect to dashboard
       setMsg('Login successful, redirecting...', true);
-      // 可把简单用户信息存起来用于欢迎文案
+      // Store simple user info for welcome message
       sessionStorage.setItem('user', JSON.stringify(data.user || {}));
       sessionStorage.setItem('sessionToken', data.session?.session_token || '');
-      location.href = 'dashboard.html'; // 目标页
+      location.href = 'dashboard.html'; // Target page
     }else{
       setMsg(data.message || data.error || `Login failed (${r.status})`, false);
     }

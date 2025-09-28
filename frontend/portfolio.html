@@ -216,7 +216,7 @@
         updatePerformanceAnalysis();
       } catch (error) {
         console.error('Error fetching portfolio data:', error);
-        showError('加载投资组合数据失败，请稍后重试');
+        showError('Failed to load portfolio data, please try again later');
       }
     }
 
@@ -262,11 +262,11 @@
 
     function getAssetCategory(asset) {
       const name = asset.asset_name.toLowerCase();
-      if (name.includes('房产') || name.includes('地产')) return '房地产';
-      if (name.includes('股票') || name.includes('股份')) return '股票';
-      if (name.includes('黄金') || name.includes('石油')) return '商品';
-      if (name.includes('比特币') || name.includes('以太坊')) return '加密货币';
-      return '其他';
+      if (name.includes('房产') || name.includes('地产') || name.includes('real estate') || name.includes('property')) return 'Real Estate';
+      if (name.includes('股票') || name.includes('股份') || name.includes('stock') || name.includes('equity')) return 'Stocks';
+      if (name.includes('黄金') || name.includes('石油') || name.includes('商品') || name.includes('gold') || name.includes('oil') || name.includes('commodity')) return 'Commodities';
+      if (name.includes('比特币') || name.includes('以太坊') || name.includes('加密货币') || name.includes('bitcoin') || name.includes('crypto')) return 'Cryptocurrency';
+      return 'Other';
     }
 
     function updatePortfolioSummary() {
@@ -291,7 +291,7 @@
       document.getElementById('totalGainPercent').textContent = `${totalGainPercent > 0 ? '+' : ''}${totalGainPercent.toFixed(2)}%`;
       document.getElementById('totalGainPercent').className = totalGainPercent > 0 ? 'text-success' : 'text-error';
       
-      document.getElementById('portfolioChange').textContent = `${dailyChange > 0 ? '+' : ''}${(dailyChange * 100).toFixed(2)}% 今日`;
+      document.getElementById('portfolioChange').textContent = `${dailyChange > 0 ? '+' : ''}${(dailyChange * 100).toFixed(2)}% Today`;
       document.getElementById('portfolioChange').className = dailyChange > 0 ? 'text-success' : 'text-error';
     }
 
@@ -351,7 +351,7 @@
       const container = document.getElementById('holdingsTable');
       
       if (portfolioData.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center">暂无持有资产</p>';
+        container.innerHTML = '<p class="text-muted text-center">No assets held</p>';
         return;
       }
       
@@ -359,14 +359,14 @@
         <table>
           <thead>
             <tr>
-              <th>资产名称</th>
-              <th>持有单位</th>
-              <th>当前价格</th>
-              <th>当前价值</th>
-              <th>成本基础</th>
-              <th>收益/亏损</th>
-              <th>收益率</th>
-              <th>操作</th>
+              <th>Asset Name</th>
+              <th>Units Held</th>
+              <th>Current Price</th>
+              <th>Current Value</th>
+              <th>Cost Basis</th>
+              <th>Gain/Loss</th>
+              <th>Return %</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -387,7 +387,7 @@
                   ${item.gain_percent > 0 ? '+' : ''}${item.gain_percent.toFixed(2)}%
                 </td>
                 <td>
-                  <button onclick="event.stopPropagation(); quickSell(${item.asset_id})" class="small danger">卖出</button>
+                  <button onclick="event.stopPropagation(); quickSell(${item.asset_id})" class="small danger">Sell</button>
                 </td>
               </tr>
             `).join('')}
@@ -400,7 +400,7 @@
       const container = document.getElementById('recentTransactions');
       
       if (transactions.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center">暂无交易记录</p>';
+        container.innerHTML = '<p class="text-muted text-center">No transaction records</p>';
         return;
       }
       
@@ -409,17 +409,17 @@
         return `
           <div class="row" style="padding: 12px; border-bottom: 1px solid var(--border);">
             <div class="col">
-              <div style="font-weight: 500;">${asset ? asset.asset_name : '未知资产'}</div>
+              <div style="font-weight: 500;">${asset ? asset.asset_name : 'Unknown Asset'}</div>
               <div class="text-muted" style="font-size: 12px;">${new Date(tx.transaction_at).toLocaleString()}</div>
             </div>
             <div class="col text-center">
               <span class="badge ${tx.transaction_type === 'buy' ? 'success' : 'error'}">
-                ${tx.transaction_type === 'buy' ? '买入' : '卖出'}
+                ${tx.transaction_type === 'buy' ? 'Buy' : 'Sell'}
               </span>
             </div>
             <div class="col text-right">
               <div class="${tx.unit_moved > 0 ? 'text-success' : 'text-error'}">
-                ${tx.unit_moved > 0 ? '+' : ''}${tx.unit_moved} 单位
+                ${tx.unit_moved > 0 ? '+' : ''}${tx.unit_moved} Units
               </div>
             </div>
           </div>
@@ -496,35 +496,35 @@
       document.getElementById('modalAssetContent').innerHTML = `
         <div class="row" style="margin-bottom: 20px;">
           <div class="col">
-            <div class="text-muted">持有单位</div>
+            <div class="text-muted">Units Held</div>
             <div style="font-size: 24px; font-weight: bold;">${asset.units.toLocaleString()}</div>
           </div>
           <div class="col">
-            <div class="text-muted">当前价格</div>
+            <div class="text-muted">Current Price</div>
             <div style="font-size: 24px; font-weight: bold; color: var(--accent);">¥${asset.current_price.toFixed(2)}</div>
           </div>
         </div>
         
         <div class="row" style="margin-bottom: 20px;">
           <div class="col">
-            <div class="text-muted">当前价值</div>
+            <div class="text-muted">Current Value</div>
             <div style="font-size: 20px; font-weight: bold;">¥${asset.current_value.toLocaleString()}</div>
           </div>
           <div class="col">
-            <div class="text-muted">成本基础</div>
+            <div class="text-muted">Cost Basis</div>
             <div style="font-size: 20px; font-weight: bold;">¥${asset.cost_basis.toLocaleString()}</div>
           </div>
         </div>
         
         <div class="row" style="margin-bottom: 20px;">
           <div class="col">
-            <div class="text-muted">收益/亏损</div>
+            <div class="text-muted">Gain/Loss</div>
             <div style="font-size: 20px; font-weight: bold;" class="${asset.gain > 0 ? 'text-success' : 'text-error'}">
               ${asset.gain > 0 ? '+' : ''}¥${asset.gain.toFixed(2)}
             </div>
           </div>
           <div class="col">
-            <div class="text-muted">收益率</div>
+            <div class="text-muted">Return %</div>
             <div style="font-size: 20px; font-weight: bold;" class="${asset.gain_percent > 0 ? 'text-success' : 'text-error'}">
               ${asset.gain_percent > 0 ? '+' : ''}${asset.gain_percent.toFixed(2)}%
             </div>
@@ -532,7 +532,7 @@
         </div>
         
         <div>
-          <div class="text-muted">资产类别</div>
+          <div class="text-muted">Asset Category</div>
           <div><span class="badge info">${asset.category}</span></div>
         </div>
       `;
@@ -564,12 +564,12 @@
     }
 
     function rebalancePortfolio() {
-      showMessage('重新平衡功能开发中...', false);
+      showMessage('Rebalancing feature under development...', false);
     }
 
     function exportPortfolio() {
       const csv = [
-        '资产名称,持有单位,当前价格,当前价值,成本基础,收益,收益率',
+        'Asset Name,Units Held,Current Price,Current Value,Cost Basis,Gain,Return %',
         ...portfolioData.map(item => 
           `${item.asset_name},${item.units},${item.current_price.toFixed(2)},${item.current_value.toFixed(2)},${item.cost_basis.toFixed(2)},${item.gain.toFixed(2)},${item.gain_percent.toFixed(2)}%`
         )

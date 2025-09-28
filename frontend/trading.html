@@ -166,36 +166,36 @@
   <!-- Create Order Modal -->
   <div id="createOrderModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 500px; max-width: 90vw;">
-      <h3>创建交易订单</h3>
+      <h3>Create Trading Order</h3>
       <form id="createOrderForm">
-        <label>交易类型</label>
+        <label>Transaction Type</label>
         <select id="orderType" onchange="updateOrderForm()">
-          <option value="buy">买入</option>
-          <option value="sell">卖出</option>
+          <option value="buy">Buy</option>
+          <option value="sell">Sell</option>
         </select>
         
-        <label>选择资产</label>
+        <label>Select Asset</label>
         <select id="orderAssetSelect">
-          <option value="">请选择资产</option>
+          <option value="">Please select an asset</option>
         </select>
         
-        <label>单位数量</label>
+        <label>Units</label>
         <input type="number" id="orderUnits" min="1" required>
         
-        <label>价格类型</label>
+        <label>Price Type</label>
         <select id="priceType" onchange="updatePriceInput()">
-          <option value="market">市价单</option>
-          <option value="limit">限价单</option>
+          <option value="market">Market Order</option>
+          <option value="limit">Limit Order</option>
         </select>
         
         <div id="limitPriceDiv" style="display: none;">
-          <label>限价 (¥)</label>
+          <label>Limit Price (¥)</label>
           <input type="number" id="limitPrice" min="0" step="0.01">
         </div>
         
         <div class="row" style="margin-top: 20px;">
-          <button type="button" onclick="hideCreateOrderModal()" class="col">取消</button>
-          <button type="submit" class="primary col">创建订单</button>
+          <button type="button" onclick="hideCreateOrderModal()" class="col">Cancel</button>
+          <button type="submit" class="primary col">Create Order</button>
         </div>
       </form>
     </div>
@@ -234,7 +234,7 @@
         updateOrdersTable();
       } catch (error) {
         console.error('Error fetching trading data:', error);
-        showError('加载数据失败，请稍后重试');
+        showError('Failed to load data, please try again later');
       }
     }
 
@@ -242,7 +242,7 @@
       const container = document.getElementById('marketTable');
       
       if (!assets || assets.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center">暂无资产数据</p>';
+        container.innerHTML = '<p class="text-muted text-center">No asset data available</p>';
         return;
       }
       
@@ -250,12 +250,12 @@
         <table>
           <thead>
             <tr>
-              <th>资产名称</th>
-              <th>当前价格</th>
-              <th>涨跌幅</th>
-              <th>可用单位</th>
-              <th>总价值</th>
-              <th>操作</th>
+              <th>Asset Name</th>
+              <th>Current Price</th>
+              <th>Change %</th>
+              <th>Available Units</th>
+              <th>Total Value</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -273,8 +273,8 @@
                   <td>${asset.total_unit}</td>
                   <td>¥${parseFloat(asset.total_value).toLocaleString()}</td>
                   <td>
-                    <button onclick="quickBuy(${asset.asset_id})" class="small success">买入</button>
-                    <button onclick="quickSell(${asset.asset_id})" class="small danger">卖出</button>
+                    <button onclick="quickBuy(${asset.asset_id})" class="small success">Buy</button>
+                    <button onclick="quickSell(${asset.asset_id})" class="small danger">Sell</button>
                   </td>
                 </tr>
               `;
@@ -286,19 +286,19 @@
 
     function updateBuyForm() {
       const select = document.getElementById('buyAssetSelect');
-      select.innerHTML = '<option value="">请选择要买入的资产</option>';
+      select.innerHTML = '<option value="">Please select an asset to buy</option>';
       
       assets.forEach(asset => {
         const option = document.createElement('option');
         option.value = asset.asset_id;
-        option.textContent = `${asset.asset_name} - ¥${(parseFloat(asset.total_value) / parseInt(asset.total_unit)).toFixed(2)}/单位`;
+        option.textContent = `${asset.asset_name} - ¥${(parseFloat(asset.total_value) / parseInt(asset.total_unit)).toFixed(2)}/unit`;
         select.appendChild(option);
       });
     }
 
     function updateSellForm() {
       const select = document.getElementById('sellAssetSelect');
-      select.innerHTML = '<option value="">请选择要卖出的资产</option>';
+      select.innerHTML = '<option value="">Please select an asset to sell</option>';
       
       // Group holdings by asset
       const holdingsByAsset = {};
@@ -314,7 +314,7 @@
         if (asset) {
           const option = document.createElement('option');
           option.value = assetId;
-          option.textContent = `${asset.asset_name} - 持有 ${holdingsByAsset[assetId]} 单位`;
+          option.textContent = `${asset.asset_name} - Hold ${holdingsByAsset[assetId]} units`;
           select.appendChild(option);
         }
       });
@@ -324,7 +324,7 @@
       const container = document.getElementById('ordersTable');
       
       if (!orders || orders.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center">暂无订单数据</p>';
+        container.innerHTML = '<p class="text-muted text-center">No order data available</p>';
         return;
       }
       
@@ -332,14 +332,14 @@
         <table>
           <thead>
             <tr>
-              <th>订单ID</th>
-              <th>资产</th>
-              <th>类型</th>
-              <th>单位数</th>
-              <th>价格</th>
-              <th>状态</th>
-              <th>时间</th>
-              <th>操作</th>
+              <th>Order ID</th>
+              <th>Asset</th>
+              <th>Type</th>
+              <th>Units</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Time</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -348,14 +348,14 @@
               return `
                 <tr>
                   <td>${order.transaction_id}</td>
-                  <td>${asset ? asset.asset_name : '未知资产'}</td>
-                  <td><span class="badge ${order.transaction_type === 'buy' ? 'success' : 'error'}">${order.transaction_type || '交易'}</span></td>
+                  <td>${asset ? asset.asset_name : 'Unknown Asset'}</td>
+                  <td><span class="badge ${order.transaction_type === 'buy' ? 'success' : 'error'}">${order.transaction_type || 'Trade'}</span></td>
                   <td>${order.unit_moved}</td>
                   <td>¥${(Math.random() * 1000).toFixed(2)}</td>
-                  <td><span class="badge success">已完成</span></td>
+                  <td><span class="badge success">Completed</span></td>
                   <td>${new Date(order.transaction_at).toLocaleString()}</td>
                   <td>
-                    <button onclick="viewOrder(${order.transaction_id})" class="small">查看</button>
+                    <button onclick="viewOrder(${order.transaction_id})" class="small">View</button>
                   </td>
                 </tr>
               `;
@@ -446,7 +446,7 @@
       const units = parseInt(document.getElementById('buyUnits').value);
       
       if (!assetId || !units) {
-        showMessage('请填写完整的买入信息', false);
+        showMessage('Please fill in complete buy information', false);
         return;
       }
       
@@ -464,14 +464,14 @@
         });
         
         if (response.ok) {
-          showMessage('买入订单创建成功', true);
+          showMessage('Buy order created successfully', true);
           refreshData();
         } else {
           const error = await response.json();
-          showMessage(error.error || '买入失败', false);
+          showMessage(error.error || 'Buy failed', false);
         }
       } catch (error) {
-        showMessage('网络错误，请稍后重试', false);
+        showMessage('Network error, please try again later', false);
       }
     }
 
@@ -480,7 +480,7 @@
       const units = parseInt(document.getElementById('sellUnits').value);
       
       if (!assetId || !units) {
-        showMessage('请填写完整的卖出信息', false);
+        showMessage('Please fill in complete sell information', false);
         return;
       }
       
@@ -498,21 +498,21 @@
         });
         
         if (response.ok) {
-          showMessage('卖出订单创建成功', true);
+          showMessage('Sell order created successfully', true);
           refreshData();
         } else {
           const error = await response.json();
-          showMessage(error.error || '卖出失败', false);
+          showMessage(error.error || 'Sell failed', false);
         }
       } catch (error) {
-        showMessage('网络错误，请稍后重试', false);
+        showMessage('Network error, please try again later', false);
       }
     }
 
     function showCreateOrderModal() {
       // Populate asset select
       const select = document.getElementById('orderAssetSelect');
-      select.innerHTML = '<option value="">请选择资产</option>';
+      select.innerHTML = '<option value="">Please select an asset</option>';
       assets.forEach(asset => {
         const option = document.createElement('option');
         option.value = asset.asset_id;

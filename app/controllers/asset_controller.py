@@ -5,6 +5,8 @@ Asset controller for handling asset-related requests.
 from flask import request
 from app.services.asset_service import AssetService
 from app.views.asset_view import AssetView
+from datetime import datetime
+from app.services.asset_value_service import AssetValueService
 
 
 class AssetController:
@@ -13,6 +15,7 @@ class AssetController:
     def __init__(self):
         self.asset_service = AssetService()
         self.asset_view = AssetView()
+        self.asset_value_service = AssetValueService()
     
     def create_asset(self):
         """
@@ -123,5 +126,51 @@ class AssetController:
         try:
             fractions = self.asset_service.get_asset_fractions(asset_id)
             return self.asset_view.render_asset_fractions(fractions)
+        except Exception as e:
+            return self.asset_view.render_error(str(e), 500)
+        
+    # Get the history of an asset
+    def get_asset_values(self, asset_id):
+        try:
+            p_from = request.args.get("from")
+            p_to   = request.args.get("to")
+            parse  = lambda s: datetime.fromisoformat(s) if s else None
+
+            items = self.asset_value_service.list_history(
+                asset_id, parse(p_from), parse(p_to)
+            )
+            return self.asset_view.render_value_history(items, asset_id)
+        except Exception as e:
+            return self.asset_view.render_error(str(e), 500)
+    
+    # Administrators can manually adjust asset values
+    def adjust_asset_value(self, asset_id):
+        try:
+            data = request.get_json()
+            if not data:
+                return self.asset_view.render_error("No JSON data provided", 400)
+            try:
+                value = float(data.get("value"))
+            except (TypeError, ValueError):
+                return self.asset_view.render_error("value must be a number", 400)
+
+            adjusted_by = data.get("adjusted_by")
+            if not adjusted_by:
+                return self.asset_view.render_error("adjusted_by is required for now", 400)
+
+            recorded_at = data.get("recorded_at")
+            recorded_at = datetime.fromisoformat(recorded_at) if recorded_at else None
+            reason = data.get("reason") or "manual adjust"
+
+            row = self.asset_value_service.add_adjustment(
+                asset_id=asset_id,
+                value=value,
+                adjusted_by=adjusted_by,
+                reason=reason,
+                recorded_at=recorded_at,
+            )
+            return self.asset_view.render_adjustment_created(row)
+        except PermissionError as e:
+            return self.asset_view.render_error(str(e), 403)
         except Exception as e:
             return self.asset_view.render_error(str(e), 500)

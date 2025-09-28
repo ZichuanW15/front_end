@@ -115,3 +115,16 @@ class AssetView:
             'message': error_message,
             'status_code': status_code
         }), status_code
+    
+    # New methods for asset value history
+    def render_value_history(self, items, asset_id):
+        return jsonify({
+            "asset_id": asset_id,
+            "count": len(items),
+            "items": [it.to_dict() for it in items],
+            "status": "success",
+        })
+    # New method to render adjustment creation response
+    def render_adjustment_created(self, row):
+        data = row.to_dict()
+        return jsonify({"status": "created", "item": data}), 201

@@ -3,7 +3,7 @@ SQLAlchemy models for the API backbone.
 These models match the provided PostgreSQL schema.
 """
 
-from sqlalchemy import Column, Integer, Text, String, Boolean, DateTime, ForeignKey, BigInteger
+from sqlalchemy import Column, Integer, Text, String, Boolean, DateTime, ForeignKey, BigInteger, Numeric
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app import db
@@ -131,3 +131,32 @@ class Transaction(Base):
     
     def __repr__(self):
         return f'<Transaction {self.transaction_id}>'
+
+
+
+# adding new model for asset value history
+class AssetValueHistory(Base):
+    __tablename__ = 'asset_value_history'
+
+    id          = Column(BigInteger, primary_key=True, autoincrement=True)
+    asset_id    = Column(BigInteger, ForeignKey('Assets.asset_id'), nullable=False)
+    value       = Column(Numeric(18, 2), nullable=False)
+    recorded_at = Column(DateTime, nullable=False)
+    source      = Column(Text, default='system')
+    adjusted_by = Column(BigInteger, ForeignKey('Users.user_id'))
+    adjustment_reason = Column(Text)
+
+    # 
+    asset     = relationship('Asset', backref='value_history')
+    adjuster  = relationship('User', foreign_keys=[adjusted_by])
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'asset_id': self.asset_id,
+            'value': float(self.value),
+            'recorded_at': self.recorded_at.isoformat() if self.recorded_at else None,
+            'source': self.source,
+            'adjusted_by': self.adjusted_by,
+            'reason': self.adjustment_reason,
+        }

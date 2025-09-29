@@ -28,6 +28,7 @@ class User(Base):
     fractions = relationship('Fraction', backref='owner')
     transactions_from = relationship('Transaction', foreign_keys='Transaction.from_owner_id', backref='from_owner')
     transactions_to = relationship('Transaction', foreign_keys='Transaction.to_owner_id', backref='to_owner')
+    offers = relationship('Offer', backref='user')
     
     def to_dict(self):
         return {
@@ -89,6 +90,7 @@ class Fraction(Base):
     # Relationships
     parent_fraction = relationship('Fraction', remote_side='Fraction.fraction_id', backref='child_fractions')
     transactions = relationship('Transaction', backref='fraction')
+    offers = relationship('Offer', backref='fraction')
     
     def to_dict(self):
         return {
@@ -104,6 +106,32 @@ class Fraction(Base):
     
     def __repr__(self):
         return f'<Fraction {self.fraction_id}>'
+    
+class Offer(Base):
+    """Offer model for buying/selling fractions."""
+    __tablename__ = 'Offers'
+    
+    offer_id = Column(BigInteger, primary_key=True, autoincrement=True)
+    asset_id = Column(BigInteger, ForeignKey('Assets.asset_id'), nullable=False)
+    fraction_id = Column(BigInteger, ForeignKey('Fractions.fraction_id'))
+    user_id = Column(BigInteger, ForeignKey('Users.user_id'), nullable=False)
+    is_buyer = Column(Boolean, nullable=False)
+    units = Column(BigInteger, nullable=False)
+    create_at = Column(DateTime, nullable=False)
+    
+    def to_dict(self):
+        return {
+            'offer_id': self.offer_id,
+            'asset_id': self.asset_id,
+            'fraction_id': self.fraction_id,
+            'user_id': self.user_id,
+            'is_buyer': self.is_buyer,
+            'units': self.units,
+            'create_at': self.create_at.isoformat() if self.create_at else None
+        }
+    
+    def __repr__(self):
+        return f'<Offer {self.offer_id}>'
 
 
 class Transaction(Base):
@@ -117,6 +145,9 @@ class Transaction(Base):
     transaction_at = Column(DateTime, nullable=False)
     from_owner_id = Column(BigInteger, ForeignKey('Users.user_id'), nullable=False)
     to_owner_id = Column(BigInteger, ForeignKey('Users.user_id'), nullable=False)
+    offer_id = Column(BigInteger, ForeignKey('Offers.offer_id'), nullable=False)
+    
+    offer = relationship('Offer', backref='transactions')
     
     def to_dict(self):
         return {

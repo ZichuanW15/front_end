@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Panel - Asset Trading Platform</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    .user-selection-item:hover {
+      background-color: var(--background) !important;
+    }
+    .user-selection-item.selected {
+      background-color: var(--accent-light) !important;
+      border-left: 4px solid var(--accent) !important;
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="container">
+      <div class="nav-content">
+        <h1>Admin Panel</h1>
+        <div class="nav-links">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="browsing.html">Browse Assets</a>
+          <a href="trading.html">Trading</a>
+          <a href="portfolio.html">My Assets</a>
+          <a href="valuehistory.html">Value History</a>
+          <a href="profile.html">Profile</a>
+          <a href="admin.html" class="active">Admin</a>
+          <button onclick="logout()" class="small">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <h2>Asset Management</h2>
+        <p class="text-muted">Create assets, assign initial fractions, and manage asset values</p>
+      </div>
+      <div class="row">
+        <button onclick="refreshData()" class="small">Refresh Data</button>
+        <button onclick="showAddAssetModal()" class="primary small">Add Asset</button>
+      </div>
+    </div>
+
+
+    <!-- Main Content -->
+      <div class="card">
+
+
+      <!-- Assets List -->
+      <div>
+        <div class="row" style="justify-content: space-between; margin-bottom: 20px;">
+          <h3>Asset List</h3>
+          <button onclick="showAssetModifyModal()" class="primary small">Asset Modify</button>
+        </div>
+        <div id="assetsTable">
+          <div class="text-muted text-center" style="padding: 40px;">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+          </div>
+        </div>
+      </div>
+
+
+        </div>
+      </div>
+
+
+  <!-- Add Asset Modal -->
+  <div id="addAssetModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 600px; max-width: 90vw; max-height: 90vh; overflow-y: auto;">
+      <h3>Create New Asset with Initial Fraction</h3>
+      <p class="text-muted" style="margin-bottom: 20px;">This will create an asset and assign the initial fraction to an admin user.</p>
+      
+      <form id="addAssetForm">
+          <div class="row">
+          <div class="col">
+            <label>Asset Name</label>
+            <input type="text" id="newAssetName" required placeholder="Enter asset name">
+          </div>
+          <div class="col">
+            <label>Total Value (¥)</label>
+            <input type="number" id="newAssetTotalValue" required min="0" step="0.01" placeholder="0.00">
+        </div>
+      </div>
+
+        <label>Asset Description</label>
+        <textarea id="newAssetDescription" rows="2" placeholder="Optional description"></textarea>
+        
+          <div class="row">
+            <div class="col">
+            <label>Total Units (Available Fractions)</label>
+            <input type="number" id="newAssetTotalUnits" required min="1" placeholder="Maximum number of fractions">
+            </div>
+            <div class="col">
+            <label>Initial Fraction Owner</label>
+            <div class="row" style="align-items: center; gap: 10px;">
+              <select id="newAssetOwner" required style="flex: 1;">
+                <option value="">Select user</option>
+              </select>
+              <button type="button" onclick="showUserSelectionModal()" class="small" style="white-space: nowrap;">Browse Users</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col">
+            <label>Minimum Units per Fraction</label>
+            <input type="number" id="newAssetMinUnits" required min="1" placeholder="1">
+          </div>
+          <div class="col">
+            <label>Maximum Units per Fraction</label>
+            <input type="number" id="newAssetMaxUnits" required min="1" placeholder="100">
+        </div>
+      </div>
+        
+        <div class="card" style="background: var(--background); margin: 15px 0; padding: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--accent);">Initial Fraction Details</h4>
+          <p class="text-muted" style="margin: 0; font-size: 14px;">
+            The initial fraction will be created with all available units and assigned to the selected admin user.
+            Value per unit will be calculated as: Total Value ÷ Total Units
+          </p>
+        </div>
+        
+        <div class="row" style="margin-top: 20px;">
+          <button type="button" onclick="hideAddAssetModal()" class="col">Cancel</button>
+          <button type="submit" class="primary col">Create Asset & Fraction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- User Selection Modal -->
+  <div id="userSelectionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 700px; max-width: 90vw; max-height: 80vh; overflow-y: auto;">
+      <h3>Select User for Initial Fraction</h3>
+      <p class="text-muted" style="margin-bottom: 20px;">Choose which user will own the initial fraction of this asset.</p>
+      
+      <!-- Search and Filter -->
+      <div class="row" style="margin-bottom: 20px;">
+        <div class="col">
+          <label>Search Users</label>
+          <input type="text" id="userSearchInput" placeholder="Search by name or email..." onkeyup="filterUsers()">
+        </div>
+        <div class="col">
+          <label>Filter by Role</label>
+          <select id="userRoleFilter" onchange="filterUsers()">
+            <option value="">All Users</option>
+            <option value="admin">Admin Users</option>
+            <option value="user">Regular Users</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- User List -->
+      <div id="userSelectionList" style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+        <div class="text-muted text-center" style="padding: 40px;">
+          <div class="spinner"></div>
+          <p>Loading users...</p>
+        </div>
+      </div>
+        
+        <div class="row" style="margin-top: 20px;">
+        <button type="button" onclick="hideUserSelectionModal()" class="col">Cancel</button>
+        <button type="button" onclick="confirmUserSelection()" class="primary col" id="confirmUserBtn" disabled>Select User</button>
+        </div>
+    </div>
+  </div>
+
+
+  <!-- Asset Modify Selection Modal -->
+  <div id="assetModifyModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 14px; width: 600px; max-width: 90vw;">
+      <h3>Modify Asset Value</h3>
+      <p class="text-muted" style="margin-bottom: 20px;">Select an asset to modify its total value.</p>
+      
+      
+      <form id="assetModifyForm">
+        <label>Select Asset to Modify</label>
+        <select id="assetModifySelect" required onchange="updateModifyAssetInfo()">
+          <option value="">Choose an asset to modify</option>
+        </select>
+        
+        <div id="modifyAssetInfo" style="display: none; background: var(--background); padding: 15px; border-radius: 8px; margin: 15px 0;">
+          <h4 style="margin: 0 0 10px 0; color: var(--accent);">Asset Information</h4>
+          <p style="margin: 0;"><strong>Asset Name:</strong> <span id="modifyAssetName">-</span></p>
+          <p style="margin: 0;"><strong>Current Value:</strong> <span id="modifyCurrentValue">-</span></p>
+          <p style="margin: 0;"><strong>Total Units:</strong> <span id="modifyTotalUnits">-</span></p>
+        </div>
+        
+        <label>New Total Value (¥) <span style="color: red;">*</span></label>
+        <input type="number" id="modifyNewValue" required min="0" step="0.01" placeholder="Enter new total value" style="border: 2px solid #ddd; padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box;" oninput="validateNewValue(this)">
+        <small style="color: #666; font-size: 12px;">Enter the NEW total value for this asset (not the current value).</small>
+        <div id="newValueError" style="color: red; font-size: 12px; margin-top: 5px; display: none;"></div>
+        
+        <label>Modification Reason <span style="color: red;">*</span></label>
+        <textarea id="modifyReason" rows="3" placeholder="Explain why you're modifying this asset value (e.g., market conditions, revaluation, etc.)" required style="border: 2px solid #ddd; padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box;" oninput="validateReason(this)"></textarea>
+        <small style="color: #666; font-size: 12px;">This field is required. Please provide a reason for the modification.</small>
+        <div id="reasonError" style="color: red; font-size: 12px; margin-top: 5px; display: none;"></div>
+        
+        <div class="card" style="background: var(--background); margin: 15px 0; padding: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: var(--accent);">Important</h4>
+          <p class="text-muted" style="margin: 0; font-size: 14px;">
+            This modification will update the total value of the asset. All existing fractions will maintain their unit counts but their values will be recalculated based on the new total value.
+          </p>
+        </div>
+        
+        <div class="row" style="margin-top: 20px;">
+          <button type="button" onclick="hideAssetModifyModal()" class="col">Cancel</button>
+          <button type="submit" class="primary col">Update Asset Value</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:5001'; // Backend API server
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    
+    // Check if user is manager
+    if (!user.is_manager) {
+      alert('You do not have admin privileges');
+      location.href = 'dashboard.html';
+    }
+
+    async function fetchAdminData() {
+      try {
+        console.log('Fetching admin data...');
+        
+        // Fetch users (needed for user selection in asset creation)
+        const usersRes = await fetch(`${API}/users`);
+        console.log('Users response status:', usersRes.status);
+        const usersData = await usersRes.json();
+        console.log('Users data:', usersData);
+        
+        // Fetch assets
+        const assetsRes = await fetch(`${API}/assets`);
+        console.log('Assets response status:', assetsRes.status);
+        const assetsData = await assetsRes.json();
+        console.log('Assets data:', assetsData);
+        
+        // Extract the actual data from the API response
+        const users = usersData.users || [];
+        const assets = assetsData.assets || [];
+        
+        console.log('Extracted users:', users.length);
+        console.log('Extracted assets:', assets.length);
+        
+        // Store data globally for use in other functions
+        window.adminData = { users, assets };
+        
+        updateAssetsTable(assets);
+      } catch (error) {
+        console.error('Error fetching admin data:', error);
+        showError('Failed to load data, please try again later');
+      }
+    }
+
+
+
+    function updateAssetsTable(assets) {
+      const container = document.getElementById('assetsTable');
+      
+      if (!assets || assets.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">No asset data available</p>';
+        return;
+      }
+      
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Asset Name</th>
+              <th>Total Units</th>
+              <th>Total Value</th>
+              <th>Created At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${assets.map(a => `
+              <tr>
+                <td>${a.asset_id}</td>
+                <td>${a.asset_name}</td>
+                <td>${a.total_unit}</td>
+                <td>¥${parseFloat(a.total_value).toLocaleString()}</td>
+                <td>${new Date(a.created_at).toLocaleDateString()}</td>
+                <td>
+                  <span class="text-muted">View only</span>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+
+
+      
+    function populateAllUsers() {
+      const ownerSelect = document.getElementById('newAssetOwner');
+      if (!ownerSelect || !window.adminData || !window.adminData.users) {
+        return;
+      }
+      
+      ownerSelect.innerHTML = '<option value="">Select user</option>';
+      
+      // Show all users (not just admins)
+      window.adminData.users.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.user_id;
+        option.textContent = `${user.user_name} (${user.email}) ${user.is_manager ? '[Admin]' : ''}`;
+        ownerSelect.appendChild(option);
+      });
+      
+      // If no users found, show warning
+      if (window.adminData.users.length === 0) {
+        ownerSelect.innerHTML = '<option value="">No users found</option>';
+        showMessage('Warning: No users found. Please create users first.', false);
+      }
+    }
+
+    // User Selection Modal Functions
+    let selectedUserId = null;
+    let allUsers = [];
+
+    function showUserSelectionModal() {
+      const modal = document.getElementById('userSelectionModal');
+      const userList = document.getElementById('userSelectionList');
+      
+      // Reset selection
+      selectedUserId = null;
+      document.getElementById('confirmUserBtn').disabled = true;
+      document.getElementById('userSearchInput').value = '';
+      document.getElementById('userRoleFilter').value = '';
+      
+      // Load users if not already loaded
+      if (!window.adminData || !window.adminData.users) {
+        userList.innerHTML = '<div class="text-muted text-center" style="padding: 40px;"><div class="spinner"></div><p>Loading users...</p></div>';
+        fetchAdminData().then(() => {
+          displayUserSelection();
+        });
+      } else {
+        displayUserSelection();
+      }
+      
+      modal.style.display = 'block';
+    }
+
+    function hideUserSelectionModal() {
+      document.getElementById('userSelectionModal').style.display = 'none';
+    }
+
+    function displayUserSelection() {
+      const userList = document.getElementById('userSelectionList');
+      allUsers = window.adminData.users || [];
+      
+      if (allUsers.length === 0) {
+        userList.innerHTML = '<div class="text-muted text-center" style="padding: 40px;"><p>No users found</p></div>';
+        return;
+      }
+      
+      userList.innerHTML = allUsers.map(user => `
+        <div class="user-selection-item" onclick="selectUser(${user.user_id})" style="padding: 15px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--background)'" onmouseout="this.style.backgroundColor='transparent'">
+          <div class="row" style="align-items: center;">
+            <div class="col">
+              <strong>${user.user_name}</strong>
+              <div class="text-muted" style="font-size: 14px;">${user.email}</div>
+            </div>
+            <div class="col" style="text-align: right;">
+              <span class="badge ${user.is_manager ? 'warning' : 'info'}">${user.is_manager ? 'Admin' : 'User'}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectUser(userId) {
+      // Remove previous selection
+      document.querySelectorAll('.user-selection-item').forEach(item => {
+        item.style.backgroundColor = 'transparent';
+        item.style.borderLeft = 'none';
+      });
+      
+      // Add selection to clicked item
+      const selectedItem = event.currentTarget;
+      selectedItem.style.backgroundColor = 'var(--accent-light)';
+      selectedItem.style.borderLeft = '4px solid var(--accent)';
+      
+      selectedUserId = userId;
+      document.getElementById('confirmUserBtn').disabled = false;
+    }
+
+    function confirmUserSelection() {
+      if (!selectedUserId) return;
+      
+      const selectedUser = allUsers.find(user => user.user_id === selectedUserId);
+      if (selectedUser) {
+        // Update the dropdown in the asset creation form
+        const ownerSelect = document.getElementById('newAssetOwner');
+        ownerSelect.value = selectedUserId;
+        
+        // Update the display text to show the selected user
+        const option = ownerSelect.querySelector(`option[value="${selectedUserId}"]`);
+        if (option) {
+          option.textContent = `${selectedUser.user_name} (${selectedUser.email}) ${selectedUser.is_manager ? '[Admin]' : ''}`;
+        }
+      }
+      
+      hideUserSelectionModal();
+    }
+
+    function filterUsers() {
+      const searchTerm = document.getElementById('userSearchInput').value.toLowerCase();
+      const roleFilter = document.getElementById('userRoleFilter').value;
+      
+      let filteredUsers = allUsers;
+      
+      // Apply search filter
+      if (searchTerm) {
+        filteredUsers = filteredUsers.filter(user => 
+          user.user_name.toLowerCase().includes(searchTerm) || 
+          user.email.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      // Apply role filter
+      if (roleFilter === 'admin') {
+        filteredUsers = filteredUsers.filter(user => user.is_manager);
+      } else if (roleFilter === 'user') {
+        filteredUsers = filteredUsers.filter(user => !user.is_manager);
+      }
+      
+      // Update display
+      const userList = document.getElementById('userSelectionList');
+      if (filteredUsers.length === 0) {
+        userList.innerHTML = '<div class="text-muted text-center" style="padding: 40px;"><p>No users match your criteria</p></div>';
+        return;
+      }
+      
+      userList.innerHTML = filteredUsers.map(user => `
+        <div class="user-selection-item" onclick="selectUser(${user.user_id})" style="padding: 15px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--background)'" onmouseout="this.style.backgroundColor='transparent'">
+          <div class="row" style="align-items: center;">
+            <div class="col">
+              <strong>${user.user_name}</strong>
+              <div class="text-muted" style="font-size: 14px;">${user.email}</div>
+            </div>
+            <div class="col" style="text-align: right;">
+              <span class="badge ${user.is_manager ? 'warning' : 'info'}">${user.is_manager ? 'Admin' : 'User'}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+
+    function showAddAssetModal() {
+      // Populate all users dropdown
+      populateAllUsers();
+      document.getElementById('addAssetModal').style.display = 'block';
+    }
+
+    function hideAddAssetModal() {
+      document.getElementById('addAssetModal').style.display = 'none';
+      document.getElementById('addAssetForm').reset();
+    }
+
+    // Asset Modify Modal Functions
+    function showAssetModifyModal() {
+      console.log('=== SHOW ASSET MODIFY MODAL DEBUG ===');
+      console.log('Admin data:', window.adminData);
+      console.log('Assets available:', window.adminData?.assets);
+      
+      // Populate asset select dropdown
+      const select = document.getElementById('assetModifySelect');
+      if (!select) {
+        console.error('Asset modify select element not found!');
+        showMessage('Form elements not found. Please refresh the page.', false);
+        return;
+      }
+      
+      select.innerHTML = '<option value="">Choose an asset to modify</option>';
+      
+      if (window.adminData && window.adminData.assets && window.adminData.assets.length > 0) {
+        console.log('Populating asset dropdown with', window.adminData.assets.length, 'assets');
+        window.adminData.assets.forEach(asset => {
+          const option = document.createElement('option');
+          option.value = asset.asset_id;
+          option.textContent = `${asset.asset_name} (Current: ¥${parseFloat(asset.total_value).toLocaleString()})`;
+          option.setAttribute('data-asset-data', JSON.stringify(asset));
+          select.appendChild(option);
+          console.log('Added asset option:', asset.asset_name, 'ID:', asset.asset_id);
+        });
+        } else {
+        console.warn('No assets available for modification');
+        showMessage('No assets available for modification. Please create an asset first.', false);
+          return;
+        }
+      
+      // Hide asset info initially
+      const assetInfo = document.getElementById('modifyAssetInfo');
+      if (assetInfo) {
+        assetInfo.style.display = 'none';
+      }
+      
+      // Show the modal
+      const modal = document.getElementById('assetModifyModal');
+      if (modal) {
+        modal.style.display = 'block';
+        console.log('Asset modify modal displayed');
+        } else {
+        console.error('Asset modify modal element not found!');
+        showMessage('Modal not found. Please refresh the page.', false);
+      }
+      
+      console.log('=== SHOW ASSET MODIFY MODAL DEBUG END ===');
+    }
+
+    function hideAssetModifyModal() {
+      document.getElementById('assetModifyModal').style.display = 'none';
+      document.getElementById('assetModifyForm').reset();
+      document.getElementById('modifyAssetInfo').style.display = 'none';
+    }
+
+    function validateNewValue(input) {
+      const errorDiv = document.getElementById('newValueError');
+      const value = input.value.trim();
+      
+      if (!value) {
+        errorDiv.style.display = 'none';
+        input.style.borderColor = '#ddd';
+          return;
+        }
+      
+      const numValue = parseFloat(value);
+      if (isNaN(numValue)) {
+        errorDiv.textContent = 'Please enter a valid number';
+        errorDiv.style.display = 'block';
+        input.style.borderColor = '#f44336';
+      } else if (numValue <= 0) {
+        errorDiv.textContent = 'Please enter a positive value greater than 0';
+        errorDiv.style.display = 'block';
+        input.style.borderColor = '#f44336';
+      } else {
+        errorDiv.style.display = 'none';
+        input.style.borderColor = '#4CAF50';
+      }
+    }
+
+    function validateReason(input) {
+      const errorDiv = document.getElementById('reasonError');
+      const value = input.value.trim();
+      
+      if (!value) {
+        errorDiv.textContent = 'Please provide a reason for the modification';
+        errorDiv.style.display = 'block';
+        input.style.borderColor = '#f44336';
+      } else if (value.length < 5) {
+        errorDiv.textContent = 'Please provide a more detailed reason (at least 5 characters)';
+        errorDiv.style.display = 'block';
+        input.style.borderColor = '#FF9800';
+          } else {
+        errorDiv.style.display = 'none';
+        input.style.borderColor = '#4CAF50';
+      }
+    }
+
+    function updateModifyAssetInfo() {
+      const select = document.getElementById('assetModifySelect');
+      const assetInfo = document.getElementById('modifyAssetInfo');
+      
+      if (select.value) {
+        const selectedOption = select.options[select.selectedIndex];
+        const assetData = JSON.parse(selectedOption.getAttribute('data-asset-data'));
+        
+        console.log('Updating asset info for:', assetData.asset_name, 'Current value:', assetData.total_value);
+        
+        // Update asset information display
+        document.getElementById('modifyAssetName').textContent = assetData.asset_name;
+        document.getElementById('modifyCurrentValue').textContent = `¥${parseFloat(assetData.total_value).toLocaleString()}`;
+        document.getElementById('modifyTotalUnits').textContent = assetData.total_unit;
+        
+        // Clear and set the new value input to current value as starting point
+        const newValueInput = document.getElementById('modifyNewValue');
+        newValueInput.value = ''; // Clear first
+        newValueInput.placeholder = `Current: ¥${parseFloat(assetData.total_value).toLocaleString()}`;
+        newValueInput.focus(); // Focus on the input so user can type
+        
+        // Add real-time validation
+        newValueInput.addEventListener('input', function() {
+          const currentValue = parseFloat(assetData.total_value);
+          const newValue = parseFloat(this.value);
+          
+          if (newValue && newValue !== currentValue) {
+            this.style.borderColor = '#4CAF50'; // Green for valid new value
+          } else if (newValue && newValue === currentValue) {
+            this.style.borderColor = '#FF9800'; // Orange for same as current
+          } else {
+            this.style.borderColor = '#ddd'; // Default
+          }
+        });
+        
+        // Show asset info
+        assetInfo.style.display = 'block';
+        
+        console.log('Asset info updated, new value input cleared and focused');
+        } else {
+        assetInfo.style.display = 'none';
+      }
+    }
+
+    async function modifySelectedAsset(event) {
+      event.preventDefault();
+      
+      console.log('=== ASSET MODIFY DEBUG START ===');
+      console.log('User session:', user);
+      console.log('API URL:', API);
+      
+      // Add a small delay to ensure form values are captured
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const assetIdElement = document.getElementById('assetModifySelect');
+      const newValueElement = document.getElementById('modifyNewValue');
+      const reasonElement = document.getElementById('modifyReason');
+      
+      console.log('Form elements found:', {
+        assetIdElement: !!assetIdElement,
+        newValueElement: !!newValueElement,
+        reasonElement: !!reasonElement
+      });
+      
+      if (!assetIdElement || !newValueElement || !reasonElement) {
+        showMessage('Form elements not found. Please refresh the page and try again.', false);
+        return;
+      }
+      
+      const assetId = assetIdElement.value;
+      const newValueRaw = newValueElement.value;
+      const newValue = parseFloat(newValueRaw);
+      const reason = reasonElement.value;
+      
+      // Additional debugging to see what's happening
+      console.log('Element values debug:', {
+        assetIdElementValue: assetIdElement.value,
+        newValueElementValue: newValueElement.value,
+        reasonElementValue: reasonElement.value,
+        newValueElementType: newValueElement.type,
+        newValueElementName: newValueElement.name,
+        newValueElementId: newValueElement.id,
+        reasonElementType: reasonElement.type,
+        reasonElementName: reasonElement.name,
+        reasonElementId: reasonElement.id
+      });
+      
+      console.log('Raw form values:', {
+        assetId: assetId,
+        newValueRaw: newValueRaw,
+        newValue: newValue,
+        isNaN: isNaN(newValue),
+        reason: reason
+      });
+      
+      console.log('Form values:', {
+        assetId: assetId,
+        newValue: newValue,
+        reason: reason,
+        reasonTrimmed: reason.trim(),
+        reasonLength: reason.length
+      });
+      
+      // Additional debugging for the new value field
+      console.log('New value field debugging:', {
+        newValueElement: newValueElement,
+        newValueElementValue: newValueElement.value,
+        newValueElementType: newValueElement.type,
+        newValueElementPlaceholder: newValueElement.placeholder,
+        newValueElementRequired: newValueElement.required,
+        newValueElementMin: newValueElement.min,
+        newValueElementStep: newValueElement.step
+      });
+      
+      // Additional debugging for the reason field
+      console.log('Reason field debugging:', {
+        reasonElement: reasonElement,
+        reasonElementValue: reasonElement.value,
+        reasonElementType: reasonElement.type,
+        reasonElementTagName: reasonElement.tagName,
+        reasonElementPlaceholder: reasonElement.placeholder,
+        reasonElementRequired: reasonElement.required,
+        reasonElementRows: reasonElement.rows,
+        reasonElementCols: reasonElement.cols
+      });
+      
+      if (!assetId) {
+        showMessage('Please select an asset to modify', false);
+        return;
+      }
+      
+      if (!newValueRaw || newValueRaw.trim() === '') {
+        showMessage('Please enter a new value for the asset', false);
+          return;
+        }
+      
+      if (isNaN(newValue)) {
+        showMessage('Please enter a valid number for the new value', false);
+        return;
+      }
+      
+      if (newValue <= 0) {
+        showMessage('Please enter a positive value greater than 0', false);
+        return;
+      }
+      
+      // Check if the new value is different from current value
+      const selectedOption = document.getElementById('assetModifySelect').options[document.getElementById('assetModifySelect').selectedIndex];
+      const assetData = JSON.parse(selectedOption.getAttribute('data-asset-data'));
+      const currentValue = parseFloat(assetData.total_value);
+      
+      if (newValue === currentValue) {
+        showMessage('Please enter a different value than the current value', false);
+        return;
+      }
+      
+      if (!reason || reason.trim().length === 0) {
+        showMessage('Please provide a reason for the modification', false);
+        return;
+      }
+      
+      try {
+        console.log('Starting asset modification...');
+        console.log('Asset ID:', assetId, 'New Value:', newValue, 'Reason:', reason);
+        
+        showMessage('Updating asset value...', true);
+        
+        // Test API connectivity first
+        console.log('Testing API connectivity...');
+        const testResponse = await fetch(`${API}/health`);
+        console.log('Health check response:', testResponse.status);
+        
+        // Update the asset value and record history in one call
+        console.log('Sending value adjustment request to:', `${API}/assets/${assetId}/values/adjust`);
+        const response = await fetch(`${API}/assets/${assetId}/values/adjust`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            value: newValue,
+            reason: reason,
+            adjusted_by: user.user_id
+          })
+        });
+        
+        console.log('Value adjustment response status:', response.status);
+        console.log('Value adjustment response headers:', response.headers);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Value adjustment error response:', errorText);
+          let errorMessage = 'Failed to update asset value';
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.message || errorJson.error || errorMessage;
+          } catch (e) {
+            errorMessage = errorText || errorMessage;
+          }
+          throw new Error(errorMessage);
+        }
+        
+        const adjustmentResult = await response.json();
+        console.log('Asset value adjustment success:', adjustmentResult);
+        
+        // Success!
+        console.log('Asset modification completed successfully');
+        hideAssetModifyModal();
+        refreshData();
+        showMessage(`Asset value updated successfully to ¥${newValue.toLocaleString()}`, true);
+        
+      } catch (error) {
+        console.error('Error modifying asset:', error);
+        showMessage(`Error: ${error.message}`, false);
+      }
+      
+      console.log('=== ASSET MODIFY DEBUG END ===');
+    }
+
+
+
+
+    async function addAsset(event) {
+      event.preventDefault();
+      
+      console.log('Asset creation started...');
+      
+      const assetData = {
+        asset_name: document.getElementById('newAssetName').value,
+        total_unit: parseInt(document.getElementById('newAssetTotalUnits').value),
+        unit_min: parseInt(document.getElementById('newAssetMinUnits').value),
+        unit_max: parseInt(document.getElementById('newAssetMaxUnits').value),
+        total_value: parseFloat(document.getElementById('newAssetTotalValue').value)
+      };
+      
+      const ownerId = document.getElementById('newAssetOwner').value;
+      
+      console.log('Asset data:', assetData);
+      console.log('Owner ID:', ownerId);
+      
+      if (!ownerId) {
+        showMessage('Please select a user to own the initial fraction', false);
+        return;
+      }
+      
+      // Validate form data
+      if (assetData.unit_min > assetData.unit_max) {
+        showMessage('Minimum units cannot be greater than maximum units', false);
+        return;
+      }
+      
+      if (assetData.unit_max > assetData.total_unit) {
+        showMessage('Maximum units cannot be greater than total units', false);
+        return;
+      }
+      
+      try {
+        // Step 1: Create the asset
+        showMessage('Creating asset...', true);
+        const assetResponse = await fetch(`${API}/assets`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(assetData)
+        });
+        
+        if (!assetResponse.ok) {
+          const error = await assetResponse.json();
+          throw new Error(error.message || error.error || 'Failed to create asset');
+        }
+        
+        const assetResult = await assetResponse.json();
+        const assetId = assetResult.asset.asset_id;
+        
+        // Step 2: Create the initial fraction
+        showMessage('Creating initial fraction...', true);
+        const valuePerUnit = assetData.total_value / assetData.total_unit;
+        
+        const fractionData = {
+          asset_id: assetId,
+          owner_id: parseInt(ownerId),
+          parent_fraction_id: null,
+          units: assetData.total_unit,
+          is_active: true,
+          value_perunit: Math.round(valuePerUnit * 100) / 100 // Round to 2 decimal places
+        };
+        
+        const fractionResponse = await fetch(`${API}/fractions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fractionData)
+        });
+        
+        if (!fractionResponse.ok) {
+          const error = await fractionResponse.json();
+          throw new Error(error.message || error.error || 'Failed to create initial fraction');
+        }
+        
+        
+        // Success!
+        hideAddAssetModal();
+        refreshData();
+        showMessage(`Asset "${assetData.asset_name}" created successfully with initial fraction assigned to selected user`, true);
+        
+      } catch (error) {
+        console.error('Error creating asset:', error);
+        showMessage(`Error: ${error.message}`, false);
+      }
+    }
+
+    function refreshData() {
+      fetchAdminData();
+    }
+
+    function showError(message) {
+      showMessage(message, false);
+    }
+
+    function showMessage(message, isSuccess) {
+      const msg = document.createElement('div');
+      msg.className = `msg ${isSuccess ? 'ok' : 'err'}`;
+      msg.textContent = message;
+      msg.style.position = 'fixed';
+      msg.style.top = '20px';
+      msg.style.right = '20px';
+      msg.style.zIndex = '1001';
+      document.body.appendChild(msg);
+      
+      setTimeout(() => {
+        document.body.removeChild(msg);
+      }, 3000);
+    }
+
+
+
+
+
+    async function logout() {
+      try {
+        await fetch(`${API}/auth/logout`, { method: 'POST' });
+      } catch (e) {
+        console.error('Logout error:', e);
+      }
+      sessionStorage.clear();
+      location.href = 'login.html';
+    }
+
+    // Event listeners
+    document.getElementById('addAssetForm').addEventListener('submit', addAsset);
+    document.getElementById('assetModifyForm').addEventListener('submit', modifySelectedAsset);
+
+    // Load data on page load
+    fetchAdminData();
+  </script>
+</body>
+</html>
+

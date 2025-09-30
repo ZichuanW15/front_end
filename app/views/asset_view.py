@@ -128,3 +128,21 @@ class AssetView:
     def render_adjustment_created(self, row):
         data = row.to_dict()
         return jsonify({"status": "created", "item": data}), 201
+    
+    def render_asset_with_fraction_created(self, result):
+        """
+        Render asset creation with initial fraction response.
+        
+        Args:
+            result: Dictionary containing asset, fraction, and value_history
+            
+        Returns:
+            Response: JSON response
+        """
+        return jsonify({
+            'asset': result['asset'].to_dict(),
+            'fraction': result['fraction'].to_dict(),
+            'value_history': result['value_history'].to_dict(),
+            'message': 'Asset created successfully with initial fraction and value history',
+            'status': 'success'
+        }), 201

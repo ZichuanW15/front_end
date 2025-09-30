@@ -184,6 +184,7 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     schema_file = os.path.join(script_dir, 'schema_postgres.sql')
     import_file = os.path.join(script_dir, 'import_postgres.sql')
+    fix_sequences_file = os.path.join(script_dir, 'fix_sequences.sql')
     
     # Execute schema creation
     if not execute_sql_file(database_config, schema_file, "Creating database schema"):
@@ -193,6 +194,11 @@ def main():
     # Execute data import
     if not execute_sql_file(database_config, import_file, "Importing initial data"):
         print("\n❌ Data import failed!")
+        sys.exit(1)
+    
+    # Fix sequence synchronization issues
+    if not execute_sql_file(database_config, fix_sequences_file, "Fixing sequence synchronization"):
+        print("\n❌ Sequence synchronization failed!")
         sys.exit(1)
     
     # Verify tables were created

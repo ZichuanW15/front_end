@@ -12,12 +12,12 @@ class OfferService:
     """Service class for offer operations."""
 
     '''
-    只显示is_acvtive = TRUE的offer
+    只显示is_valid = TRUE的offer
     无论buyer还是seller只能发布一个offer
     buyer可以随意发布offer seller发布offer的时候需要check是否有units
 
     update offer 必须根据id来track 调get_offers_by_user 
-    delete offer 是把is_active改为false
+    delete offer 是把is_valid改为false
     '''
 
     @staticmethod
@@ -49,7 +49,7 @@ class OfferService:
             user_id=offer_data['user_id'],
             asset_id=offer_data['asset_id'],
             is_buyer=is_buyer,
-            is_active=True
+            is_valid=True
         ).first()
         
         if existing_offer:
@@ -83,7 +83,7 @@ class OfferService:
             units=offer_data['units'],
             price_perunit=offer_data['price_perunit'],
             create_at=datetime.utcnow(),
-            is_active=True
+            is_valid=True
         )
         
         db.session.add(offer)
@@ -119,7 +119,7 @@ class OfferService:
         query = Offer.query
         
         if active_only:
-            query = query.filter_by(is_active=True)
+            query = query.filter_by(is_valid=True)
         
         pagination = query.order_by(Offer.create_at.desc()).paginate(
             page=page,
@@ -157,7 +157,7 @@ class OfferService:
         if not offer:
             return None
         
-        if not offer.is_active:
+        if not offer.is_valid:
             raise ValueError("Cannot update an inactive offer")
 
         # Update allowed fields
@@ -192,10 +192,10 @@ class OfferService:
             True if deleted, False if not found
         """
         offer = Offer.query.get(offer_id)
-        if not offer or not offer.is_active:
+        if not offer or not offer.is_valid:
             return {"success": False, "message": "Offer not found or already inactive"}
 
-        offer.is_active = False
+        offer.is_valid = False
         db.session.commit()
         return {"success": True, "message": "Offer deactivated"}
 
@@ -214,7 +214,7 @@ class OfferService:
         query = Offer.query.filter_by(user_id=user_id)
         
         if active_only:
-            query = query.filter_by(is_active=True)
+            query = query.filter_by(is_valid=True)
         
         return query.order_by(Offer.create_at.desc()).all()
 
@@ -234,7 +234,7 @@ class OfferService:
         query = Offer.query.filter_by(asset_id=asset_id)
         
         if active_only:
-            query = query.filter_by(is_active=True)
+            query = query.filter_by(is_valid=True)
         
         if is_buyer is not None:
             query = query.filter_by(is_buyer=is_buyer)

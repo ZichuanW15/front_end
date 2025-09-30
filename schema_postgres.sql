@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS "Offers" (
     units BIGINT NOT NULL,
     create_at TIMESTAMP NOT NULL DEFAULT now(),
     price_perunit NUMERIC(18,2) NOT NULL
-    is_deleted BOOLEAN NOT NULL DEFAULT TRUE
+    is_valid BOOLEAN NOT NULL DEFAULT TRUE
 );
 -- Indexes for Offers table
 CREATE INDEX idx_offers_asset ON "Offers"(asset_id);

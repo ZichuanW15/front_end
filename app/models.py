@@ -117,6 +117,7 @@ class Offer(Base):
     user_id = Column(BigInteger, ForeignKey('Users.user_id'), nullable=False)
     is_buyer = Column(Boolean, nullable=False)
     units = Column(BigInteger, nullable=False)
+    price_perunit = Column(Numeric(18, 2), nullable=True)
     create_at = Column(DateTime, nullable=False)
     is_valid = Column(Boolean, nullable=False, default=True)
     
@@ -129,7 +130,7 @@ class Offer(Base):
             'is_buyer': self.is_buyer,
             'units': self.units,
             'price_perunit': float(self.price_perunit) if self.price_perunit else None,
-            'is_deleted': self.is_valid,
+            'is_valid': self.is_valid,
             'create_at': self.create_at.isoformat() if self.create_at else None
         }
     

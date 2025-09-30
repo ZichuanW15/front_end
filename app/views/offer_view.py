@@ -140,6 +140,6 @@ class OfferView:
             'units': offer.units,
             'price_perunit': float(offer.price_perunit) if offer.price_perunit else None,
             'total_price': float(offer.units * offer.price_perunit) if offer.price_perunit else None,
-            'is_active': offer.is_active,
+            'is_valid': offer.is_valid,
             'created_at': offer.create_at.isoformat() if offer.create_at else None
         }

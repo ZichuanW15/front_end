@@ -44,6 +44,23 @@ VALUES
 (4, 120000.00, '2025-09-25 09:30:00', 'manual_adjust', 1, 'Strategic value adjustment')
 ON CONFLICT DO NOTHING;
 
+-- Insert fractions for testing
+INSERT INTO "Fractions" 
+(fraction_id, asset_id, owner_id, parent_fraction_id, units, is_active, created_at, value_perunit)
+VALUES
+-- Asset 1: Modern Art Painting (1000 units, split between Alice and Alex)
+(1, 1, 1, NULL, 600, true, '2025-09-19 14:05:00', 1000),  -- Alice
+(2, 1, 2, 1,   400, true, '2025-09-19 14:06:00', 1000),  -- Alex, child of fraction 1
+
+-- Asset 2: Technology Equity Fund (500 units, assigned to Alice only)
+(3, 2, 1, NULL, 500, true, '2025-09-20 10:10:00', 1000),
+
+-- Asset 3: Commercial Real Estate Trust (2000 units, assigned to Alex only)
+(4, 3, 2, NULL, 2000, true, '2025-09-21 15:40:00', 1000),
+
+-- Asset 4: Digital Asset Token (10000 units, assigned to Alice only)
+(5, 4, 1, NULL, 10000, true, '2025-09-22 09:20:00', 10);
+
 -- Display success message
 \echo '✅ Initial data imported successfully!'
 \echo '   - Created 2 users (1 manager, 1 regular user)'

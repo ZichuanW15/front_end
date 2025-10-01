@@ -12,7 +12,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pathlib import Path
 
 # Set up paths and import shared utilities
-from shared_utils import setup_paths, load_environment, parse_database_url, seed_test_database, clear_test_database_data
+from shared_utils import setup_paths, load_environment, parse_database_url, seed_test_database, clear_test_database_data, get_server_connection_params
 setup_paths()
 
 from test_utils.database_utils import create_test_database as shared_create_test_database, drop_test_database as shared_drop_test_database, setup_test_database_schema as shared_setup_schema
@@ -53,13 +53,7 @@ def show_test_database_info(main_db_config):
     """Show information about the test database."""
     test_db_name = f"{main_db_config['database']}_test"
     
-    server_conn_params = {
-        'host': main_db_config['host'],
-        'port': main_db_config['port'],
-        'user': main_db_config['user'],
-        'password': main_db_config['password'],
-        'database': 'postgres'
-    }
+    server_conn_params = get_server_connection_params(main_db_config)
     
     try:
         conn = psycopg2.connect(**server_conn_params)

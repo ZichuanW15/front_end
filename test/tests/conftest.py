@@ -13,6 +13,7 @@ from app import create_app
 from app.database import db
 from app.models import User, Asset, Fraction, Transaction, Offer, AssetValueHistory
 from test.test_utils.database_utils import create_test_database
+from test.test_database.shared_utils import get_sample_users_data
 from datetime import datetime
 
 
@@ -123,12 +124,7 @@ def clean_database(app, request):
         from datetime import datetime
         
         # Create seeded users
-        users_data = [
-            ('admin', 'admin@test.com', 'admin123', True),
-            ('testuser1', 'user1@test.com', 'password123', False),
-            ('testuser2', 'user2@test.com', 'password123', False),
-            ('manager1', 'manager@test.com', 'manager123', True)
-        ]
+        users_data = get_sample_users_data()
         
         user_ids = []
         for username, email, password, is_manager in users_data:

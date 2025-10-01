@@ -9,6 +9,17 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pathlib import Path
 
 
+def get_server_connection_params(main_db_config):
+    """Get server connection parameters for database operations."""
+    return {
+        'host': main_db_config['host'],
+        'port': main_db_config['port'],
+        'user': main_db_config['user'],
+        'password': main_db_config['password'],
+        'database': 'postgres'
+    }
+
+
 def create_test_database(main_db_config, test_db_name):
     """
     Create test database with the given name.
@@ -20,13 +31,7 @@ def create_test_database(main_db_config, test_db_name):
     Returns:
         str: Name of the created test database
     """
-    server_conn_params = {
-        'host': main_db_config['host'],
-        'port': main_db_config['port'],
-        'user': main_db_config['user'],
-        'password': main_db_config['password'],
-        'database': 'postgres'
-    }
+    server_conn_params = get_server_connection_params(main_db_config)
 
     try:
         conn = psycopg2.connect(**server_conn_params)
@@ -62,13 +67,7 @@ def drop_test_database(main_db_config, test_db_name):
         main_db_config (dict): Main database configuration
         test_db_name (str): Name of the test database to drop
     """
-    server_conn_params = {
-        'host': main_db_config['host'],
-        'port': main_db_config['port'],
-        'user': main_db_config['user'],
-        'password': main_db_config['password'],
-        'database': 'postgres'
-    }
+    server_conn_params = get_server_connection_params(main_db_config)
 
     try:
         conn = psycopg2.connect(**server_conn_params)

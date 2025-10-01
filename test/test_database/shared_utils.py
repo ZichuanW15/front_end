@@ -57,28 +57,48 @@ def parse_database_url(database_url):
     }
 
 
+def get_server_connection_params(main_db_config):
+    """Get server connection parameters for database operations."""
+    return {
+        'host': main_db_config['host'],
+        'port': main_db_config['port'],
+        'user': main_db_config['user'],
+        'password': main_db_config['password'],
+        'database': 'postgres'
+    }
+
+
+def get_test_connection_params(test_db_config):
+    """Get test database connection parameters."""
+    return {
+        'host': test_db_config['host'],
+        'port': test_db_config['port'],
+        'user': test_db_config['user'],
+        'password': test_db_config['password'],
+        'database': test_db_config['database']
+    }
+
+
+def get_sample_users_data():
+    """Get sample users data for seeding."""
+    return [
+        ('admin', 'admin@test.com', 'admin123', True),
+        ('testuser1', 'user1@test.com', 'password123', False),
+        ('testuser2', 'user2@test.com', 'password123', False),
+        ('manager1', 'manager@test.com', 'manager123', True)
+    ]
+
+
 def seed_test_database(test_db_config):
     """Seed test database with sample data for testing."""
     try:
-        conn = psycopg2.connect(
-            host=test_db_config['host'],
-            port=test_db_config['port'],
-            user=test_db_config['user'],
-            password=test_db_config['password'],
-            database=test_db_config['database']
-        )
-        
+        conn = psycopg2.connect(**get_test_connection_params(test_db_config))
         cursor = conn.cursor()
         
         print("📝 Seeding test database with sample data...")
         
         # Insert sample users (without specifying user_id since it's GENERATED ALWAYS)
-        users_data = [
-            ('admin', 'admin@test.com', 'admin123', True),
-            ('testuser1', 'user1@test.com', 'password123', False),
-            ('testuser2', 'user2@test.com', 'password123', False),
-            ('manager1', 'manager@test.com', 'manager123', True)
-        ]
+        users_data = get_sample_users_data()
         
         user_ids = []
         for username, email, password, is_manager in users_data:

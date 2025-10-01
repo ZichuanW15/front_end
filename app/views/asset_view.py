@@ -3,10 +3,15 @@ Asset view for formatting asset-related responses.
 """
 
 from flask import jsonify
+from .base_view import BaseView
 
 
-class AssetView:
+class AssetView(BaseView):
     """View class for asset responses."""
+    
+    def __init__(self):
+        """Initialize AssetView with entity name."""
+        super().__init__('Asset')
     
     def render_asset(self, asset):
         """
@@ -18,10 +23,7 @@ class AssetView:
         Returns:
             Response: JSON response
         """
-        return jsonify({
-            'asset': asset.to_dict(),
-            'status': 'success'
-        })
+        return self.render_single(asset)
     
     def render_asset_created(self, asset):
         """
@@ -33,11 +35,7 @@ class AssetView:
         Returns:
             Response: JSON response
         """
-        return jsonify({
-            'asset': asset.to_dict(),
-            'message': 'Asset created successfully',
-            'status': 'success'
-        }), 201
+        return self.render_created(asset)
     
     def render_asset_updated(self, asset):
         """
@@ -49,11 +47,7 @@ class AssetView:
         Returns:
             Response: JSON response
         """
-        return jsonify({
-            'asset': asset.to_dict(),
-            'message': 'Asset updated successfully',
-            'status': 'success'
-        })
+        return self.render_updated(asset)
     
     def render_asset_deleted(self):
         """
@@ -62,10 +56,7 @@ class AssetView:
         Returns:
             Response: JSON response
         """
-        return jsonify({
-            'message': 'Asset deleted successfully',
-            'status': 'success'
-        })
+        return self.render_deleted()
     
     def render_assets_list(self, assets):
         """
@@ -77,11 +68,7 @@ class AssetView:
         Returns:
             Response: JSON response
         """
-        return jsonify({
-            'assets': [asset.to_dict() for asset in assets],
-            'count': len(assets),
-            'status': 'success'
-        })
+        return self.render_list(assets, 'assets')
     
     def render_asset_fractions(self, fractions):
         """
@@ -98,23 +85,6 @@ class AssetView:
             'count': len(fractions),
             'status': 'success'
         })
-    
-    def render_error(self, error_message, status_code):
-        """
-        Render error response.
-        
-        Args:
-            error_message: Error message
-            status_code: HTTP status code
-            
-        Returns:
-            Response: JSON error response
-        """
-        return jsonify({
-            'error': 'Asset Error',
-            'message': error_message,
-            'status_code': status_code
-        }), status_code
     
     # New methods for asset value history
     def render_value_history(self, items, asset_id):

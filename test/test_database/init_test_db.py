@@ -9,54 +9,13 @@ import sys
 import subprocess
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from dotenv import load_dotenv
 from pathlib import Path
 
-# Add the project root and test directory to the Python path
-project_root = Path(__file__).parent.parent.parent
-test_dir = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-sys.path.insert(0, str(test_dir))
+# Set up paths and import shared utilities
+from shared_utils import setup_paths, load_environment, parse_database_url, seed_test_database
+setup_paths()
 
 from test_utils.database_utils import create_test_database as shared_create_test_database, setup_test_database_schema as shared_setup_schema
-
-
-def load_environment():
-    """Load environment variables from .env file."""
-    load_dotenv()
-    
-    # Get database configuration
-    database_url = os.environ.get('DATABASE_URL')
-    test_database_url = os.environ.get('TEST_DATABASE_URL')
-    
-    if not database_url:
-        print("❌ DATABASE_URL not found in environment variables")
-        print("Please set DATABASE_URL in your .env file")
-        sys.exit(1)
-    
-    return database_url, test_database_url
-
-
-def parse_database_url(database_url):
-    """Parse database URL into components."""
-    import re
-    
-    # Parse postgresql://user:password@host:port/database
-    pattern = r'postgresql://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)'
-    match = re.match(pattern, database_url)
-    
-    if not match:
-        raise ValueError(f"Invalid database URL format: {database_url}")
-    
-    user, password, host, port, database = match.groups()
-    
-    return {
-        'user': user,
-        'password': password,
-        'host': host,
-        'port': int(port),
-        'database': database
-    }
 
 
 def create_test_database(main_db_config):
@@ -70,91 +29,6 @@ def setup_test_database_schema(test_db_config):
     shared_setup_schema(test_db_config)
 
 
-def seed_test_database(test_db_config):
-    """Seed test database with sample data for testing."""
-    try:
-        conn = psycopg2.connect(
-            host=test_db_config['host'],
-            port=test_db_config['port'],
-            user=test_db_config['user'],
-            password=test_db_config['password'],
-            database=test_db_config['database']
-        )
-        
-        cursor = conn.cursor()
-        
-        print("📝 Seeding test database with sample data...")
-        
-        # Insert sample users (without specifying user_id since it's GENERATED ALWAYS)
-        users_data = [
-            ('admin', 'admin@test.com', 'admin123', True),
-            ('testuser1', 'user1@test.com', 'password123', False),
-            ('testuser2', 'user2@test.com', 'password123', False),
-            ('manager1', 'manager@test.com', 'manager123', True)
-        ]
-        
-        user_ids = []
-        for username, email, password, is_manager in users_data:
-            cursor.execute("""
-                INSERT INTO "Users" (user_name, email, password, is_manager, created_at, is_deleted)
-                VALUES (%s, %s, %s, %s, NOW(), FALSE)
-                RETURNING user_id
-            """, (username, email, password, is_manager))
-            user_ids.append(cursor.fetchone()[0])
-        
-        # Insert sample assets (without specifying asset_id since it's GENERATED ALWAYS)
-        assets_data = [
-            ('Test Asset 1', 'Description for test asset 1', 1000, 1, 100, 10000.00),
-            ('Test Asset 2', 'Description for test asset 2', 500, 1, 50, 5000.00),
-            ('Test Asset 3', 'Description for test asset 3', 200, 1, 20, 2000.00)
-        ]
-        
-        asset_ids = []
-        for name, description, total_unit, unit_min, unit_max, total_value in assets_data:
-            cursor.execute("""
-                INSERT INTO "Assets" (asset_name, asset_description, total_unit, unit_min, unit_max, total_value, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s, NOW())
-                RETURNING asset_id
-            """, (name, description, total_unit, unit_min, unit_max, total_value))
-            asset_ids.append(cursor.fetchone()[0])
-        
-        # Insert sample fractions (using actual user_ids and asset_ids from above)
-        fractions_data = [
-            (asset_ids[0], user_ids[0], None, 100, True, 10.00),  # Admin owns 100 units of Asset 1
-            (asset_ids[0], user_ids[1], None, 50, True, 10.00),   # User1 owns 50 units of Asset 1
-            (asset_ids[1], user_ids[2], None, 25, True, 20.00),   # User2 owns 25 units of Asset 2
-            (asset_ids[2], user_ids[3], None, 10, True, 100.00)  # Manager1 owns 10 units of Asset 3
-        ]
-        
-        for asset_id, owner_id, parent_id, units, is_active, value_per_unit in fractions_data:
-            cursor.execute("""
-                INSERT INTO "Fractions" (asset_id, owner_id, parent_fraction_id, units, is_active, created_at, value_perunit)
-                VALUES (%s, %s, %s, %s, %s, NOW(), %s)
-            """, (asset_id, owner_id, parent_id, units, is_active, value_per_unit))
-        
-        # Insert sample asset value history (using actual asset_ids)
-        value_history_data = [
-            (asset_ids[0], 10.00, 'system', None, 'Initial value'),
-            (asset_ids[0], 12.00, 'admin', user_ids[0], 'Value adjustment'),
-            (asset_ids[1], 20.00, 'system', None, 'Initial value'),
-            (asset_ids[2], 100.00, 'system', None, 'Initial value')
-        ]
-        
-        for asset_id, value, source, adjusted_by, reason in value_history_data:
-            cursor.execute("""
-                INSERT INTO "AssetValueHistory" (asset_id, value, recorded_at, source, adjusted_by, adjustment_reason)
-                VALUES (%s, %s, NOW(), %s, %s, %s)
-            """, (asset_id, value, source, adjusted_by, reason))
-        
-        conn.commit()
-        print("✅ Test database seeded with sample data")
-        
-        cursor.close()
-        conn.close()
-        
-    except psycopg2.Error as e:
-        print(f"❌ Error seeding test database: {e}")
-        sys.exit(1)
 
 
 def verify_test_database_setup(test_db_config):

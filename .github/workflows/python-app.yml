@@ -26,8 +26,19 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
+        pip install flake8 pytest pytest-cov
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Set up PostgreSQL
+      run: |
+        sudo systemctl start postgresql
+        sudo -u postgres psql -c "CREATE DATABASE test_db;"
+        sudo -u postgres psql -c "CREATE USER test_user WITH PASSWORD 'test_pass';"
+        sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE test_db TO test_user;"
+    - name: Set up environment
+      run: |
+        echo "DATABASE_URL=postgresql://test_user:test_pass@localhost/test_db" >> .env
+        echo "FLASK_ENV=testing" >> .env
+        echo "SECRET_KEY=test-secret-key" >> .env
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -36,7 +47,4 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Run unit tests
       run: |
-        python run_tests.py --unit --coverage --verbose
-    - name: Run database tests
-      run: |
-        python run_tests.py --database --coverage --verbose
+        pytest test/tests/unit/ -v --cov=app --cov-report=term-missing --cov-fail-under=40

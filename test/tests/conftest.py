@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker
 from app import create_app
 from app.database import db
 from app.models import User, Asset, Fraction, Transaction, Offer, AssetValueHistory
-from test_utils.database_utils import create_test_database
+from test.test_utils.database_utils import create_test_database
 from datetime import datetime
 
 

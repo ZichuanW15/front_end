@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import text
 from app import create_app
 from app.database import db
-from test_utils.database_utils import verify_database_tables
+from test.test_utils.database_utils import verify_database_tables
 
 
 def test_app_creation(app):

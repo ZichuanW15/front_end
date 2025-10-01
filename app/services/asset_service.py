@@ -2,10 +2,10 @@
 Asset service for asset-related business logic.
 """
 
-from app.database import db
-from app.models import Asset, Fraction, AssetValueHistory
 from datetime import datetime
 from typing import Optional, List, Dict, Any
+from app.database import db
+from app.models import Asset, Fraction, AssetValueHistory, User
 
 
 class AssetService:
@@ -168,7 +168,6 @@ class AssetService:
             ValueError: If required fields are missing or invalid
         """
         # Validate owner exists
-        from app.models import User
         owner = User.query.get(owner_id)
         if not owner:
             raise ValueError("Owner user not found")
@@ -225,4 +224,4 @@ class AssetService:
         except Exception as e:
             # Rollback asset creation if fraction or history creation fails
             db.session.rollback()
-            raise ValueError(f"Failed to create initial fraction or value history: {str(e)}")
+            raise ValueError(f"Failed to create initial fraction or value history: {str(e)}") from e

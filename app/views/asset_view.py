@@ -86,16 +86,34 @@ class AssetView(BaseView):
             'status': 'success'
         })
     
-    # New methods for asset value history
     def render_value_history(self, items, asset_id):
+        """
+        Render asset value history response.
+        
+        Args:
+            items: List of asset value history items
+            asset_id: Asset ID
+            
+        Returns:
+            JSON response with value history data
+        """
         return jsonify({
             "asset_id": asset_id,
             "count": len(items),
             "items": [it.to_dict() for it in items],
             "status": "success",
         })
-    # New method to render adjustment creation response
+    
     def render_adjustment_created(self, row):
+        """
+        Render adjustment creation response.
+        
+        Args:
+            row: AssetValueHistory record
+            
+        Returns:
+            JSON response with adjustment data
+        """
         data = row.to_dict()
         return jsonify({"status": "created", "item": data}), 201
     

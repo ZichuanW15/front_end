@@ -3,9 +3,9 @@ SQLAlchemy models for the API backbone.
 These models match the provided PostgreSQL schema.
 """
 
+from datetime import datetime
 from sqlalchemy import Column, Integer, Text, String, Boolean, DateTime, ForeignKey, BigInteger, Numeric
 from sqlalchemy.orm import relationship
-from datetime import datetime
 from .database import db
 
 # Use Flask-SQLAlchemy's Model base class
@@ -31,6 +31,7 @@ class User(Base):
     offers = relationship('Offer', backref='user')
     
     def to_dict(self):
+        """Convert user to dictionary representation."""
         return {
             'user_id': self.user_id,
             'user_name': self.user_name,
@@ -61,6 +62,7 @@ class Asset(Base):
     fractions = relationship('Fraction', backref='asset')
     
     def to_dict(self):
+        """Convert asset to dictionary representation."""
         return {
             'asset_id': self.asset_id,
             'asset_name': self.asset_name,
@@ -95,6 +97,7 @@ class Fraction(Base):
     offers = relationship('Offer', backref='fraction')
     
     def to_dict(self):
+        """Convert fraction to dictionary representation."""
         return {
             'fraction_id': self.fraction_id,
             'asset_id': self.asset_id,
@@ -122,6 +125,7 @@ class Offer(Base):
     create_at = Column(DateTime, nullable=False)
     
     def to_dict(self):
+        """Convert offer to dictionary representation."""
         return {
             'offer_id': self.offer_id,
             'asset_id': self.asset_id,
@@ -152,6 +156,7 @@ class Transaction(Base):
     offer = relationship('Offer', backref='transactions')
     
     def to_dict(self):
+        """Convert transaction to dictionary representation."""
         return {
             'transaction_id': self.transaction_id,
             'fraction_id': self.fraction_id,
@@ -167,8 +172,8 @@ class Transaction(Base):
 
 
 
-# adding new model for asset value history
 class AssetValueHistory(Base):
+    """Asset value history model for tracking asset value changes."""
     __tablename__ = 'AssetValueHistory'
 
     id          = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -184,6 +189,7 @@ class AssetValueHistory(Base):
     adjuster  = relationship('User', foreign_keys=[adjusted_by])
 
     def to_dict(self):
+        """Convert asset value history to dictionary representation."""
         return {
             'id': self.id,
             'asset_id': self.asset_id,
@@ -193,3 +199,7 @@ class AssetValueHistory(Base):
             'adjusted_by': self.adjusted_by,
             'reason': self.adjustment_reason,
         }
+    
+    def __repr__(self):
+        """String representation of asset value history."""
+        return f'<AssetValueHistory {self.id}>'

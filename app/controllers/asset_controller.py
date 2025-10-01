@@ -2,11 +2,11 @@
 Asset controller for handling asset-related requests.
 """
 
+from datetime import datetime
 from flask import request
 from app.services.asset_service import AssetService
-from app.views.asset_view import AssetView
-from datetime import datetime
 from app.services.asset_value_service import AssetValueService
+from app.views.asset_view import AssetView
 
 
 class AssetController:
@@ -129,8 +129,16 @@ class AssetController:
         except Exception as e:
             return self.asset_view.render_error(str(e), 500)
         
-    # Get the history of an asset
     def get_asset_values(self, asset_id):
+        """
+        Get the history of an asset.
+        
+        Args:
+            asset_id: Asset ID
+            
+        Returns:
+            Response: JSON response with asset value history
+        """
         try:
             p_from = request.args.get("from")
             p_to   = request.args.get("to")
@@ -167,8 +175,16 @@ class AssetController:
         except Exception as e:
             return self.asset_view.render_error(str(e), 500)
     
-    # Administrators can manually adjust asset values
     def adjust_asset_value(self, asset_id):
+        """
+        Administrators can manually adjust asset values.
+        
+        Args:
+            asset_id: Asset ID
+            
+        Returns:
+            Response: JSON response with adjustment data
+        """
         try:
             data = request.get_json()
             if not data:

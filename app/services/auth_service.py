@@ -2,13 +2,13 @@
 Authentication service for user authentication business logic.
 """
 
+from datetime import datetime
+from typing import Optional, Tuple, Dict, Any
 from flask import session
 from app.database import db
 from app.models import User
 from app.services.user_service import UserService
 from app.decorators import create_user_session, clear_user_session
-from datetime import datetime
-from typing import Optional, Tuple, Dict, Any
 
 
 class AuthService:

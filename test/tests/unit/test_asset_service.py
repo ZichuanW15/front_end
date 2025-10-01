@@ -124,7 +124,7 @@ class TestAssetService:
             mock_admin.user_id = admin_user_id
             mock_admin.is_manager = True
             
-            with patch('app.models.User') as mock_user_class:
+            with patch('app.services.asset_service.User') as mock_user_class:
                 mock_user_class.query.get.side_effect = lambda uid: mock_owner if uid == owner_id else mock_admin
                 
                 # Mock Asset creation
@@ -168,7 +168,7 @@ class TestAssetService:
         owner_id = 999  # Non-existent
         admin_user_id = 2
         
-        with patch('app.models.User') as mock_user_class:
+        with patch('app.services.asset_service.User') as mock_user_class:
             mock_user_class.query.get.return_value = None
             
             with pytest.raises(ValueError, match="Owner user not found"):
@@ -186,7 +186,7 @@ class TestAssetService:
         owner_id = 1
         admin_user_id = 999  # Non-existent
         
-        with patch('app.models.User') as mock_user_class:
+        with patch('app.services.asset_service.User') as mock_user_class:
             mock_owner = Mock(spec=User)
             mock_user_class.query.get.side_effect = lambda uid: mock_owner if uid == owner_id else None
             
@@ -205,7 +205,7 @@ class TestAssetService:
         owner_id = 1
         admin_user_id = 2
         
-        with patch('app.models.User') as mock_user_class:
+        with patch('app.services.asset_service.User') as mock_user_class:
             mock_owner = Mock(spec=User)
             mock_admin = Mock(spec=User)
             mock_admin.is_manager = False  # Not a manager
@@ -233,7 +233,7 @@ class TestAssetService:
             mock_admin = Mock(spec=User)
             mock_admin.is_manager = True
             
-            with patch('app.models.User') as mock_user_class:
+            with patch('app.services.asset_service.User') as mock_user_class:
                 mock_user_class.query.get.side_effect = lambda uid: mock_owner if uid == owner_id else mock_admin
                 
                 # Mock Asset creation

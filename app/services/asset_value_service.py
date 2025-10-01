@@ -8,7 +8,6 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 
-
 class AssetValueService:
     """Service class for asset value history operations."""
     # 1) Query the history of an asset over a period of time (in ascending order of time)

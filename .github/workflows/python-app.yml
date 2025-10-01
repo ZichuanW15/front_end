@@ -78,19 +78,3 @@ jobs:
         FLASK_ENV: testing
       run: |
         python run_tests.py --database --coverage --verbose
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
-    - name: Archive test results
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: test-results
-        path: |
-          coverage.xml
-          htmlcov/
-          .coverage

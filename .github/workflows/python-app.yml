@@ -28,15 +28,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest pytest-cov
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Set up PostgreSQL
-      run: |
-        sudo systemctl start postgresql
-        sudo -u postgres psql -c "CREATE DATABASE test_db;"
-        sudo -u postgres psql -c "CREATE USER test_user WITH PASSWORD 'test_pass';"
-        sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE test_db TO test_user;"
     - name: Set up environment
       run: |
-        echo "DATABASE_URL=postgresql://test_user:test_pass@localhost/test_db" >> .env
+        echo "DATABASE_URL=sqlite:///test.db" >> .env
+        echo "TEST_DATABASE_URL=sqlite:///test.db" >> .env
         echo "FLASK_ENV=testing" >> .env
         echo "SECRET_KEY=test-secret-key" >> .env
     - name: Lint with flake8

@@ -35,7 +35,13 @@ def test_database_url():
 @pytest.fixture(scope='session')
 def ensure_test_database(test_database_url):
     """Ensure test database exists and is properly set up."""
-    # Parse database URL
+    # Handle SQLite URLs
+    if test_database_url.startswith('sqlite:///'):
+        # For SQLite, just return the URL - no setup needed
+        yield test_database_url
+        return
+    
+    # Parse PostgreSQL database URL
     pattern = r'postgresql://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)'
     match = re.match(pattern, test_database_url)
     

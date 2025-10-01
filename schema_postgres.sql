@@ -107,9 +107,3 @@ CREATE INDEX idx_transactions_at ON "Transactions"(transaction_at);
 CREATE INDEX idx_transactions_offer ON public."Transactions"(offer_id);
 CREATE INDEX idx_users_email ON "Users"(email);
 CREATE INDEX idx_users_manager ON "Users"(is_manager);
-
--- Display success message
-\echo '✅ PostgreSQL schema created successfully!'
-\echo '   - Tables created with proper relationships'
-\echo '   - Indexes created for performance'
-\echo '   - Schema matches new SQLAlchemy models'

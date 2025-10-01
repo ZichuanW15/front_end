@@ -2,7 +2,7 @@
 Asset value history service: Query history and allow administrators to manually adjust values.
 """
 
-from app import db
+from app.database import db
 from app.models import AssetValueHistory, Asset, User
 from datetime import datetime
 from typing import Optional, List, Dict, Any

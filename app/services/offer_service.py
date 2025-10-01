@@ -2,7 +2,7 @@
 Offer service for offer-related business logic.
 """
 
-from app import db
+from app.database import db
 from app.models import Offer
 from datetime import datetime
 from typing import Optional, List, Dict, Any

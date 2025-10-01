@@ -5,12 +5,14 @@ Provides test database setup, teardown, and common fixtures.
 
 import os
 import pytest
+import re
 import psycopg2
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from app import create_app, db
+from app import create_app
+from app.database import db
 from app.models import User, Asset, Fraction, Transaction, Offer, AssetValueHistory
+from test_utils.database_utils import create_test_database
 from datetime import datetime
 
 
@@ -34,7 +36,6 @@ def test_database_url():
 def ensure_test_database(test_database_url):
     """Ensure test database exists and is properly set up."""
     # Parse database URL
-    import re
     pattern = r'postgresql://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)'
     match = re.match(pattern, test_database_url)
     
@@ -43,8 +44,8 @@ def ensure_test_database(test_database_url):
     
     user, password, host, port, database = match.groups()
     
-    # Connect to PostgreSQL server to create database if needed
-    server_conn_params = {
+    # Create main database config
+    main_db_config = {
         'host': host,
         'port': int(port),
         'user': user,
@@ -53,22 +54,9 @@ def ensure_test_database(test_database_url):
     }
     
     try:
-        conn = psycopg2.connect(**server_conn_params)
-        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cursor = conn.cursor()
-        
-        # Check if test database exists
-        cursor.execute("SELECT 1 FROM pg_database WHERE datname = %s", (database,))
-        exists = cursor.fetchone() is not None
-        
-        if not exists:
-            print(f"Creating test database: {database}")
-            cursor.execute(f'CREATE DATABASE "{database}"')
-        
-        cursor.close()
-        conn.close()
-        
-    except psycopg2.Error as e:
+        # Use shared utility to create test database
+        create_test_database(main_db_config, database)
+    except Exception as e:
         pytest.skip(f"Could not create test database: {e}")
     
     yield test_database_url

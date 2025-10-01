@@ -4,7 +4,9 @@ Database connectivity tests for the API backbone.
 
 import pytest
 from sqlalchemy import text
-from app import create_app, db
+from app import create_app
+from app.database import db
+from test_utils.database_utils import verify_database_tables
 
 
 def test_app_creation(app):
@@ -24,14 +26,7 @@ def test_database_connection(app):
 def test_database_tables_creation(app):
     """Test that database tables can be created."""
     with app.app_context():
-        # Check that tables exist
-        inspector = db.inspect(db.engine)
-        tables = inspector.get_table_names()
-        
-        # Should have the main tables from schema
-        expected_tables = ['Users', 'Assets', 'Fractions', 'Transactions', 'Offers', 'AssetValueHistory']
-        for table in expected_tables:
-            assert table in tables, f"Table {table} not found in database"
+        assert verify_database_tables(db), "Not all expected tables found in database"
 
 
 def test_database_functions_creation(app):

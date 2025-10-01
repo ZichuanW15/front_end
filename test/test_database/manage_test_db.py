@@ -12,6 +12,14 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from dotenv import load_dotenv
 from pathlib import Path
 
+# Add the project root and test directory to the Python path
+project_root = Path(__file__).parent.parent.parent
+test_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(test_dir))
+
+from test_utils.database_utils import create_test_database as shared_create_test_database, drop_test_database as shared_drop_test_database, setup_test_database_schema as shared_setup_schema
+
 
 def load_environment():
     """Load environment variables from .env file."""
@@ -50,83 +58,13 @@ def parse_database_url(database_url):
 def create_test_database(main_db_config):
     """Create test database."""
     test_db_name = f"{main_db_config['database']}_test"
-    
-    server_conn_params = {
-        'host': main_db_config['host'],
-        'port': main_db_config['port'],
-        'user': main_db_config['user'],
-        'password': main_db_config['password'],
-        'database': 'postgres'
-    }
-    
-    try:
-        conn = psycopg2.connect(**server_conn_params)
-        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cursor = conn.cursor()
-        
-        # Check if test database exists
-        cursor.execute("SELECT 1 FROM pg_database WHERE datname = %s", (test_db_name,))
-        exists = cursor.fetchone() is not None
-        
-        if exists:
-            print(f"ℹ️  Test database '{test_db_name}' already exists")
-        else:
-            print(f"📝 Creating test database: {test_db_name}")
-            cursor.execute(f'CREATE DATABASE "{test_db_name}"')
-            print(f"✅ Test database '{test_db_name}' created successfully")
-        
-        cursor.close()
-        conn.close()
-        
-        return test_db_name
-        
-    except psycopg2.Error as e:
-        print(f"❌ Error creating test database: {e}")
-        sys.exit(1)
+    return shared_create_test_database(main_db_config, test_db_name)
 
 
 def drop_test_database(main_db_config):
     """Drop test database."""
     test_db_name = f"{main_db_config['database']}_test"
-    
-    server_conn_params = {
-        'host': main_db_config['host'],
-        'port': main_db_config['port'],
-        'user': main_db_config['user'],
-        'password': main_db_config['password'],
-        'database': 'postgres'
-    }
-    
-    try:
-        conn = psycopg2.connect(**server_conn_params)
-        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cursor = conn.cursor()
-        
-        # Check if test database exists
-        cursor.execute("SELECT 1 FROM pg_database WHERE datname = %s", (test_db_name,))
-        exists = cursor.fetchone() is not None
-        
-        if not exists:
-            print(f"ℹ️  Test database '{test_db_name}' does not exist")
-        else:
-            # Terminate all connections to the test database
-            cursor.execute(f"""
-                SELECT pg_terminate_backend(pg_stat_activity.pid)
-                FROM pg_stat_activity
-                WHERE pg_stat_activity.datname = '{test_db_name}'
-                AND pid <> pg_backend_pid();
-            """)
-            
-            print(f"🗑️  Dropping test database: {test_db_name}")
-            cursor.execute(f'DROP DATABASE "{test_db_name}"')
-            print(f"✅ Test database '{test_db_name}' dropped successfully")
-        
-        cursor.close()
-        conn.close()
-        
-    except psycopg2.Error as e:
-        print(f"❌ Error dropping test database: {e}")
-        sys.exit(1)
+    shared_drop_test_database(main_db_config, test_db_name)
 
 
 def reset_test_database(main_db_config):
@@ -139,60 +77,7 @@ def reset_test_database(main_db_config):
 
 def setup_test_database_schema(test_db_config):
     """Set up the test database schema."""
-    schema_file = Path(__file__).parent.parent / 'schema_postgres.sql'
-    
-    if not schema_file.exists():
-        print(f"❌ Schema file not found: {schema_file}")
-        sys.exit(1)
-    
-    try:
-        conn = psycopg2.connect(
-            host=test_db_config['host'],
-            port=test_db_config['port'],
-            user=test_db_config['user'],
-            password=test_db_config['password'],
-            database=test_db_config['database']
-        )
-        
-        cursor = conn.cursor()
-        
-        print(f"📝 Setting up schema for test database: {test_db_config['database']}")
-        
-        with open(schema_file, 'r') as f:
-            schema_sql = f.read()
-        
-        # Better SQL statement parsing - handle multi-line statements
-        statements = []
-        current_stmt = ""
-        for line in schema_sql.split('\n'):
-            line = line.strip()
-            if line and not line.startswith('--'):
-                current_stmt += line + " "
-                if line.endswith(';'):
-                    statements.append(current_stmt.strip()[:-1])  # Remove trailing semicolon
-                    current_stmt = ""
-        
-        for statement in statements:
-            if statement:
-                try:
-                    cursor.execute(statement)
-                except psycopg2.Error as e:
-                    if "already exists" in str(e).lower():
-                        continue
-                    else:
-                        print(f"❌ Error executing statement: {e}")
-                        print(f"   Statement: {statement[:100]}...")
-                        raise
-        
-        conn.commit()
-        print("✅ Test database schema setup completed")
-        
-        cursor.close()
-        conn.close()
-        
-    except psycopg2.Error as e:
-        print(f"❌ Error setting up test database schema: {e}")
-        sys.exit(1)
+    shared_setup_schema(test_db_config)
 
 
 def seed_test_database(test_db_config):

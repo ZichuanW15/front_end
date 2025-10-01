@@ -167,7 +167,7 @@ def setup_test_database():
     
     try:
         # Always reset the test database to ensure clean state
-        script_path = Path('test_database/manage_test_db.py')
+        script_path = Path('test/test_database/manage_test_db.py')
         if script_path.exists():
             print("🔄 Resetting test database for clean test run...")
             success, _ = run_command(['python', str(script_path), 'reset'], 
@@ -207,19 +207,19 @@ def run_tests(args):
     
     # Determine test scope
     if args.unit:
-        cmd.extend(['tests/unit/', '--maxfail=1'])
+        cmd.extend(['test/tests/unit/', '--maxfail=1'])
         test_type = "Unit Tests"
     elif args.integration:
-        cmd.extend(['tests/integration/test_playwright_integration.py', '--maxfail=1'])
+        cmd.extend(['test/tests/integration/test_playwright_integration.py', '--maxfail=1'])
         test_type = "Integration Tests (Playwright)"
     elif args.playwright:
-        cmd.extend(['tests/integration/test_playwright_integration.py', '--maxfail=1'])
+        cmd.extend(['test/tests/integration/test_playwright_integration.py', '--maxfail=1'])
         test_type = "Playwright Integration Tests"
     elif args.database:
-        cmd.extend(['tests/test_db.py', 'tests/test_database_setup.py', '--maxfail=1'])
+        cmd.extend(['test/tests/test_db.py', 'test/tests/test_database_setup.py', '--maxfail=1'])
         test_type = "Database Tests"
     else:
-        cmd.extend(['tests/', '--maxfail=1'])
+        cmd.extend(['test/tests/', '--maxfail=1'])
         test_type = "All Tests"
     
     # Add coverage if requested
@@ -321,7 +321,7 @@ def main():
                         print("❌ Test database reset failed")
                         sys.exit(1)
                 except ImportError:
-                    script_path = Path('test_database/manage_test_db.py')
+                    script_path = Path('test/test_database/manage_test_db.py')
                     if script_path.exists():
                         success, _ = run_command(['python', str(script_path), 'reset'], 
                                                "Manual test database reset", capture_output=True)
@@ -349,8 +349,8 @@ def main():
         else:
             print_header("Test Run Failed! 💥")
             print("\n🔧 Troubleshooting:")
-            print("   - Check test database setup: python test_database/manage_test_db.py info")
-            print("   - Reset test database: python test_database/manage_test_db.py reset")
+            print("   - Check test database setup: python test/test_database/manage_test_db.py info")
+            print("   - Reset test database: python test/test_database/manage_test_db.py reset")
             print("   - Run tests with --verbose for more details")
             sys.exit(1)
     

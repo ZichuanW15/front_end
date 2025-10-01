@@ -3,7 +3,7 @@ Health service for system health checks and monitoring.
 """
 
 from sqlalchemy import text
-from app import db
+from app.database import db
 from datetime import datetime
 
 

@@ -2,7 +2,7 @@
 Fraction service for fraction-related business logic.
 """
 
-from app import db
+from app.database import db
 from app.models import Fraction, Asset, User
 from datetime import datetime
 from typing import Optional, List, Dict, Any

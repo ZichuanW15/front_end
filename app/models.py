@@ -6,7 +6,7 @@ These models match the provided PostgreSQL schema.
 from sqlalchemy import Column, Integer, Text, String, Boolean, DateTime, ForeignKey, BigInteger, Numeric
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from app import db
+from .database import db
 
 # Use Flask-SQLAlchemy's Model base class
 Base = db.Model

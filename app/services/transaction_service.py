@@ -2,7 +2,7 @@
 Transaction service for transaction-related business logic.
 """
 
-from app import db
+from app.database import db
 from app.models import Transaction, Fraction, User
 from datetime import datetime
 from typing import Optional, List, Dict, Any

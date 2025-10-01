@@ -5,7 +5,9 @@ Test suite to verify test database setup and configuration.
 import pytest
 import os
 from sqlalchemy import text
-from app import create_app, db
+from app import create_app
+from app.database import db
+from test_utils.database_utils import verify_database_tables
 
 
 class TestDatabaseSetup:
@@ -34,12 +36,7 @@ class TestDatabaseSetup:
     def test_schema_tables_exist(self, app):
         """Test that all required tables exist in test database."""
         with app.app_context():
-            inspector = db.inspect(db.engine)
-            tables = inspector.get_table_names()
-            
-            expected_tables = ['Users', 'Assets', 'Fractions', 'Transactions', 'Offers', 'AssetValueHistory']
-            for table in expected_tables:
-                assert table in tables, f"Table {table} not found in test database"
+            assert verify_database_tables(db), "Not all expected tables found in test database"
     
     def test_sample_data_fixtures(self, sample_users, sample_assets, sample_fractions):
         """Test that sample data fixtures work correctly."""

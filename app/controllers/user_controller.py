@@ -99,7 +99,7 @@ class UserController:
             user_data = request.get_json()
             
             # Validate user and password
-            user, error = self._validate_user_update(user_id, user_data)
+            _, error = self._validate_user_update(user_id, user_data)
             if error:
                 return self.user_view.render_error(error, 401 if "password" in error else 404)
             

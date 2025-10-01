@@ -83,9 +83,17 @@ class AssetValueService:
         db.session.commit()
         return item
 
-    # 3) Get the latest value (sometimes the page needs to display the "current value")
     @staticmethod
     def latest_value(asset_id: int) -> Optional[AssetValueHistory]:
+        """
+        Get the latest value for an asset.
+        
+        Args:
+            asset_id: Asset ID to get latest value for
+            
+        Returns:
+            Latest AssetValueHistory record or None if not found
+        """
         return (
             AssetValueHistory.query.filter_by(asset_id=asset_id)
             .order_by(AssetValueHistory.recorded_at.desc())

@@ -39,7 +39,6 @@ def create_app(config_name=None):
     
     # Import models, services and controllers to ensure they're available
     # These imports are moved to the top level to avoid import-outside-toplevel warnings
-    pass
     
     # Enable CORS for frontend
     CORS(app, origins=['http://localhost:3000', 'http://127.0.0.1:3000', 'http://127.0.0.1:5001', 'http://localhost:5001', 'file://'], supports_credentials=True)

@@ -10,13 +10,10 @@
   <nav class="nav">
     <div class="container">
       <div class="nav-content">
-        <h1>Profile Settings</h1>
+        <img src="Icons/pvit90.png" alt="PVIT" style="height:32px;">
         <div class="nav-links">
-          <a href="dashboard.html">Dashboard</a>
-          <a href="browsing.html">Browse Assets</a>
           <a href="trading.html">Trading</a>
           <a href="portfolio.html">My Assets</a>
-          <a href="valuehistory.html">Value History</a>
           <a href="profile.html" class="active">Profile</a>
           <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
           <button onclick="logout()" class="small">Logout</button>
@@ -146,6 +143,13 @@
   <div id="msg" class="msg muted" style="display: none;"></div>
 
 <script>
+// Show admin link if user is manager
+try {
+  const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+  if (user.is_manager) {
+    document.getElementById('adminLink').style.display = 'inline-block';
+  }
+} catch(e) {}
 const API = 'http://localhost:5001'; // Backend API server
 const el = id => document.getElementById(id);
 const setMsg = (txt, ok=null) => {

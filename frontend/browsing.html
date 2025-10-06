@@ -10,13 +10,10 @@
   <nav class="nav">
     <div class="container">
       <div class="nav-content">
-        <h1>Browse Assets</h1>
+        <img src="Icons/pvit90.png" alt="PVIT" style="height:32px;">
         <div class="nav-links">
-          <a href="dashboard.html">Dashboard</a>
-          <a href="browsing.html" class="active">Browse Assets</a>
           <a href="trading.html">Trading</a>
           <a href="portfolio.html">My Assets</a>
-          <a href="valuehistory.html">Value History</a>
           <a href="profile.html">Profile</a>
           <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
           <button onclick="logout()" class="small">Logout</button>
@@ -44,15 +41,7 @@
           <input type="text" id="searchInput" placeholder="Search asset name or description..." onkeyup="searchAssets()" style="width: 100%;">
         </div>
         <div class="col" style="max-width: 200px;">
-          <select id="categoryFilter" onchange="filterAssets()">
-            <option value="all">All Categories</option>
-            <option value="real_estate">Real Estate</option>
-            <option value="stocks">Stocks</option>
-            <option value="commodities">Commodities</option>
-            <option value="crypto">Cryptocurrency</option>
-            <option value="bonds">Bonds</option>
-          </select>
-        </div>
+        <!-- Category filter removed -->
         <div class="col" style="max-width: 200px;">
           <select id="sortBy" onchange="sortAssets()">
             <option value="name">Sort by Name</option>
@@ -157,6 +146,13 @@
   </div>
 
   <script>
+// Show admin link if user is manager
+try {
+  const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+  if (user.is_manager) {
+    document.getElementById('adminLink').style.display = 'inline-block';
+  }
+} catch(e) {}
     const API = 'http://localhost:5001'; // Backend API server
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     let allAssets = [];
@@ -221,7 +217,7 @@
             <thead>
               <tr>
                 <th>Asset Name</th>
-                <th>Category</th>
+                <!-- Category column removed -->
                 <th>Unit Price</th>
                 <th>Total Units</th>
                 <th>Total Value</th>
@@ -240,13 +236,12 @@
     function createAssetCard(asset) {
       const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
       const change = (Math.random() * 10 - 5).toFixed(2);
-      const category = getAssetCategory(asset);
+  // category removed
       
       return `
         <div class="card" style="cursor: pointer;" onclick="showAssetDetail(${asset.asset_id})">
           <div class="row" style="justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
             <h4 style="margin: 0;">${asset.asset_name}</h4>
-            <span class="badge info">${category}</span>
           </div>
           
           <div class="row" style="margin-bottom: 10px;">
@@ -282,7 +277,7 @@
     function createAssetRow(asset) {
       const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
       const change = (Math.random() * 10 - 5).toFixed(2);
-      const category = getAssetCategory(asset);
+  // category removed
       
       return `
         <tr onclick="showAssetDetail(${asset.asset_id})" style="cursor: pointer;">
@@ -290,7 +285,6 @@
             <div style="font-weight: 500;">${asset.asset_name}</div>
             <div class="text-muted" style="font-size: 12px;">ID: ${asset.asset_id}</div>
           </td>
-          <td><span class="badge info">${category}</span></td>
           <td>¥${price.toFixed(2)}</td>
           <td>${asset.total_unit}</td>
           <td>¥${parseFloat(asset.total_value).toLocaleString()}</td>
@@ -303,16 +297,6 @@
       `;
     }
 
-    function getAssetCategory(asset) {
-      // Mock category assignment based on asset name
-      const name = asset.asset_name.toLowerCase();
-      if (name.includes('房产') || name.includes('地产') || name.includes('房屋') || name.includes('real estate') || name.includes('property')) return 'Real Estate';
-      if (name.includes('股票') || name.includes('股份') || name.includes('stock') || name.includes('equity')) return 'Stocks';
-      if (name.includes('黄金') || name.includes('石油') || name.includes('商品') || name.includes('gold') || name.includes('oil') || name.includes('commodity')) return 'Commodities';
-      if (name.includes('比特币') || name.includes('以太坊') || name.includes('加密货币') || name.includes('bitcoin') || name.includes('crypto')) return 'Cryptocurrency';
-      if (name.includes('债券') || name.includes('国债') || name.includes('bond')) return 'Bonds';
-      return 'Other';
-    }
 
     function searchAssets() {
       const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -321,7 +305,7 @@
 
     function filterAssets() {
       const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-      const category = document.getElementById('categoryFilter').value;
+  // category filter removed
       const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
       const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
       const minUnits = parseInt(document.getElementById('minUnits').value) || 0;
@@ -329,11 +313,10 @@
       
       filteredAssets = allAssets.filter(asset => {
         const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
-        const assetCategory = getAssetCategory(asset);
+    // category removed
         
         return (
           (searchTerm === '' || asset.asset_name.toLowerCase().includes(searchTerm)) &&
-          (category === 'all' || assetCategory === category) &&
           price >= minPrice && price <= maxPrice &&
           parseInt(asset.total_unit) >= minUnits && parseInt(asset.total_unit) <= maxUnits
         );
@@ -388,7 +371,7 @@
 
     function clearFilters() {
       document.getElementById('searchInput').value = '';
-      document.getElementById('categoryFilter').value = 'all';
+  // category filter removed
       document.getElementById('minPrice').value = '';
       document.getElementById('maxPrice').value = '';
       document.getElementById('minUnits').value = '';
@@ -454,10 +437,6 @@
           <div class="col">
             <div class="text-muted">Asset ID</div>
             <div>${asset.asset_id}</div>
-          </div>
-          <div class="col">
-            <div class="text-muted">Category</div>
-            <div><span class="badge info">${getAssetCategory(asset)}</span></div>
           </div>
         </div>
         

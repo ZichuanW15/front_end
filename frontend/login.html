@@ -12,7 +12,7 @@
       <div class="nav-content">
         <img src="Icons/pvit90.png" alt="PVIT" style="height:48px;">
         <div class="nav-links">
-          <h1>My Assets</h1>
+          <h1>Assets Trading Platform</h1>
         </div>
       </div>
     </div>
@@ -59,7 +59,7 @@ async function login(){
       // Store simple user info for welcome message
       sessionStorage.setItem('user', JSON.stringify(data.user || {}));
       sessionStorage.setItem('sessionToken', data.session?.session_token || '');
-      location.href = 'dashboard.html'; // Target page
+      location.href = 'trading.html'; // Target page
     }else{
       setMsg(data.message || data.error || `Login failed (${r.status})`, false);
     }

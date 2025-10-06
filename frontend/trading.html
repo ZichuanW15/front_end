@@ -10,13 +10,10 @@
   <nav class="nav">
     <div class="container">
       <div class="nav-content">
-        <h1>Trading Center</h1>
+        <img src="Icons/pvit90.png" alt="PVIT" style="height:32px;">
         <div class="nav-links">
-          <a href="dashboard.html">Dashboard</a>
-          <a href="browsing.html">Browse Assets</a>
           <a href="trading.html" class="active">Trading</a>
           <a href="portfolio.html">My Assets</a>
-          <a href="valuehistory.html">Value History</a>
           <a href="profile.html">Profile</a>
           <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
           <button onclick="logout()" class="small">Logout</button>
@@ -202,6 +199,13 @@
   </div>
 
   <script>
+// Show admin link if user is manager
+try {
+  const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+  if (user.is_manager) {
+    document.getElementById('adminLink').style.display = 'inline-block';
+  }
+} catch(e) {}
     const API = 'http://localhost:5001'; // Backend API server
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     let currentTab = 'market';

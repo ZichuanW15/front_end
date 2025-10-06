@@ -80,6 +80,15 @@ def drop_test_database(main_db_config, test_db_name):
 
         if exists:
             print(f"🗑️  Dropping test database: {test_db_name}")
+            
+            # Terminate all connections to the test database before dropping
+            print(f"🔌 Terminating active connections to '{test_db_name}'...")
+            cursor.execute("""
+                SELECT pg_terminate_backend(pid) 
+                FROM pg_stat_activity 
+                WHERE datname = %s AND pid <> pg_backend_pid()
+            """, (test_db_name,))
+            
             cursor.execute(f'DROP DATABASE "{test_db_name}"')
             print(f"✅ Test database '{test_db_name}' dropped successfully")
         else:

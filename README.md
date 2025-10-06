@@ -46,7 +46,6 @@ provision_it_v2/
 ├── import_postgres.sql        # Database insert data
 ├── init_db_postgres.py        # Database initialization
 ├── run.py                     # Application entry point
-├── test_auth_demo.py          # Demo script for testing auth endpoints
 ├── requirements.txt           # Dependencies
 ├── .env                       # Environment configuration template
 ├── setup_env.sh               # Automated setup script for Unix/Linux/macOS
@@ -452,7 +451,7 @@ A demo script is included to test the authentication endpoints:
 python run.py
 
 # In another terminal, run the demo
-python test_auth_demo.py
+python run_tests.py --unit --database
 ```
 
 The demo script will test:

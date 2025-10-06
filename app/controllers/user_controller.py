@@ -68,6 +68,21 @@ class UserController:
         except Exception as e:
             return self.user_view.render_error(str(e), 500)
     
+    def _validate_user_update(self, user_id, user_data):
+        """Validate user update request and return user if valid."""
+        current_password = user_data.pop('current_password', None)
+        if not current_password:
+            return None, "Current password required for verification"
+        
+        user = self.user_service.get_user_by_id(user_id)
+        if not user:
+            return None, "User not found"
+        
+        if user.password != current_password:
+            return None, "Invalid current password"
+        
+        return user, None
+
     @require_json
     def update_user(self, user_id):
         """
@@ -83,19 +98,10 @@ class UserController:
         try:
             user_data = request.get_json()
             
-            # Get current password for verification
-            current_password = user_data.pop('current_password', None)
-            if not current_password:
-                return self.user_view.render_error("Current password required for verification", 401)
-            
-            # Get the user to verify password
-            user = self.user_service.get_user_by_id(user_id)
-            if not user:
-                return self.user_view.render_error("User not found", 404)
-            
-            # Verify current password
-            if user.password != current_password:
-                return self.user_view.render_error("Invalid current password", 401)
+            # Validate user and password
+            _, error = self._validate_user_update(user_id, user_data)
+            if error:
+                return self.user_view.render_error(error, 401 if "password" in error else 404)
             
             # Update user
             updated_user = self.user_service.update_user(user_id, user_data)
@@ -141,8 +147,7 @@ class UserController:
             
             if result["success"]:
                 return self.user_view.render_user_deleted()
-            else:
-                return self.user_view.render_error(result["message"], 400)
+            return self.user_view.render_error(result["message"], 400)
                 
         except Exception as e:
             return self.user_view.render_error(str(e), 500)

@@ -186,6 +186,11 @@
     let chart = null;
     let selectedAsset = null;
     
+    // Redirect to login if not authenticated
+    if (!user || !user.user_id) {
+      location.href = 'login.html';
+    }
+
     // Check if user is manager
     if (user.is_manager) {
       document.getElementById('adminLink').style.display = 'inline-block';
@@ -193,17 +198,23 @@
 
     async function fetchPortfolioData() {
       try {
-        // Fetch user holdings
-        const holdingsRes = await fetch(`${API}/users/${user.user_id}/fractions`);
-        const holdings = await holdingsRes.json();
+        // Fetch user holdings (aggregated)
+        const holdingsRes = await fetch(`${API}/users/${user.user_id}/fractions/owning`, {
+          credentials: 'include'
+        });
+        const holdingsWrap = await holdingsRes.json();
+        const holdings = holdingsWrap.items || [];
         
         // Fetch all assets for reference
-        const assetsRes = await fetch(`${API}/assets`);
+        const assetsRes = await fetch(`${API}/assets`, { credentials: 'include' });
         allAssets = await assetsRes.json();
         
         // Fetch recent transactions
-        const transactionsRes = await fetch(`${API}/transactions?user_id=${user.user_id}&limit=10`);
-        transactions = await transactionsRes.json();
+        const transactionsRes = await fetch(`${API}/users/${user.user_id}/transactions?per_page=10`, {
+          credentials: 'include'
+        });
+        const txWrap = await transactionsRes.json();
+        transactions = txWrap.items || [];
         
         // Process portfolio data
         portfolioData = processPortfolioData(holdings, allAssets);
@@ -220,42 +231,28 @@
     }
 
     function processPortfolioData(holdings, assets) {
+      // holdings is aggregated from backend: [{ asset_id, asset_name, units, latest_value, estimated_value }]
       const portfolio = [];
-      const holdingsByAsset = {};
-      
-      // Group holdings by asset
-      holdings.forEach(holding => {
-        if (!holdingsByAsset[holding.asset_id]) {
-          holdingsByAsset[holding.asset_id] = 0;
-        }
-        holdingsByAsset[holding.asset_id] += holding.units;
+      holdings.forEach(h => {
+        const currentPrice = parseFloat(h.latest_value || 0);
+        const currentValue = parseFloat(h.estimated_value || (currentPrice * (h.units || 0)));
+        const costBasis = currentValue * (0.8 + Math.random() * 0.4); // Mock cost basis
+        const gain = currentValue - costBasis;
+        const gainPercent = costBasis ? (gain / costBasis) * 100 : 0;
+        const name = h.asset_name || (assets.find(a => a.asset_id == h.asset_id)?.asset_name) || `Asset ${h.asset_id}`;
+
+        portfolio.push({
+          asset_id: h.asset_id,
+          asset_name: name,
+          units: parseInt(h.units || 0),
+          current_price: currentPrice,
+          current_value: currentValue,
+          cost_basis: costBasis,
+          gain: gain,
+          gain_percent: gainPercent,
+          category: getAssetCategory({ asset_name: name })
+        });
       });
-      
-      // Create portfolio entries
-      Object.keys(holdingsByAsset).forEach(assetId => {
-        const asset = assets.find(a => a.asset_id == assetId);
-        if (asset) {
-          const units = holdingsByAsset[assetId];
-          const currentPrice = parseFloat(asset.total_value) / parseInt(asset.total_unit);
-          const currentValue = units * currentPrice;
-          const costBasis = currentValue * (0.8 + Math.random() * 0.4); // Mock cost basis
-          const gain = currentValue - costBasis;
-          const gainPercent = (gain / costBasis) * 100;
-          
-          portfolio.push({
-            asset_id: asset.asset_id,
-            asset_name: asset.asset_name,
-            units: units,
-            current_price: currentPrice,
-            current_value: currentValue,
-            cost_basis: costBasis,
-            gain: gain,
-            gain_percent: gainPercent,
-            category: getAssetCategory(asset)
-          });
-        }
-      });
-      
       return portfolio;
     }
 

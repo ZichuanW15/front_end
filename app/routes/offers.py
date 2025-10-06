@@ -18,6 +18,15 @@ def create_offer():
     """
     Create a new offer.
     
+    Request body:
+    {
+        "asset_id": 1,
+        "user_id": 1,
+        "is_buyer": true/false,
+        "units": 100,
+        "price_perunit": 50.00
+    }
+    
     Returns:
         JSON response with created offer data
     """
@@ -38,6 +47,22 @@ def get_offer(offer_id):
     return offer_controller.get_offer(offer_id)
 
 
+@bp.route('', methods=['GET'])
+def get_all_offers():
+    """
+    Get all offers with pagination.
+    
+    Query params:
+        - page: int (default 1)
+        - per_page: int (default 20)
+        - active_only: bool (default true)
+    
+    Returns:
+        JSON response with paginated offers list
+    """
+    return offer_controller.get_all_offers()
+
+
 @bp.route('/user/<int:user_id>', methods=['GET'])
 def get_offers_by_user(user_id):
     """
@@ -45,6 +70,9 @@ def get_offers_by_user(user_id):
     
     Args:
         user_id: User ID
+    
+    Query params:
+        - active_only: bool (default true)
         
     Returns:
         JSON response with offers list
@@ -59,11 +87,49 @@ def get_offers_by_asset(asset_id):
     
     Args:
         asset_id: Asset ID
+    
+    Query params:
+        - active_only: bool (default true)
+        - is_buyer: bool (optional, filter by buyer/seller)
         
     Returns:
         JSON response with offers list
     """
     return offer_controller.get_offers_by_asset(asset_id)
+
+
+@bp.route('/asset/<int:asset_id>/buy', methods=['GET'])
+def get_buy_offers(asset_id):
+    """
+    Get all buy offers for a specific asset (sorted by price descending).
+    
+    Args:
+        asset_id: Asset ID
+    
+    Query params:
+        - active_only: bool (default true)
+        
+    Returns:
+        JSON response with buy offers list
+    """
+    return offer_controller.get_buy_offers(asset_id)
+
+
+@bp.route('/asset/<int:asset_id>/sell', methods=['GET'])
+def get_sell_offers(asset_id):
+    """
+    Get all sell offers for a specific asset (sorted by price ascending).
+    
+    Args:
+        asset_id: Asset ID
+    
+    Query params:
+        - active_only: bool (default true)
+        
+    Returns:
+        JSON response with sell offers list
+    """
+    return offer_controller.get_sell_offers(asset_id)
 
 
 @bp.route('/<int:offer_id>', methods=['PUT'])
@@ -73,6 +139,12 @@ def update_offer(offer_id):
     
     Args:
         offer_id: Offer ID
+    
+    Request body:
+    {
+        "units": 150,
+        "price_perunit": 55.00
+    }
         
     Returns:
         JSON response with updated offer data
@@ -83,7 +155,7 @@ def update_offer(offer_id):
 @bp.route('/<int:offer_id>', methods=['DELETE'])
 def delete_offer(offer_id):
     """
-    Delete an offer.
+    Delete (deactivate) an offer.
     
     Args:
         offer_id: Offer ID

@@ -24,6 +24,18 @@ def create_asset():
     return asset_controller.create_asset()
 
 
+@bp.route('/with-initial-fraction', methods=['POST'])
+def create_asset_with_initial_fraction():
+    """
+    Create a new asset with initial fraction and value history.
+    This is the complete admin workflow for asset creation.
+    
+    Returns:
+        JSON response with created asset, fraction, and value history data
+    """
+    return asset_controller.create_asset_with_initial_fraction()
+
+
 @bp.route('/<int:asset_id>', methods=['GET'])
 def get_asset(asset_id):
     """

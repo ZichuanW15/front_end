@@ -198,3 +198,37 @@ class AssetController:
             return self.asset_view.render_error(str(e), 403)
         except Exception as e:
             return self.asset_view.render_error(str(e), 500)
+    
+    def create_asset_with_initial_fraction(self):
+        """
+        Handle complete asset creation workflow with initial fraction and value history.
+        This is the admin endpoint for creating assets with all necessary components.
+        
+        Returns:
+            Response: JSON response with created asset, fraction, and value history data
+        """
+        try:
+            data = request.get_json()
+            if not data:
+                return self.asset_view.render_error("No JSON data provided", 400)
+            
+            # Extract asset data, owner_id, and adjusted_by
+            asset_data = {k: v for k, v in data.items() if k not in ['owner_id', 'adjusted_by']}
+            owner_id = data.get('owner_id')
+            adjusted_by = data.get('adjusted_by')
+            
+            if not owner_id:
+                return self.asset_view.render_error("owner_id is required", 400)
+            
+            if not adjusted_by:
+                return self.asset_view.render_error("adjusted_by is required", 400)
+            
+            # Create asset with initial fraction and value history
+            result = self.asset_service.create_asset_with_initial_fraction(asset_data, owner_id, adjusted_by)
+            
+            return self.asset_view.render_asset_with_fraction_created(result)
+            
+        except ValueError as e:
+            return self.asset_view.render_error(str(e), 400)
+        except Exception as e:
+            return self.asset_view.render_error(str(e), 500)

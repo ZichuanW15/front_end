@@ -33,6 +33,7 @@ CREATE TABLE "Users" (
 CREATE TABLE "Assets" (
   asset_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   asset_name TEXT NOT NULL,
+  asset_description TEXT,
   total_unit BIGINT NOT NULL,
   unit_min BIGINT NOT NULL,
   unit_max BIGINT NOT NULL,

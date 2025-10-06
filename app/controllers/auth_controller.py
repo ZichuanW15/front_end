@@ -2,10 +2,10 @@
 Authentication controller for handling authentication-related requests.
 """
 
-from flask import request
+from flask import request, session
+from app.decorators import require_json, require_login
 from app.services.auth_service import AuthService
 from app.views.auth_view import AuthView
-from app.decorators import require_json, require_login
 
 
 class AuthController:
@@ -98,7 +98,6 @@ class AuthController:
             Response: JSON response with current user data
         """
         try:
-            from flask import session
             user = self.auth_service.get_current_user()
             if not user:
                 return self.auth_view.render_error("User not found", 404)
@@ -123,7 +122,6 @@ class AuthController:
             session_token = data['session_token']
             
             # Find user by session token
-            from flask import session
             if session.get('session_token') == session_token:
                 user = self.auth_service.get_current_user()
                 if user:

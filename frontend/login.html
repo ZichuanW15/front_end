@@ -44,12 +44,12 @@ async function login(){
     });
     const data = await r.json().catch(()=>({}));
     if(r.ok && data.status === 'success'){
-      // Login successful → redirect to dashboard
+      // Login successful → redirect to browsing
       setMsg('Login successful, redirecting...', true);
       // Store simple user info for welcome message
       sessionStorage.setItem('user', JSON.stringify(data.user || {}));
       sessionStorage.setItem('sessionToken', data.session?.session_token || '');
-      location.href = 'dashboard.html'; // Target page
+      location.href = 'browsing.html'; // Target page
     }else{
       setMsg(data.message || data.error || `Login failed (${r.status})`, false);
     }

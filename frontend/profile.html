@@ -12,7 +12,6 @@
       <div class="nav-content">
         <h1>Profile Settings</h1>
         <div class="nav-links">
-          <a href="dashboard.html">Dashboard</a>
           <a href="browsing.html">Browse Assets</a>
           <a href="trading.html">Trading</a>
           <a href="portfolio.html">My Assets</a>
@@ -146,62 +145,26 @@
   <div id="msg" class="msg muted" style="display: none;"></div>
 
 <script>
-const API = 'http://localhost:5001'; // Backend API server
-const el = id => document.getElementById(id);
-const setMsg = (txt, ok=null) => {
-  const m = el('msg'); 
-  m.textContent = txt; 
-  m.className = 'msg ' + (ok===null?'muted': ok?'ok':'err');
-  m.style.display = 'block';
-  setTimeout(() => m.style.display = 'none', 5000);
-};
+  const API = 'http://localhost:5001'; // Backend API server
+  const el = id => document.getElementById(id);
+  const setMsg = (txt, ok=null) => {
+    const m = el('msg'); 
+    m.textContent = txt; 
+    m.className = 'msg ' + (ok===null?'muted': ok?'ok':'err');
+    m.style.display = 'block';
+    setTimeout(() => m.style.display = 'none', 5000);
+  };
 
-// Load user profile data
-async function loadProfile() {
-  try {
-    console.log('Loading profile data...');
-    
-    // First, try to get user data from sessionStorage (stored during login)
-    const sessionUser = sessionStorage.getItem('user');
-    if (sessionUser) {
-      console.log('Using sessionStorage user data');
-      const user = JSON.parse(sessionUser);
+  // Load user profile data
+  async function loadProfile() {
+    try {
+      console.log('Loading profile data...');
       
-      // Populate form fields
-      el('username').value = user.user_name || '';
-      el('email').value = user.email || '';
-      
-      // Populate display fields
-      el('displayUsername').textContent = user.user_name || '-';
-      el('displayEmail').textContent = user.email || '-';
-      el('accountType').textContent = user.is_manager ? 'Manager' : 'Regular User';
-      el('memberSince').textContent = user.created_at ? new Date(user.created_at).toLocaleDateString() : '-';
-      el('userId').textContent = user.user_id || '-';
-      
-      // Store original values for comparison
-      el('username').setAttribute('data-original', user.user_name || '');
-      el('email').setAttribute('data-original', user.email || '');
-      
-      console.log('Profile loaded from sessionStorage');
-      return; // Success, exit early
-    }
-    
-    // If no sessionStorage data, try API call
-    console.log('No sessionStorage data, trying API call...');
-    const response = await fetch(`${API}/auth/me`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include' // Include cookies for session-based auth
-    });
-    
-    console.log('Profile response status:', response.status);
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.status === 'success' && data.user) {
-        const user = data.user;
+      // First, try to get user data from sessionStorage (stored during login)
+      const sessionUser = sessionStorage.getItem('user');
+      if (sessionUser) {
+        console.log('Using sessionStorage user data');
+        const user = JSON.parse(sessionUser);
         
         // Populate form fields
         el('username').value = user.user_name || '';
@@ -218,288 +181,347 @@ async function loadProfile() {
         el('username').setAttribute('data-original', user.user_name || '');
         el('email').setAttribute('data-original', user.email || '');
         
-        // Store in sessionStorage for future use
-        sessionStorage.setItem('user', JSON.stringify(user));
-        console.log('Profile loaded from API and stored in sessionStorage');
+        console.log('Profile loaded from sessionStorage');
+        // Show admin link if the user is a manager (handle booleans, numbers, and strings)
+        try {
+          const adminLink = document.getElementById('adminLink');
+          const isManager = user.is_manager === true || user.is_manager === 1 || user.is_manager === '1' || user.is_manager === 'true';
+          if (adminLink) adminLink.style.display = isManager ? 'inline-block' : 'none';
+        } catch (e) {
+          console.warn('Could not toggle admin link:', e);
+        }
+        return; // Success, exit early
       }
-    } else {
-      console.log('Profile request failed with status:', response.status);
-      const errorData = await response.json().catch(() => ({}));
-      console.log('Profile error data:', errorData);
       
-      // If API fails and no sessionStorage, show error
-      setMsg('Failed to load profile data: ' + (errorData.message || 'Unknown error'), false);
-    }
-  } catch (error) {
-    console.error('Profile load error:', error);
-    
-    // Check if we have sessionStorage data as fallback
-    const sessionUser = sessionStorage.getItem('user');
-    if (sessionUser) {
-      console.log('API failed, using sessionStorage fallback');
-      const user = JSON.parse(sessionUser);
+      // If no sessionStorage data, try API call
+      console.log('No sessionStorage data, trying API call...');
+      const response = await fetch(`${API}/auth/me`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include' // Include cookies for session-based auth
+      });
       
-      // Populate form fields
-      el('username').value = user.user_name || '';
-      el('email').value = user.email || '';
+      console.log('Profile response status:', response.status);
       
-      // Populate display fields
-      el('displayUsername').textContent = user.user_name || '-';
-      el('displayEmail').textContent = user.email || '-';
-      el('accountType').textContent = user.is_manager ? 'Manager' : 'Regular User';
-      el('memberSince').textContent = user.created_at ? new Date(user.created_at).toLocaleDateString() : '-';
-      el('userId').textContent = user.user_id || '-';
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === 'success' && data.user) {
+          const user = data.user;
+          
+          // Populate form fields
+          el('username').value = user.user_name || '';
+          el('email').value = user.email || '';
+          
+          // Populate display fields
+          el('displayUsername').textContent = user.user_name || '-';
+          el('displayEmail').textContent = user.email || '-';
+          el('accountType').textContent = user.is_manager ? 'Manager' : 'Regular User';
+          el('memberSince').textContent = user.created_at ? new Date(user.created_at).toLocaleDateString() : '-';
+          el('userId').textContent = user.user_id || '-';
+          
+          // Store original values for comparison
+          el('username').setAttribute('data-original', user.user_name || '');
+          el('email').setAttribute('data-original', user.email || '');
+          
+          // Store in sessionStorage for future use
+          sessionStorage.setItem('user', JSON.stringify(user));
+          console.log('Profile loaded from API and stored in sessionStorage');
+          // Show admin link if the user is a manager
+          try {
+            const adminLink = document.getElementById('adminLink');
+            const isManager = user.is_manager === true || user.is_manager === 1 || user.is_manager === '1' || user.is_manager === 'true';
+            if (adminLink) adminLink.style.display = isManager ? 'inline-block' : 'none';
+          } catch (e) {
+            console.warn('Could not toggle admin link:', e);
+          }
+        }
+      } else {
+        console.log('Profile request failed with status:', response.status);
+        const errorData = await response.json().catch(() => ({}));
+        console.log('Profile error data:', errorData);
+        
+        // If API fails and no sessionStorage, show error
+        setMsg('Failed to load profile data: ' + (errorData.message || 'Unknown error'), false);
+      }
+    } catch (error) {
+      console.error('Profile load error:', error);
       
-      // Store original values for comparison
-      el('username').setAttribute('data-original', user.user_name || '');
-      el('email').setAttribute('data-original', user.email || '');
-      
-      setMsg('Profile loaded (offline mode)', true);
-    } else {
-      setMsg('Error loading profile: ' + error.message, false);
-    }
-  }
-}
-
-// Update profile
-async function updateProfile(event) {
-  event.preventDefault();
-  
-  const username = el('username').value.trim();
-  const email = el('email').value.trim();
-  const currentPassword = el('currentPassword').value;
-  const newPassword = el('newPassword').value;
-  const confirmPassword = el('confirmPassword').value;
-  
-  // Validate required fields
-  if (!username) {
-    setMsg('Username is required', false);
-    return;
-  }
-  
-  if (!email) {
-    setMsg('Email is required', false);
-    return;
-  }
-  
-  if (!currentPassword) {
-    setMsg('Current password is required', false);
-    return;
-  }
-  
-  // Validate password if changing
-  if (newPassword) {
-    if (newPassword !== confirmPassword) {
-      setMsg('New passwords do not match', false);
-      return;
-    }
-    // No password length restrictions
-  }
-  
-  setMsg('Updating profile...', null);
-  
-  try {
-    const updateData = { 
-      user_name: username,
-      email: email,
-      current_password: currentPassword
-    };
-    if (newPassword) {
-      updateData.password = newPassword;
-    }
-    
-    console.log('Attempting API update...');
-    
-    const response = await fetch(`${API}/users/${getCurrentUserId()}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include', // Include cookies for session-based auth
-      body: JSON.stringify(updateData)
-    });
-    
-    console.log('Update response status:', response.status);
-    const data = await response.json();
-    
-    if (response.ok && data.status === 'success') {
-      // Update sessionStorage with new data
+      // Check if we have sessionStorage data as fallback
       const sessionUser = sessionStorage.getItem('user');
       if (sessionUser) {
+        console.log('API failed, using sessionStorage fallback');
         const user = JSON.parse(sessionUser);
-        user.user_name = username;
-        user.email = email;
-        sessionStorage.setItem('user', JSON.stringify(user));
+        
+        // Populate form fields
+        el('username').value = user.user_name || '';
+        el('email').value = user.email || '';
+        
+        // Populate display fields
+        el('displayUsername').textContent = user.user_name || '-';
+        el('displayEmail').textContent = user.email || '-';
+        el('accountType').textContent = user.is_manager ? 'Manager' : 'Regular User';
+        el('memberSince').textContent = user.created_at ? new Date(user.created_at).toLocaleDateString() : '-';
+        el('userId').textContent = user.user_id || '-';
+        
+        // Store original values for comparison
+        el('username').setAttribute('data-original', user.user_name || '');
+        el('email').setAttribute('data-original', user.email || '');
+        
+        setMsg('Profile loaded (offline mode)', true);
+        // Show admin link if the user is a manager in offline/session fallback
+        try {
+          const adminLink = document.getElementById('adminLink');
+          const isManager = user.is_manager === true || user.is_manager === 1 || user.is_manager === '1' || user.is_manager === 'true';
+          if (adminLink) adminLink.style.display = isManager ? 'inline-block' : 'none';
+        } catch (e) {
+          console.warn('Could not toggle admin link in fallback:', e);
+        }
+      } else {
+        setMsg('Error loading profile: ' + error.message, false);
+      }
+    }
+  }
+  // Update profile
+  async function updateProfile(event) {
+    event.preventDefault();
+    
+    const username = el('username').value.trim();
+    const email = el('email').value.trim();
+    const currentPassword = el('currentPassword').value;
+    const newPassword = el('newPassword').value;
+    const confirmPassword = el('confirmPassword').value;
+    
+    // Validate required fields
+    if (!username) {
+      setMsg('Username is required', false);
+      return;
+    }
+    
+    if (!email) {
+      setMsg('Email is required', false);
+      return;
+    }
+    
+    if (!currentPassword) {
+      setMsg('Current password is required', false);
+      return;
+    }
+    
+    // Validate password if changing
+    if (newPassword) {
+      if (newPassword !== confirmPassword) {
+        setMsg('New passwords do not match', false);
+        return;
+      }
+      // No password length restrictions
+    }
+    
+    setMsg('Updating profile...', null);
+    
+    try {
+      const updateData = { 
+        user_name: username,
+        email: email,
+        current_password: currentPassword
+      };
+      if (newPassword) {
+        updateData.password = newPassword;
       }
       
-      setMsg('Profile updated successfully in database', true);
-      el('currentPassword').value = '';
-      el('newPassword').value = '';
-      el('confirmPassword').value = '';
-      loadProfile(); // Reload profile data
-      cancelEdit(); // Exit edit mode
-    } else {
-      console.log('Update failed:', data);
-      setMsg(data.message || data.error || 'Failed to update profile', false);
+      console.log('Attempting API update...');
+      
+      const response = await fetch(`${API}/users/${getCurrentUserId()}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include', // Include cookies for session-based auth
+        body: JSON.stringify(updateData)
+      });
+      
+      console.log('Update response status:', response.status);
+      const data = await response.json();
+      
+      if (response.ok && data.status === 'success') {
+        // Update sessionStorage with new data
+        const sessionUser = sessionStorage.getItem('user');
+        if (sessionUser) {
+          const user = JSON.parse(sessionUser);
+          user.user_name = username;
+          user.email = email;
+          sessionStorage.setItem('user', JSON.stringify(user));
+        }
+        
+        setMsg('Profile updated successfully in database', true);
+        el('currentPassword').value = '';
+        el('newPassword').value = '';
+        el('confirmPassword').value = '';
+        loadProfile(); // Reload profile data
+        cancelEdit(); // Exit edit mode
+      } else {
+        console.log('Update failed:', data);
+        setMsg(data.message || data.error || 'Failed to update profile', false);
+      }
+    } catch (error) {
+      console.error('Profile update error:', error);
+      setMsg('Error updating profile: ' + error.message, false);
     }
-  } catch (error) {
-    console.error('Profile update error:', error);
-    setMsg('Error updating profile: ' + error.message, false);
   }
-}
 
-// Delete account
-async function deleteAccount(password) {
-  try {
-    console.log('Attempting to delete account...');
-    setMsg('Deleting account...', null);
+  // Delete account
+  async function deleteAccount(password) {
+    try {
+      console.log('Attempting to delete account...');
+      setMsg('Deleting account...', null);
+      
+      const response = await fetch(`${API}/users/${getCurrentUserId()}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          current_password: password
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.status === 'success') {
+        // Clear all session data
+        sessionStorage.clear();
+        
+        setMsg('Account deleted successfully from database', true);
+        
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          location.href = 'login.html';
+        }, 2000);
+        
+        console.log('Account deleted successfully from database');
+      } else {
+        console.error('Delete account failed:', data);
+        setMsg(data.message || data.error || 'Failed to delete account', false);
+      }
+      
+    } catch (error) {
+      console.error('Delete account error:', error);
+      setMsg('Error deleting account: ' + error.message, false);
+    }
+  }
+
+  // Toggle edit mode
+  function toggleEditMode() {
+    const form = el('profileForm');
+    const display = el('profileDisplay');
+    const btn = el('editToggleBtn');
     
-    const response = await fetch(`${API}/users/${getCurrentUserId()}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        current_password: password
-      })
-    });
+    if (form.style.display === 'none') {
+      form.style.display = 'block';
+      display.style.display = 'none';
+      btn.textContent = 'Cancel Edit';
+    } else {
+      cancelEdit();
+    }
+  }
+
+  // Cancel edit mode
+  function cancelEdit() {
+    const form = el('profileForm');
+    const display = el('profileDisplay');
+    const btn = el('editToggleBtn');
     
-    const data = await response.json();
+    form.style.display = 'none';
+    display.style.display = 'block';
+    btn.textContent = 'Edit Profile';
     
-    if (response.ok && data.status === 'success') {
-      // Clear all session data
+    // Reset form to original values
+    el('username').value = el('username').getAttribute('data-original') || '';
+    el('email').value = el('email').getAttribute('data-original') || '';
+    el('newPassword').value = '';
+    el('confirmPassword').value = '';
+  }
+
+  // Utility functions
+  function getCurrentUserId() {
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    return user.user_id;
+  }
+
+  // Removed resetForm function - now using cancelEdit()
+
+  function showDeleteConfirmation() {
+    el('deleteModal').style.display = 'block';
+    el('deleteConfirmation').value = '';
+    el('confirmDeleteBtn').disabled = true;
+  }
+
+  function hideDeleteConfirmation() {
+    el('deleteModal').style.display = 'none';
+  }
+
+  function confirmDeleteAccount() {
+    const confirmation = el('deleteConfirmation').value;
+    const password = el('deletePassword').value;
+    
+    if (confirmation !== 'DELETE') {
+      setMsg('Please type "DELETE" to confirm', false);
+      return;
+    }
+    
+    if (!password) {
+      setMsg('Please enter your current password', false);
+      return;
+    }
+    
+    deleteAccount(password);
+    hideDeleteConfirmation();
+  }
+
+  // Logout function
+  async function logout() {
+    try {
+      await fetch(`${API}/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include' // Include cookies for session-based auth
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
       sessionStorage.clear();
-      
-      setMsg('Account deleted successfully from database', true);
-      
-      // Redirect to login after a short delay
-      setTimeout(() => {
-        location.href = 'login.html';
-      }, 2000);
-      
-      console.log('Account deleted successfully from database');
-    } else {
-      console.error('Delete account failed:', data);
-      setMsg(data.message || data.error || 'Failed to delete account', false);
+      location.href = 'login.html';
     }
-    
-  } catch (error) {
-    console.error('Delete account error:', error);
-    setMsg('Error deleting account: ' + error.message, false);
   }
-}
 
-// Toggle edit mode
-function toggleEditMode() {
-  const form = el('profileForm');
-  const display = el('profileDisplay');
-  const btn = el('editToggleBtn');
-  
-  if (form.style.display === 'none') {
-    form.style.display = 'block';
-    display.style.display = 'none';
-    btn.textContent = 'Cancel Edit';
-  } else {
-    cancelEdit();
-  }
-}
-
-// Cancel edit mode
-function cancelEdit() {
-  const form = el('profileForm');
-  const display = el('profileDisplay');
-  const btn = el('editToggleBtn');
-  
-  form.style.display = 'none';
-  display.style.display = 'block';
-  btn.textContent = 'Edit Profile';
-  
-  // Reset form to original values
-  el('username').value = el('username').getAttribute('data-original') || '';
-  el('email').value = el('email').getAttribute('data-original') || '';
-  el('newPassword').value = '';
-  el('confirmPassword').value = '';
-}
-
-// Utility functions
-function getCurrentUserId() {
-  const user = JSON.parse(sessionStorage.getItem('user') || '{}');
-  return user.user_id;
-}
-
-// Removed resetForm function - now using cancelEdit()
-
-function showDeleteConfirmation() {
-  el('deleteModal').style.display = 'block';
-  el('deleteConfirmation').value = '';
-  el('confirmDeleteBtn').disabled = true;
-}
-
-function hideDeleteConfirmation() {
-  el('deleteModal').style.display = 'none';
-}
-
-function confirmDeleteAccount() {
-  const confirmation = el('deleteConfirmation').value;
-  const password = el('deletePassword').value;
-  
-  if (confirmation !== 'DELETE') {
-    setMsg('Please type "DELETE" to confirm', false);
-    return;
-  }
-  
-  if (!password) {
-    setMsg('Please enter your current password', false);
-    return;
-  }
-  
-  deleteAccount(password);
-  hideDeleteConfirmation();
-}
-
-// Logout function
-async function logout() {
-  try {
-    await fetch(`${API}/auth/logout`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include' // Include cookies for session-based auth
-    });
-  } catch (error) {
-    console.error('Logout error:', error);
-  } finally {
-    sessionStorage.clear();
-    location.href = 'login.html';
-  }
-}
-
-// Event listeners
-el('profileForm').addEventListener('submit', updateProfile);
-el('deleteConfirmation').addEventListener('input', function() {
-  updateDeleteButtonState();
-});
-
-el('deletePassword').addEventListener('input', function() {
-  updateDeleteButtonState();
-});
-
-function updateDeleteButtonState() {
-  const confirmation = el('deleteConfirmation').value;
-  const password = el('deletePassword').value;
-  el('confirmDeleteBtn').disabled = confirmation !== 'DELETE' || !password;
-}
-
-// Check authentication and load profile
-document.addEventListener('DOMContentLoaded', function() {
-  // Check if user is logged in by trying to load profile
-  loadProfile().catch(() => {
-    // If profile loading fails, redirect to login
-    location.href = 'login.html';
+  // Event listeners
+  el('profileForm').addEventListener('submit', updateProfile);
+  el('deleteConfirmation').addEventListener('input', function() {
+    updateDeleteButtonState();
   });
-});
+
+  el('deletePassword').addEventListener('input', function() {
+    updateDeleteButtonState();
+  });
+
+  function updateDeleteButtonState() {
+    const confirmation = el('deleteConfirmation').value;
+    const password = el('deletePassword').value;
+    el('confirmDeleteBtn').disabled = confirmation !== 'DELETE' || !password;
+  }
+
+  // Check authentication and load profile
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is logged in by trying to load profile
+    loadProfile().catch(() => {
+      // If profile loading fails, redirect to login
+      location.href = 'login.html';
+    });
+  });
 </script>
 </body>
 </html>

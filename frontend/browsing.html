@@ -12,7 +12,6 @@
       <div class="nav-content">
         <h1>Browse Assets</h1>
         <div class="nav-links">
-          <a href="dashboard.html">Dashboard</a>
           <a href="browsing.html" class="active">Browse Assets</a>
           <a href="trading.html">Trading</a>
           <a href="portfolio.html">My Assets</a>
@@ -150,8 +149,7 @@
       </div>
       
       <div class="row" style="margin-top: 20px;">
-        <button onclick="quickBuyFromModal()" class="primary col" style="margin-right: 10px;">Quick Buy</button>
-        <button onclick="addToWatchlist()" class="col">Add to Watchlist</button>
+        <button onclick="quickBuyFromModal()" class="primary col">Quick Buy</button>
       </div>
     </div>
   </div>
@@ -173,10 +171,15 @@
 
     async function fetchAssets() {
       try {
-        const response = await fetch(`${API}/assets`);
-        allAssets = await response.json();
+        // Request more items from the API so the frontend can show/search all assets client-side.
+        // If the backend paginates, ask for a large per_page value.
+        const response = await fetch(`${API}/assets?per_page=1000`);
+        const data = await response.json();
+
+        // The API returns an object like { assets: [...], count: N, status: 'success' }
+        allAssets = Array.isArray(data) ? data : (data.assets || []);
         filteredAssets = [...allAssets];
-        
+
         updateStatistics();
         displayAssets();
         updatePagination();
@@ -272,8 +275,7 @@
           </div>
           
           <div class="row">
-            <button onclick="event.stopPropagation(); quickBuy(${asset.asset_id})" class="primary small col" style="margin-right: 5px;">Buy</button>
-            <button onclick="event.stopPropagation(); addToWatchlist(${asset.asset_id})" class="small col">Watch</button>
+            <button onclick="event.stopPropagation(); quickBuy(${asset.asset_id})" class="primary small col">Buy</button>
           </div>
         </div>
       `;
@@ -297,7 +299,6 @@
           <td>${new Date(asset.created_at).toLocaleDateString()}</td>
           <td>
             <button onclick="event.stopPropagation(); quickBuy(${asset.asset_id})" class="small success">Buy</button>
-            <button onclick="event.stopPropagation(); addToWatchlist(${asset.asset_id})" class="small">Watch</button>
           </td>
         </tr>
       `;
@@ -516,10 +517,7 @@
       }
     }
 
-    function addToWatchlist(assetId) {
-      // Mock watchlist functionality
-      showMessage('Added to watchlist', true);
-    }
+    // watchlist functionality removed
 
     function refreshData() {
       fetchAssets();

@@ -68,6 +68,10 @@ class AssetService:
         Returns:
             List of Asset objects
         """
+        # If per_page is less than or equal to 0, return all assets (no pagination)
+        if per_page is not None and per_page <= 0:
+            return Asset.query.all()
+
         return Asset.query.paginate(
             page=page, 
             per_page=per_page, 

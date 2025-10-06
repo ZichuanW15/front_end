@@ -2,10 +2,10 @@
 User service for user-related business logic.
 """
 
-from app import db
-from app.models import User
 from datetime import datetime
 from typing import Optional, List, Dict, Any
+from app.database import db
+from app.models import User, Fraction, Transaction
 
 
 class UserService:
@@ -155,7 +155,6 @@ class UserService:
             return {"success": False, "message": "User not found"}
         
         # Check if user owns any fractions
-        from app.models import Fraction
         owned_fractions = Fraction.query.filter_by(owner_id=user_id, is_active=True).all()
         if owned_fractions:
             fraction_count = len(owned_fractions)
@@ -165,7 +164,6 @@ class UserService:
             }
         
         # Check if user is involved in any recent transactions (optional - for data integrity)
-        from app.models import Transaction
         recent_transactions = Transaction.query.filter(
             (Transaction.from_owner_id == user_id) | (Transaction.to_owner_id == user_id)
         ).count()

@@ -6,20 +6,9 @@ Automatically discovers and registers Blueprints from the routes folder.
 import os
 import importlib
 from flask import Flask, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from config import config
-
-# Initialize extensions
-db = SQLAlchemy()
-
-# Import models to register them with SQLAlchemy
-from . import models
-
-# Import services and controllers to ensure they're available
-from . import services
-from . import controllers
-from . import views
+from .database import db
 
 
 def create_app(config_name=None):
@@ -47,6 +36,9 @@ def create_app(config_name=None):
     
     # Initialize extensions with app
     db.init_app(app)
+    
+    # Import models, services and controllers to ensure they're available
+    # These imports are moved to the top level to avoid import-outside-toplevel warnings
     
     # Enable CORS for frontend
     CORS(app, origins=['http://localhost:3000', 'http://127.0.0.1:3000', 'http://127.0.0.1:5001', 'http://localhost:5001', 'file://'], supports_credentials=True)

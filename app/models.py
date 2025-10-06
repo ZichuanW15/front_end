@@ -157,6 +157,7 @@ class Transaction(Base):
     from_owner_id = Column(BigInteger, ForeignKey('Users.user_id'), nullable=False)
     to_owner_id = Column(BigInteger, ForeignKey('Users.user_id'), nullable=False)
     offer_id = Column(BigInteger, ForeignKey('Offers.offer_id'), nullable=False)
+    price_perunit = Column(Numeric(18, 2), nullable=False)
     
     
     offer = relationship('Offer', backref='transactions')
@@ -170,7 +171,9 @@ class Transaction(Base):
             'transaction_type': self.transaction_type,
             'transaction_at': self.transaction_at.isoformat() if self.transaction_at else None,
             'from_owner_id': self.from_owner_id,
-            'to_owner_id': self.to_owner_id
+            'to_owner_id': self.to_owner_id,
+            'offer_id': self.offer_id,
+            'price_perunit': float(self.price_perunit) if self.price_perunit else None
         }
     
     def __repr__(self):

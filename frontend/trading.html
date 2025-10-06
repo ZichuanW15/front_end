@@ -5,6 +5,276 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Trading Center - Asset Trading Platform</title>
   <link rel="stylesheet" href="common.css">
+  <style>
+    .tab-container {
+      display: flex;
+      border-bottom: 2px solid #e0e0e0;
+      margin-bottom: 20px;
+    }
+    .tab {
+      padding: 12px 24px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 16px;
+      font-weight: 500;
+      color: #666;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    .tab.active {
+      color: #007bff;
+      border-bottom-color: #007bff;
+    }
+    .tab:hover {
+      color: #007bff;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .offer-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      background: #fff;
+      transition: box-shadow 0.2s ease;
+    }
+    .offer-card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .offer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .offer-type {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .offer-type.buy {
+      background: #d4edda;
+      color: #155724;
+    }
+    .offer-type.sell {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .offer-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    .offer-detail {
+      text-align: center;
+    }
+    .offer-detail-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .offer-detail-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+    .offer-price {
+      color: #007bff;
+    }
+    .offer-user {
+      color: #666;
+      font-size: 14px;
+    }
+    .offer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .offer-time {
+      font-size: 12px;
+      color: #999;
+    }
+    .filters-section {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .filters-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .filter-group label {
+      font-size: 12px;
+      color: #666;
+      font-weight: 500;
+    }
+    .filter-group input,
+    .filter-group select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .modal-close {
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+    }
+    .modal-close:hover {
+      color: #333;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #333;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
+    .radio-group {
+      display: flex;
+      gap: 16px;
+    }
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .radio-option input[type="radio"] {
+      width: auto;
+    }
+    .my-offers-section {
+      margin-top: 40px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .ownership-summary {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    .ownership-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #e9ecef;
+    }
+    .ownership-item:last-child {
+      border-bottom: none;
+    }
+    .btn-disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    @media (max-width: 768px) {
+      .offer-details {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .filters-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .modal-content {
+        margin: 10% auto;
+        width: 95%;
+      }
+    }
+  </style>
 </head>
 <body>
   <nav class="nav">
@@ -26,173 +296,777 @@
   </nav>
 
   <div class="container">
-    <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <div>
-        <h2>Asset Trading</h2>
-        <p class="text-muted">View and execute trades on available offers</p>
-      </div>
-      <div class="row">
-        <select id="assetFilter" onchange="loadOffers()" style="margin-right: 10px;">
-          <option value="">Select Asset</option>
-        </select>
-        <button onclick="loadOffers()" class="small">Refresh</button>
-      </div>
-    </div>
-
     <!-- Message Display -->
     <div id="messageContainer" style="margin-bottom: 20px;"></div>
 
-    <!-- Offers Table -->
+    <!-- Trading Header -->
+    <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <h2>Asset Trading Marketplace</h2>
+        <p class="text-muted">Browse, create, and execute trades on fractional ownership assets</p>
+      </div>
+      <div class="row">
+        <button onclick="openCreateOfferModal()" class="success" style="margin-right: 10px;">Create Offer</button>
+        <button onclick="refreshOffers()" class="small">Refresh</button>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+      <div class="filters-row">
+        <div class="filter-group">
+          <label>Asset</label>
+          <select id="assetFilter" onchange="handleAssetFilterChange()">
+            <option value="">All Assets</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Price Range</label>
+          <input type="number" id="minPrice" placeholder="Min" oninput="debouncedApplyFilters()">
+        </div>
+        <div class="filter-group">
+          <label>&nbsp;</label>
+          <input type="number" id="maxPrice" placeholder="Max" oninput="debouncedApplyFilters()">
+        </div>
+        <div class="filter-group">
+          <label>User ID</label>
+          <input type="number" id="userFilter" placeholder="User ID" oninput="debouncedApplyFilters()">
+        </div>
+        <div class="filter-group">
+          <label>&nbsp;</label>
+          <button onclick="clearFilters()" class="small">Clear Filters</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Marketplace View -->
     <div class="card">
-      <div class="row" style="justify-content: space-between; margin-bottom: 20px;">
-        <h3>Available Offers</h3>
-        <span class="text-muted" id="offersCount">0 offers</span>
+      <div class="tab-container">
+        <button class="tab active" onclick="switchTab('buy')">Buy Offers</button>
+        <button class="tab" onclick="switchTab('sell')">Sell Offers</button>
+        <button class="tab" onclick="switchTab('all')">All Offers</button>
+      </div>
+
+      <div id="buyTab" class="tab-content active">
+        <div class="section-header">
+          <h3>Buy Offers (Highest Price First)</h3>
+          <span class="text-muted" id="buyOffersCount">0 offers</span>
+        </div>
+        <div id="buyOffersContainer">
+          <div class="text-muted text-center" style="padding: 40px;">
+            <div class="spinner"></div>
+            <p>Loading buy offers...</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="sellTab" class="tab-content">
+        <div class="section-header">
+          <h3>Sell Offers (Lowest Price First)</h3>
+          <span class="text-muted" id="sellOffersCount">0 offers</span>
+        </div>
+        <div id="sellOffersContainer">
+          <div class="text-muted text-center" style="padding: 40px;">
+            <div class="spinner"></div>
+            <p>Loading sell offers...</p>
+          </div>
+        </div>
       </div>
       
-      <div id="offersTable">
+      <div id="allTab" class="tab-content">
+        <div class="section-header">
+          <h3>All Offers</h3>
+          <span class="text-muted" id="allOffersCount">0 offers</span>
+        </div>
+        <div id="allOffersContainer">
+          <div class="text-muted text-center" style="padding: 40px;">
+            <div class="spinner"></div>
+            <p>Loading all offers...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Offers Section -->
+    <div class="my-offers-section">
+      <div class="card">
+        <div class="section-header">
+          <h3 class="section-title">My Offers</h3>
+          <button onclick="loadMyOffers()" class="small">Refresh</button>
+        </div>
+        <div id="myOffersContainer">
         <div class="text-muted text-center" style="padding: 40px;">
           <div class="spinner"></div>
-          <p>Loading offers...</p>
+            <p>Loading your offers...</p>
+          </div>
         </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Create Offer Modal -->
+  <div id="createOfferModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Create New Offer</h3>
+        <span class="modal-close" onclick="closeCreateOfferModal()">&times;</span>
+      </div>
+      <form id="createOfferForm">
+        <div class="form-group">
+          <label for="offerAsset">Asset *</label>
+          <select id="offerAsset" required>
+            <option value="">Select Asset</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Direction *</label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="buyOffer" name="offerDirection" value="buy" onchange="updateOfferValidation()">
+              <label for="buyOffer">Buy</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="sellOffer" name="offerDirection" value="sell" onchange="updateOfferValidation()">
+              <label for="sellOffer">Sell</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="offerUnits">Units *</label>
+          <input type="number" id="offerUnits" min="1" required onchange="updateOfferValidation()">
+        </div>
+        <div class="form-group">
+          <label for="offerPrice">Price per Unit *</label>
+          <input type="number" id="offerPrice" min="0.01" step="0.01" required onchange="updateOfferValidation()">
+        </div>
+        <div id="offerValidation" style="margin-bottom: 16px; padding: 12px; border-radius: 4px; display: none;"></div>
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <button type="button" onclick="closeCreateOfferModal()" class="small">Cancel</button>
+          <button type="submit" id="submitOfferBtn" class="success" disabled>Create Offer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Trade Confirmation Modal -->
+  <div id="tradeConfirmModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Confirm Trade Execution</h3>
+        <span class="modal-close" onclick="closeTradeConfirmModal()">&times;</span>
+      </div>
+      <div id="tradeConfirmContent">
+        <!-- Trade details will be populated here -->
+      </div>
+      <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+        <button type="button" onclick="closeTradeConfirmModal()" class="small">Cancel</button>
+        <button type="button" id="confirmTradeBtn" class="success">Execute Trade</button>
       </div>
     </div>
   </div>
 
   <script>
-    const API = 'http://localhost:5000';
+    const API = 'http://localhost:5001';
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     let assets = [];
-    let currentAssetId = null;
+    let allOffers = [];
+    let currentTradeOffer = null;
+    let filterTimeout = null;
+    let offersCache = new Map(); // Cache for asset-specific offers
     
     // Check if user is manager
     if (user.is_manager) {
       document.getElementById('adminLink').style.display = 'inline-block';
     }
 
+    // Initialize page
+    window.onload = () => {
+      if (!user.user_id) {
+        location.href = 'login.html';
+        return;
+      }
+      loadAssets();
+      loadOffers();
+      loadMyOffers();
+    };
+
+    // Tab switching
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.getElementById(tabName + 'Tab').classList.add('active');
+      
+      // Load appropriate offers
+      loadOffers();
+    }
+
+    // Switch to Buy Offers tab programmatically
+    function switchToBuyTab() {
+      // Update tab buttons
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelector('.tab[onclick="switchTab(\'buy\')"]').classList.add('active');
+      
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.getElementById('buyTab').classList.add('active');
+    }
+
     // Load assets for dropdown
     async function loadAssets() {
       try {
         const response = await fetch(`${API}/assets`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
         
         if (data.status === 'success') {
           assets = data.assets || [];
-          populateAssetDropdown();
-          
-          // Auto-select first asset
-          if (assets.length > 0) {
-            document.getElementById('assetFilter').value = assets[0].asset_id;
-            currentAssetId = assets[0].asset_id;
-            loadOffers();
-          }
+          console.log('Loaded assets:', assets.length);
+          populateAssetDropdowns();
+        } else {
+          console.error('Failed to load assets:', data.message || 'Unknown error');
+          showMessage('Failed to load assets: ' + (data.message || 'Unknown error'), false);
         }
       } catch (error) {
         console.error('Error loading assets:', error);
-        showMessage('Failed to load assets', false);
+        showMessage('Failed to load assets: ' + error.message, false);
       }
     }
 
-    function populateAssetDropdown() {
-      const select = document.getElementById('assetFilter');
-      select.innerHTML = '<option value="">Select Asset</option>';
+    function populateAssetDropdowns() {
+      console.log('Populating asset dropdowns with', assets.length, 'assets');
+      
+      // Main filter dropdown
+      const assetFilter = document.getElementById('assetFilter');
+      if (assetFilter) {
+        assetFilter.innerHTML = '<option value="">All Assets</option>';
+        
+        assets.forEach(asset => {
+          const filterOption = document.createElement('option');
+          filterOption.value = asset.asset_id;
+          filterOption.textContent = asset.asset_name;
+          assetFilter.appendChild(filterOption);
+        });
+        console.log('Main filter dropdown populated with', assetFilter.options.length, 'options');
+      }
+      
+      // Create offer modal dropdown
+      const offerAsset = document.getElementById('offerAsset');
+      if (offerAsset) {
+        offerAsset.innerHTML = '<option value="">Select Asset</option>';
       
       assets.forEach(asset => {
-        const option = document.createElement('option');
-        option.value = asset.asset_id;
-        option.textContent = asset.asset_name;
-        select.appendChild(option);
-      });
+          const offerOption = document.createElement('option');
+          offerOption.value = asset.asset_id;
+          offerOption.textContent = asset.asset_name;
+          offerAsset.appendChild(offerOption);
+        });
+        console.log('Offer modal dropdown populated with', offerAsset.options.length, 'options');
+      } else {
+        console.error('offerAsset dropdown not found!');
+      }
     }
 
-    // Load offers for selected asset
+    // Load all offers
     async function loadOffers() {
-      const assetId = document.getElementById('assetFilter').value;
-      
-      if (!assetId) {
-        document.getElementById('offersTable').innerHTML = '<p class="text-muted text-center" style="padding: 40px;">Please select an asset to view offers</p>';
-        return;
-      }
-      
-      currentAssetId = assetId;
-      
-      document.getElementById('offersTable').innerHTML = '<div class="text-muted text-center" style="padding: 40px;"><div class="spinner"></div><p>Loading offers...</p></div>';
-      
       try {
-        const response = await fetch(`${API}/trading/offers/${assetId}`);
+        const response = await fetch(`${API}/offers?active_only=true`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
         
         if (data.status === 'success') {
-          displayOffers(data.buy_offers, data.sell_offers);
-          const totalCount = data.buy_count + data.sell_count;
-          document.getElementById('offersCount').textContent = `${totalCount} offers`;
+          allOffers = data.offers || [];
+          applyFilters();
+          
+          // Show helpful message if no offers exist
+          if (allOffers.length === 0) {
+            console.log('No offers found in database - this is normal for a new system');
+          }
         } else {
-          document.getElementById('offersTable').innerHTML = '<p class="text-muted text-center" style="padding: 40px;">Failed to load offers</p>';
+          showMessage('Failed to load offers: ' + (data.message || 'Unknown error'), false);
         }
       } catch (error) {
         console.error('Error loading offers:', error);
-        document.getElementById('offersTable').innerHTML = '<p class="text-muted text-center" style="padding: 40px;">Error loading offers</p>';
+        showMessage('Network error loading offers: ' + error.message, false);
       }
     }
 
-    function displayOffers(buyOffers, sellOffers) {
-      const container = document.getElementById('offersTable');
+    // Refresh offers (clears cache and reloads)
+    function refreshOffers() {
+      offersCache.clear(); // Clear cache
+      const assetId = document.getElementById('assetFilter').value;
+      if (assetId) {
+        handleAssetFilterChange(); // Reload specific asset
+      } else {
+        loadOffers(); // Reload all offers
+      }
+    }
+
+    // Apply filters to offers (client-side filtering for better performance)
+    function applyFilters(showLoading = false) {
+      if (showLoading) {
+        // Show loading state for all containers
+        document.getElementById('buyOffersContainer').innerHTML = '<div class="text-muted text-center" style="padding: 20px;"><div class="spinner"></div><p>Filtering...</p></div>';
+        document.getElementById('sellOffersContainer').innerHTML = '<div class="text-muted text-center" style="padding: 20px;"><div class="spinner"></div><p>Filtering...</p></div>';
+        document.getElementById('allOffersContainer').innerHTML = '<div class="text-muted text-center" style="padding: 20px;"><div class="spinner"></div><p>Filtering...</p></div>';
+      }
+
+      const assetId = document.getElementById('assetFilter').value;
+      const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+      const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+      const userId = document.getElementById('userFilter').value;
+
+      let filteredOffers = allOffers.filter(offer => {
+        if (assetId && offer.asset_id != assetId) return false;
+        if (offer.price_perunit < minPrice || offer.price_perunit > maxPrice) return false;
+        if (userId && offer.user_id != userId) return false;
+        return true;
+      });
+
+      displayFilteredOffers(filteredOffers);
+    }
+
+    // Debounced filter application for better performance
+    function debouncedApplyFilters() {
+      if (filterTimeout) {
+        clearTimeout(filterTimeout);
+      }
+      filterTimeout = setTimeout(() => {
+        applyFilters(true);
+      }, 300); // 300ms delay
+    }
+
+    // Handle asset filter change (only reload if needed)
+    async function handleAssetFilterChange() {
+      const assetId = document.getElementById('assetFilter').value;
+      console.log('Asset filter changed to:', assetId);
       
-      // Combine all offers and add type
-      const allOffers = [
-        ...buyOffers.map(o => ({ ...o, type: 'buy' })),
-        ...sellOffers.map(o => ({ ...o, type: 'sell' }))
-      ];
+      // Show loading immediately
+      applyFilters(true);
       
-      // Sort by price (highest first)
-      allOffers.sort((a, b) => b.price_perunit - a.price_perunit);
-      
-      if (allOffers.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center" style="padding: 40px;">No offers available for this asset</p>';
+      // If no asset selected and we have all offers loaded, just apply filters
+      if (!assetId && allOffers.length > 0) {
+        console.log('No asset selected, applying filters to existing offers');
+        applyFilters();
         return;
       }
       
-      container.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Price per Unit</th>
-              <th>Units</th>
-              <th>Total Value</th>
-              <th>User</th>
-              <th>Created</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${allOffers.map(offer => {
-              const actionButton = offer.type === 'buy' 
-                ? `<button onclick="executeTrade(${offer.offer_id})" class="small danger">SELL</button>`
-                : `<button onclick="executeTrade(${offer.offer_id})" class="small success">BUY</button>`;
+      // If no asset selected, load all offers
+      if (!assetId) {
+        console.log('No asset selected, loading all offers');
+        await loadOffers();
+        return;
+      }
+      
+      // If asset selected, load specific asset offers
+      console.log('Asset selected, loading offers for asset:', assetId);
+      await loadOffersForAsset(assetId);
+      
+      // Auto-switch to Buy Offers tab after loading asset offers
+      switchToBuyTab();
+    }
+
+    // Load offers for specific asset (optimized with cache)
+    async function loadOffersForAsset(assetId) {
+      console.log('Loading offers for asset:', assetId);
+      
+      // Check cache first
+      if (offersCache.has(assetId)) {
+        console.log('Using cached offers for asset:', assetId);
+        allOffers = offersCache.get(assetId);
+        applyFilters();
+        return;
+      }
+
+      try {
+        console.log('Fetching offers from API for asset:', assetId);
+        const response = await fetch(`${API}/trading/offers/${assetId}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('API response for asset offers:', data);
+        
+        if (data.status === 'success') {
+          // Convert asset-specific offers to the same format as all offers
+          const assetOffers = [
+            ...data.buy_offers.map(o => ({ ...o, is_buyer: true })),
+            ...data.sell_offers.map(o => ({ ...o, is_buyer: false }))
+          ];
+          
+          console.log('Converted asset offers:', assetOffers);
+          
+          // Cache the results
+          offersCache.set(assetId, assetOffers);
+          
+          // Update allOffers with just this asset's offers
+          allOffers = assetOffers;
+          applyFilters();
+        } else {
+          console.error('Failed to load asset offers:', data.message || 'Unknown error');
+        }
+      } catch (error) {
+        console.error('Error loading asset offers:', error);
+        showMessage('Error loading offers for selected asset: ' + error.message, false);
+      }
+    }
+
+    function clearFilters() {
+      document.getElementById('assetFilter').value = '';
+      document.getElementById('minPrice').value = '';
+      document.getElementById('maxPrice').value = '';
+      document.getElementById('userFilter').value = '';
+      offersCache.clear(); // Clear cache when clearing filters
+      loadOffers(); // Reload all offers when clearing filters
+    }
+
+    function displayFilteredOffers(offers) {
+      const buyOffers = offers.filter(o => o.is_buyer).sort((a, b) => b.price_perunit - a.price_perunit);
+      const sellOffers = offers.filter(o => !o.is_buyer).sort((a, b) => a.price_perunit - b.price_perunit);
+      const allOffersSorted = offers.sort((a, b) => b.price_perunit - a.price_perunit);
+
+      displayOfferCards(buyOffers, 'buyOffersContainer', 'buyOffersCount');
+      displayOfferCards(sellOffers, 'sellOffersContainer', 'sellOffersCount');
+      displayOfferCards(allOffersSorted, 'allOffersContainer', 'allOffersCount');
+    }
+
+    function displayOfferCards(offers, containerId, countId) {
+      const container = document.getElementById(containerId);
+      const countElement = document.getElementById(countId);
+      
+      countElement.textContent = `${offers.length} offers`;
+      
+      if (offers.length === 0) {
+        const hasFilters = document.getElementById('assetFilter').value || 
+                          document.getElementById('minPrice').value || 
+                          document.getElementById('maxPrice').value || 
+                          document.getElementById('userFilter').value;
+        
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📊</div>
+            <p>${hasFilters ? 'No offers found matching your criteria' : 'No offers available yet'}</p>
+            ${!hasFilters ? '<p class="text-muted">Be the first to create an offer!</p>' : ''}
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = offers.map(offer => {
+        const assetName = assets.find(a => a.asset_id === offer.asset_id)?.asset_name || `Asset #${offer.asset_id}`;
+        const canAccept = offer.user_id !== user.user_id;
+        const actionButton = canAccept ? 
+          `<button onclick="confirmTrade(${offer.offer_id})" class="small ${offer.is_buyer ? 'danger' : 'success'}">
+            ${offer.is_buyer ? 'SELL TO' : 'BUY FROM'}
+          </button>` : 
+          '<span class="text-muted">Your Offer</span>';
+
+        return `
+          <div class="offer-card">
+            <div class="offer-header">
+              <span class="offer-type ${offer.is_buyer ? 'buy' : 'sell'}">
+                ${offer.is_buyer ? 'BUY' : 'SELL'}
+              </span>
+              <span class="offer-user">User #${offer.user_id}</span>
+            </div>
+            <div class="offer-details">
+              <div class="offer-detail">
+                <div class="offer-detail-label">Asset</div>
+                <div class="offer-detail-value">${assetName}</div>
+              </div>
+              <div class="offer-detail">
+                <div class="offer-detail-label">Units</div>
+                <div class="offer-detail-value">${offer.units}</div>
+              </div>
+              <div class="offer-detail">
+                <div class="offer-detail-label">Price/Unit</div>
+                <div class="offer-detail-value offer-price">¥${offer.price_perunit.toFixed(2)}</div>
+              </div>
+            </div>
+            <div class="offer-actions">
+              <span class="offer-time">Created: ${formatDate(offer.create_at)}</span>
+              ${actionButton}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Load user's offers
+    async function loadMyOffers() {
+      try {
+        const response = await fetch(`${API}/offers/user/${user.user_id}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          displayMyOffers(data.offers || []);
+        } else {
+          console.error('Failed to load my offers:', data.message || 'Unknown error');
+        }
+      } catch (error) {
+        console.error('Error loading my offers:', error);
+      }
+    }
+
+    function displayMyOffers(offers) {
+      const container = document.getElementById('myOffersContainer');
+      
+      if (offers.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📝</div>
+            <p>You haven't created any offers yet</p>
+            <button onclick="openCreateOfferModal()" class="success" style="margin-top: 12px;">Create Your First Offer</button>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = offers.map(offer => {
+        const assetName = assets.find(a => a.asset_id === offer.asset_id)?.asset_name || `Asset #${offer.asset_id}`;
+        const statusClass = offer.is_valid ? 'success' : 'error';
+        const statusText = offer.is_valid ? 'Active' : 'Inactive';
               
               return `
-                <tr>
-                  <td>
-                    <span class="badge ${offer.type === 'buy' ? 'success' : 'error'}">${offer.type.toUpperCase()}</span>
-                  </td>
-                  <td>¥${offer.price_perunit.toFixed(2)}</td>
-                  <td>${offer.units}</td>
-                  <td>¥${offer.total_value.toFixed(2)}</td>
-                  <td>User #${offer.user_id}</td>
-                  <td class="text-muted">${formatDate(offer.created_at)}</td>
-                  <td>${actionButton}</td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-      `;
+          <div class="offer-card">
+            <div class="offer-header">
+              <span class="offer-type ${offer.is_buyer ? 'buy' : 'sell'}">
+                ${offer.is_buyer ? 'BUY' : 'SELL'}
+              </span>
+              <span class="badge ${statusClass}">${statusText}</span>
+            </div>
+            <div class="offer-details">
+              <div class="offer-detail">
+                <div class="offer-detail-label">Asset</div>
+                <div class="offer-detail-value">${assetName}</div>
+              </div>
+              <div class="offer-detail">
+                <div class="offer-detail-label">Units</div>
+                <div class="offer-detail-value">${offer.units}</div>
+              </div>
+              <div class="offer-detail">
+                <div class="offer-detail-label">Price/Unit</div>
+                <div class="offer-detail-value offer-price">¥${offer.price_perunit.toFixed(2)}</div>
+              </div>
+            </div>
+            <div class="offer-actions">
+              <span class="offer-time">Created: ${formatDate(offer.create_at)}</span>
+              <div>
+                ${offer.is_valid ? `
+                  <button onclick="editOffer(${offer.offer_id})" class="small" style="margin-right: 8px;">Edit</button>
+                  <button onclick="deleteOffer(${offer.offer_id})" class="small danger">Deactivate</button>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
-    async function executeTrade(offerId) {
-      if (!confirm('Are you sure you want to execute this trade?')) {
+
+    // Create offer modal functions
+    async function openCreateOfferModal() {
+      document.getElementById('createOfferModal').style.display = 'block';
+      
+      // Ensure assets are loaded and dropdown is populated
+      if (assets.length === 0) {
+        console.log('Assets not loaded yet, loading now...');
+        await loadAssets();
+      } else {
+        // Ensure asset dropdown is populated
+        const offerAsset = document.getElementById('offerAsset');
+        if (offerAsset && offerAsset.options.length <= 1) {
+          console.log('Repopulating asset dropdown...');
+          populateAssetDropdowns();
+        }
+      }
+      
+      updateOfferValidation();
+    }
+
+    function closeCreateOfferModal() {
+      document.getElementById('createOfferModal').style.display = 'none';
+      document.getElementById('createOfferForm').reset();
+      document.getElementById('offerValidation').style.display = 'none';
+    }
+
+    async function updateOfferValidation() {
+      const assetId = document.getElementById('offerAsset').value;
+      const direction = document.querySelector('input[name="offerDirection"]:checked')?.value;
+      const units = parseInt(document.getElementById('offerUnits').value);
+      const price = parseFloat(document.getElementById('offerPrice').value);
+
+      const validationDiv = document.getElementById('offerValidation');
+      const submitBtn = document.getElementById('submitOfferBtn');
+
+      if (!assetId || !direction || !units || !price) {
+        validationDiv.style.display = 'none';
+        submitBtn.disabled = true;
         return;
       }
+
+      let validationMessage = '';
+      let isValid = true;
+
+      // Check for existing active offer
+      const existingOffer = allOffers.find(o => 
+        o.user_id === user.user_id && 
+        o.asset_id == assetId && 
+        o.is_buyer === (direction === 'buy')
+      );
+
+      if (existingOffer) {
+        validationMessage = `You already have an active ${direction} offer for this asset. Please update or deactivate it first.`;
+        isValid = false;
+      }
+
+      // Check seller has enough fractions (validation will be done by backend)
+      if (direction === 'sell') {
+        // Note: Backend will validate seller has sufficient fractions
+        // Frontend validation removed to avoid dependency on myFractions data
+      }
+
+      if (validationMessage) {
+        validationDiv.innerHTML = validationMessage;
+        validationDiv.className = 'msg err';
+        validationDiv.style.display = 'block';
+      } else {
+        validationDiv.style.display = 'none';
+      }
+
+      submitBtn.disabled = !isValid;
+    }
+
+    // Handle create offer form submission
+    document.getElementById('createOfferForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = {
+        asset_id: parseInt(document.getElementById('offerAsset').value),
+        user_id: user.user_id,
+        is_buyer: document.querySelector('input[name="offerDirection"]:checked').value === 'buy',
+        units: parseInt(document.getElementById('offerUnits').value),
+        price_perunit: parseFloat(document.getElementById('offerPrice').value)
+      };
+
+      try {
+        const response = await fetch(`${API}/offers`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.status === 'success') {
+          showMessage('Offer created successfully!', true);
+          closeCreateOfferModal();
+          loadOffers();
+          loadMyOffers();
+        } else {
+          showMessage('Failed to create offer: ' + (data.message || 'Unknown error'), false);
+        }
+      } catch (error) {
+        console.error('Error creating offer:', error);
+        showMessage('Network error, please try again', false);
+      }
+    });
+
+    // Trade confirmation and execution
+    async function confirmTrade(offerId) {
+      const offer = allOffers.find(o => o.offer_id === offerId);
+      if (!offer) {
+        showMessage('Offer not found. It may have been traded already.', false);
+        // Refresh offers to get latest data
+        offersCache.clear();
+        await loadOffers();
+        return;
+      }
+
+      // Check if user is trying to trade with themselves
+      if (offer.user_id === user.user_id) {
+        showMessage('You cannot trade with yourself. Please select a different offer.', false);
+        return;
+      }
+
+      const assetName = assets.find(a => a.asset_id === offer.asset_id)?.asset_name || `Asset #${offer.asset_id}`;
+      
+      document.getElementById('tradeConfirmContent').innerHTML = `
+        <div class="offer-card">
+          <div class="offer-header">
+            <span class="offer-type ${offer.is_buyer ? 'buy' : 'sell'}">
+              ${offer.is_buyer ? 'BUY' : 'SELL'}
+            </span>
+            <span class="offer-user">User #${offer.user_id}</span>
+          </div>
+          <div class="offer-details">
+            <div class="offer-detail">
+              <div class="offer-detail-label">Asset</div>
+              <div class="offer-detail-value">${assetName}</div>
+            </div>
+            <div class="offer-detail">
+              <div class="offer-detail-label">Units</div>
+              <div class="offer-detail-value">${offer.units}</div>
+            </div>
+            <div class="offer-detail">
+              <div class="offer-detail-label">Price/Unit</div>
+              <div class="offer-detail-value offer-price">¥${offer.price_perunit.toFixed(2)}</div>
+            </div>
+          </div>
+          <div class="ownership-summary">
+            <div class="ownership-item">
+              <span><strong>Total Value:</strong></span>
+              <span><strong>¥${(offer.units * offer.price_perunit).toFixed(2)}</strong></span>
+            </div>
+            <div class="ownership-item">
+              <span>Your Role:</span>
+              <span>${offer.is_buyer ? 'Seller' : 'Buyer'}</span>
+            </div>
+            <div class="ownership-item">
+              <span>Counterparty:</span>
+              <span>User #${offer.user_id}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      currentTradeOffer = offer;
+      document.getElementById('tradeConfirmModal').style.display = 'block';
+    }
+
+    function closeTradeConfirmModal() {
+      document.getElementById('tradeConfirmModal').style.display = 'none';
+      currentTradeOffer = null;
+    }
+
+    async function executeTrade() {
+      if (!currentTradeOffer) return;
+
+      const confirmBtn = document.getElementById('confirmTradeBtn');
+      confirmBtn.disabled = true;
+      confirmBtn.innerHTML = 'Executing...';
+      confirmBtn.classList.add('btn-disabled');
       
       try {
         const response = await fetch(`${API}/trading/execute`, {
@@ -201,30 +1075,163 @@
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            offer_id: offerId,
+            offer_id: currentTradeOffer.offer_id,
             user_id: user.user_id
           })
         });
         
-        const data = await response.json();
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          console.error('Error parsing JSON response:', jsonError);
+          showMessage('Server returned invalid response. Please try again.', false);
+          return;
+        }
         
         if (response.ok && data.status === 'success') {
+          const trade = data.trade;
+          const assetName = assets.find(a => a.asset_id === trade.asset_id)?.asset_name || `Asset #${trade.asset_id}`;
+          
           showMessage(
-            `Trade executed successfully! ${data.trade.units_traded} units @ ¥${data.trade.price_perunit.toFixed(2)} = ¥${data.trade.total_value.toFixed(2)}`,
+            `✅ Trade executed successfully!<br>
+            <strong>${assetName}</strong><br>
+            ${trade.units_traded} units @ ¥${trade.price_perunit.toFixed(2)} = ¥${trade.total_value.toFixed(2)}<br>
+            <small>Offer has been removed from marketplace</small>`,
             true
           );
           
-          // Reload offers after 2 seconds
-          setTimeout(() => loadOffers(), 2000);
+          // Store offer details before closing modal
+          const tradedOfferId = currentTradeOffer.offer_id;
+          const tradedAssetId = currentTradeOffer.asset_id;
+          
+          closeTradeConfirmModal();
+          
+          // Remove the traded offer from display immediately
+          removeOfferFromDisplay(tradedOfferId);
+          
+          // Clear cache for the specific asset and refresh data
+          offersCache.delete(tradedAssetId);
+          offersCache.clear(); // Clear all cache to be safe
+          await loadOffers();
+          await loadMyOffers();
         } else {
-          showMessage('Trade failed: ' + (data.message || 'Unknown error'), false);
+          // Handle server errors (400, 500, etc.)
+          const errorMessage = data.message || data.error || `Server error (${response.status})`;
+          console.error('Trade execution failed:', {
+            status: response.status,
+            statusText: response.statusText,
+            data: data
+          });
+          showMessage('Trade failed: ' + errorMessage, false);
         }
       } catch (error) {
-        console.error('Error executing trade:', error);
+        console.error('Network error executing trade:', error);
+        showMessage('Network error: ' + error.message, false);
+      } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = 'Execute Trade';
+        confirmBtn.classList.remove('btn-disabled');
+      }
+    }
+
+    // Remove offer from display immediately after trade execution
+    function removeOfferFromDisplay(offerId) {
+      // Find and highlight the offer card being removed
+      const offerCards = document.querySelectorAll('.offer-card');
+      offerCards.forEach(card => {
+        const actionButtons = card.querySelectorAll('button');
+        actionButtons.forEach(button => {
+          if (button.onclick && button.onclick.toString().includes(offerId)) {
+            // Add visual feedback that offer is being removed
+            card.style.transition = 'opacity 0.5s ease-out';
+            card.style.opacity = '0.3';
+            card.style.backgroundColor = '#f0f8ff';
+          }
+        });
+      });
+      
+      // Remove from allOffers array
+      allOffers = allOffers.filter(offer => offer.offer_id !== offerId);
+      
+      // Update display immediately
+      setTimeout(() => {
+        const assetId = document.getElementById('assetFilter').value;
+        if (assetId) {
+          // If viewing specific asset, filter offers for that asset
+          const filteredOffers = allOffers.filter(offer => offer.asset_id == assetId);
+          displayFilteredOffers(filteredOffers);
+        } else {
+          // If viewing all offers, display all offers
+          displayFilteredOffers(allOffers);
+        }
+      }, 500); // Small delay for visual feedback
+    }
+
+    // Wire up trade confirmation button
+    document.getElementById('confirmTradeBtn').addEventListener('click', executeTrade);
+
+    // Offer management functions
+    async function editOffer(offerId) {
+      const offer = allOffers.find(o => o.offer_id === offerId);
+      if (!offer) return;
+
+      const newUnits = prompt('Enter new units:', offer.units);
+      const newPrice = prompt('Enter new price per unit:', offer.price_perunit);
+
+      if (newUnits === null || newPrice === null) return;
+
+      try {
+        const response = await fetch(`${API}/offers/${offerId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            units: parseInt(newUnits),
+            price_perunit: parseFloat(newPrice)
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.status === 'success') {
+          showMessage('Offer updated successfully!', true);
+          loadOffers();
+          loadMyOffers();
+        } else {
+          showMessage('Failed to update offer: ' + (data.message || 'Unknown error'), false);
+        }
+      } catch (error) {
+        console.error('Error updating offer:', error);
         showMessage('Network error, please try again', false);
       }
     }
 
+    async function deleteOffer(offerId) {
+      if (!confirm('Are you sure you want to deactivate this offer?')) return;
+
+      try {
+        const response = await fetch(`${API}/offers/${offerId}`, {
+          method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.status === 'success') {
+          showMessage('Offer deactivated successfully!', true);
+          loadOffers();
+          loadMyOffers();
+        } else {
+          showMessage('Failed to deactivate offer: ' + (data.message || 'Unknown error'), false);
+        }
+      } catch (error) {
+        console.error('Error deleting offer:', error);
+        showMessage('Network error, please try again', false);
+      }
+    }
+
+    // Utility functions
     function formatDate(dateString) {
       if (!dateString) return 'N/A';
       const date = new Date(dateString);
@@ -236,14 +1243,16 @@
       const msgClass = isSuccess ? 'ok' : 'err';
       
       container.innerHTML = `
-        <div class="msg ${msgClass}" style="padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div class="msg ${msgClass}" style="padding: 15px; border-radius: 8px; margin-bottom: 15px; line-height: 1.4;">
           ${message}
         </div>
       `;
       
+      // Show success messages longer, error messages shorter
+      const duration = isSuccess ? 8000 : 5000;
       setTimeout(() => {
         container.innerHTML = '';
-      }, 5000);
+      }, duration);
     }
 
     function logout() {
@@ -251,14 +1260,18 @@
       location.href = 'login.html';
     }
 
-    // Load data on page load
-    window.onload = () => {
-      if (!user.user_id) {
-        location.href = 'login.html';
-        return;
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+      const createModal = document.getElementById('createOfferModal');
+      const tradeModal = document.getElementById('tradeConfirmModal');
+      
+      if (event.target === createModal) {
+        closeCreateOfferModal();
       }
-      loadAssets();
-    };
+      if (event.target === tradeModal) {
+        closeTradeConfirmModal();
+      }
+    }
   </script>
 </body>
 </html>

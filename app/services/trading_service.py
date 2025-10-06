@@ -45,7 +45,7 @@ class TradingService:
         if not offer:
             raise ValueError("Offer not found")
         
-        if not offer.is_active:
+        if not offer.is_valid:
             raise ValueError("Offer is not active")
         
         # 2. Validate counterparty is not the offer creator
@@ -78,7 +78,7 @@ class TradingService:
         # Start database transaction
         try:
             # 4. Deactivate the offer
-            offer.is_active = False
+            offer.is_valid = False
             
             # 5 & 6. Process fractions and create transactions
             return TradingService._process_fractions_and_transactions(
@@ -175,14 +175,14 @@ class TradingService:
         buy_offers = Offer.query.filter_by(
             asset_id=asset_id,
             is_buyer=True,
-            is_active=True
+            is_valid=True
         ).order_by(Offer.price_perunit.desc()).all()
         
         # Get active sell offers (lowest price first)
         sell_offers = Offer.query.filter_by(
             asset_id=asset_id,
             is_buyer=False,
-            is_active=True
+            is_valid=True
         ).order_by(Offer.price_perunit.asc()).all()
         
         return {

@@ -3,7 +3,7 @@ Transaction service for transaction-related business logic.
 """
 
 from app import db
-from app.models import Transaction, Fraction, User
+from app.models import Transaction, Fraction, User, Offer
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
@@ -29,6 +29,13 @@ class TransactionService:
         for field in required_fields:
             if field not in transaction_data or transaction_data[field] is None:
                 raise ValueError(f"Missing required field: {field}")
+            
+        offer_id = transaction_data.get('offer_id') or transaction_data.get('offerId')
+        if not offer_id:
+            raise ValueError("Missing required field: offer_id")
+
+        price = (transaction_data.get('price_perunit')
+            or transaction_data.get('pricePerUnit'))
         
         # Validate fraction exists
         fraction = Fraction.query.get(transaction_data['fraction_id'])
@@ -46,13 +53,30 @@ class TransactionService:
         if unit_moved <= 0:
             raise ValueError("Unit moved must be positive")
         
+        offer = Offer.query.get(offer_id)
+        if not offer:
+            raise ValueError(f"Offer {offer_id} not found")
+        
+        if price is None:
+            price = offer.price_perunit
+
+        try:
+            price = float(price)
+        except (TypeError, ValueError):
+            raise ValueError("price_perunit must be a number")
+
+        if price <= 0:
+            raise ValueError("price_perunit must be positive")
+        
         transaction = Transaction(
             fraction_id=transaction_data['fraction_id'],
             unit_moved=unit_moved,
             transaction_type=transaction_data.get('transaction_type', 'transfer'),
             transaction_at=datetime.utcnow(),
             from_owner_id=transaction_data['from_owner_id'],
-            to_owner_id=transaction_data['to_owner_id']
+            to_owner_id=transaction_data['to_owner_id'],
+            offer_id=offer_id,
+            price_perunit=price,  
         )
         
         db.session.add(transaction)

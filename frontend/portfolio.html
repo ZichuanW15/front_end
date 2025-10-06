@@ -482,7 +482,7 @@
       portfolioData = originalData;
     }
 
-    function showAssetDetail(assetId) {
+    async function showAssetDetail(assetId) {
       const asset = portfolioData.find(a => a.asset_id == assetId);
       if (!asset) return;
       
@@ -533,6 +533,96 @@
         </div>
       `;
       
+      // Now fetch user's fractions for this asset and render them below
+      try {
+        const fracRes = await fetch(`${API}/fractions/owner/${user.user_id}`, { credentials: 'include' });
+        const fracWrap = await fracRes.json();
+        const allUserFractions = fracWrap.fractions || fracWrap.items || [];
+        const myFractions = allUserFractions.filter(f => String(f.asset_id) === String(assetId));
+
+        const fracSection = document.createElement('div');
+        fracSection.style.marginTop = '18px';
+        fracSection.innerHTML = `<h4>My Fractions for this Asset (${myFractions.length})</h4>`;
+
+        if (myFractions.length === 0) {
+          const p = document.createElement('div');
+          p.className = 'text-muted';
+          p.textContent = 'You do not own any fractions of this asset.';
+          fracSection.appendChild(p);
+        } else {
+          const list = document.createElement('div');
+          list.style.marginTop = '8px';
+          myFractions.forEach(f => {
+            const row = document.createElement('div');
+            row.className = 'row';
+            row.style.justifyContent = 'space-between';
+            row.style.alignItems = 'center';
+            row.style.padding = '8px 0';
+            row.style.borderBottom = '1px solid var(--border)';
+
+            const info = document.createElement('div');
+            info.innerHTML = `<div style="font-weight:600">Fraction ${f.fraction_id || f.id}</div><div class="text-muted" style="font-size:12px">Units: ${Number(f.units || f.unit || 0)}</div>`;
+
+            const actions = document.createElement('div');
+            actions.style.display = 'flex';
+            actions.style.gap = '8px';
+
+            const sellBtn = document.createElement('button');
+            sellBtn.className = 'small danger';
+            sellBtn.textContent = 'Sell';
+            sellBtn.onclick = (e) => { e.stopPropagation(); quickSell(asset.asset_id); };
+
+            const histBtn = document.createElement('button');
+            histBtn.className = 'small';
+            histBtn.textContent = 'View Transactions';
+            histBtn.onclick = async (e) => {
+              e.stopPropagation();
+              // fetch and show transactions for this fraction beneath the row
+              histBtn.disabled = true;
+              const tRes = await fetch(`${API}/transactions/fraction/${f.fraction_id || f.id}`, { credentials: 'include' });
+              const tWrap = await tRes.json();
+              const txs = tWrap.transactions || tWrap.transaction_history || [];
+              const txDiv = document.createElement('div');
+              txDiv.style.marginTop = '8px';
+              if (txs.length === 0) txDiv.textContent = 'No transactions for this fraction.';
+              else {
+                const table = document.createElement('table');
+                table.style.width = '100%';
+                table.innerHTML = `<thead><tr><th>Time</th><th>Type</th><th>Units</th><th>Price</th></tr></thead>`;
+                const tb = document.createElement('tbody');
+                txs.forEach(t => {
+                  const tr = document.createElement('tr');
+                  const time = new Date(t.created_at || t.transaction_at || t.timestamp || Date.now()).toLocaleString();
+                  tr.innerHTML = `<td>${time}</td><td>${t.type || t.transaction_type || ''}</td><td>${t.units || t.unit_moved || t.amount || ''}</td><td>¥${(t.price || t.unit_price || 0).toLocaleString()}</td>`;
+                  tb.appendChild(tr);
+                });
+                table.appendChild(tb);
+                txDiv.appendChild(table);
+              }
+              // insert transaction div after the row
+              row.appendChild(txDiv);
+            };
+
+            actions.appendChild(histBtn);
+            actions.appendChild(sellBtn);
+
+            row.appendChild(info);
+            row.appendChild(actions);
+            list.appendChild(row);
+          });
+
+          fracSection.appendChild(list);
+        }
+
+        document.getElementById('modalAssetContent').appendChild(fracSection);
+      } catch (err) {
+        console.error('Failed to load user fractions for asset', err);
+        const warn = document.createElement('div');
+        warn.className = 'text-muted';
+        warn.textContent = 'Could not load your fractions for this asset.';
+        document.getElementById('modalAssetContent').appendChild(warn);
+      }
+
       document.getElementById('assetDetailModal').style.display = 'block';
     }
 

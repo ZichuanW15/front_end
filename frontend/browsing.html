@@ -441,7 +441,7 @@
       }
     }
 
-    function showAssetDetail(assetId) {
+    async function showAssetDetail(assetId) {
       const asset = allAssets.find(a => a.asset_id == assetId);
       if (!asset) return;
       
@@ -497,6 +497,94 @@
         </div>
       `;
       
+      // Fetch fractions for this asset
+      try {
+        const fRes = await fetch(`${API}/fractions/asset/${assetId}`, { credentials: 'include' });
+        const fWrap = await fRes.json();
+        const fractions = Array.isArray(fWrap) ? fWrap : (fWrap.fractions || fWrap.items || []);
+
+        const section = document.createElement('div');
+        section.style.marginTop = '18px';
+        section.innerHTML = `<h4>Fractions (${fractions.length})</h4>`;
+
+        if (fractions.length === 0) {
+          const p = document.createElement('div');
+          p.className = 'text-muted';
+          p.textContent = 'No fractions for this asset.';
+          section.appendChild(p);
+        } else {
+          const table = document.createElement('table');
+          table.innerHTML = `
+            <thead>
+              <tr>
+                <th>Fraction ID</th>
+                <th>Owner</th>
+                <th>Units</th>
+                <th>Active</th>
+                <th>Value/Unit</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          `;
+          const tbody = table.querySelector('tbody');
+          fractions.forEach(fr => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${fr.fraction_id}</td>
+              <td>${fr.owner_id ?? '-'}</td>
+              <td>${Number(fr.units || 0).toLocaleString()}</td>
+              <td>${fr.is_active ? '<span class="badge success">Active</span>' : '<span class="badge error">Inactive</span>'}</td>
+              <td>${fr.value_perunit != null ? Number(fr.value_perunit).toLocaleString() : '-'}</td>
+              <td><button class="small" data-fid="${fr.fraction_id}">View Transactions</button></td>
+            `;
+            const btn = tr.querySelector('button');
+            btn.onclick = async (e) => {
+              e.stopPropagation();
+              btn.disabled = true;
+              // Fetch transactions for this fraction
+              const tRes = await fetch(`${API}/transactions/fraction/${fr.fraction_id}`, { credentials: 'include' });
+              const tWrap = await tRes.json();
+              const txs = Array.isArray(tWrap) ? tWrap : (tWrap.transactions || tWrap.items || tWrap.transaction_history || []);
+              // Render below this row
+              const tr2 = document.createElement('tr');
+              const td = document.createElement('td');
+              td.colSpan = 6;
+              if (txs.length === 0) {
+                td.innerHTML = '<div class="text-muted">No transactions for this fraction.</div>';
+              } else {
+                const tTable = document.createElement('table');
+                tTable.style.width = '100%';
+                tTable.innerHTML = `
+                  <thead><tr><th>Time</th><th>Type</th><th>Units</th><th>Price</th><th>From</th><th>To</th></tr></thead>
+                  <tbody>
+                    ${txs.map(t => `
+                      <tr>
+                        <td>${new Date(t.transaction_at || t.created_at || Date.now()).toLocaleString()}</td>
+                        <td>${t.transaction_type || t.type || ''}</td>
+                        <td>${t.unit_moved || t.units || 0}</td>
+                        <td>${t.price_perunit != null ? '¥' + Number(t.price_perunit).toLocaleString() : '-'}</td>
+                        <td>${t.from_owner_id ?? ''}</td>
+                        <td>${t.to_owner_id ?? ''}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                `;
+                td.appendChild(tTable);
+              }
+              tr2.appendChild(td);
+              tr.parentNode.insertBefore(tr2, tr.nextSibling);
+            };
+            tbody.appendChild(tr);
+          });
+          section.appendChild(table);
+        }
+
+        document.getElementById('modalAssetContent').appendChild(section);
+      } catch (err) {
+        console.error('Failed to load fractions for asset', err);
+      }
+
       document.getElementById('assetDetailModal').style.display = 'block';
     }
 

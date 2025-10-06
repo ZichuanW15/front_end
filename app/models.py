@@ -51,7 +51,7 @@ class Asset(Base):
     
     asset_id = Column(BigInteger, primary_key=True, autoincrement=True)
     asset_name = Column(Text, nullable=False)
-    asset_description = Column(Text)
+    # asset_description = Column(Text)
     total_unit = Column(BigInteger, nullable=False)
     unit_min = Column(BigInteger, nullable=False)
     unit_max = Column(BigInteger, nullable=False)
@@ -66,7 +66,7 @@ class Asset(Base):
         return {
             'asset_id': self.asset_id,
             'asset_name': self.asset_name,
-            'asset_description': self.asset_description,
+            # 'asset_description': self.asset_description,
             'total_unit': self.total_unit,
             'unit_min': self.unit_min,
             'unit_max': self.unit_max,

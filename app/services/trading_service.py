@@ -3,10 +3,10 @@ Trading service for handling manual trade execution.
 Users manually accept existing offers (not automatic matching).
 """
 
-from app import db
-from app.models import Offer, Fraction, Transaction
 from datetime import datetime
 from typing import Dict, Any
+from app import db
+from app.models import Offer, Fraction, Transaction
 
 
 class TradingService:
@@ -54,16 +54,11 @@ class TradingService:
         
         # Determine buyer and seller based on offer type
         if offer.is_buyer:
-            # Offer is a BUY offer: counterparty is the seller
             buyer_id = offer.user_id
             seller_id = counterparty_user_id
         else:
-            # Offer is a SELL offer: counterparty is the buyer
             buyer_id = counterparty_user_id
             seller_id = offer.user_id
-        
-        units_to_trade = offer.units
-        trade_price = offer.price_perunit
         
         # 3. Get seller's fractions (oldest first, active only)
         seller_fractions = Fraction.query.filter_by(
@@ -74,10 +69,10 @@ class TradingService:
         
         total_available = sum(f.units for f in seller_fractions)
         
-        if total_available < units_to_trade:
+        if total_available < offer.units:
             raise ValueError(
                 f"Seller only has {total_available} units available, "
-                f"cannot sell {units_to_trade} units"
+                f"cannot sell {offer.units} units"
             )
         
         # Start database transaction
@@ -86,77 +81,84 @@ class TradingService:
             offer.is_active = False
             
             # 5 & 6. Process fractions and create transactions
-            remaining_units = units_to_trade
-            transactions_created = []
-            
-            for seller_fraction in seller_fractions:
-                if remaining_units <= 0:
-                    break
-                
-                # Determine how many units to take from this fraction
-                units_from_this_fraction = min(remaining_units, seller_fraction.units)
-                
-                # Deduct from seller's fraction
-                seller_fraction.units -= units_from_this_fraction
-                
-                # If fraction is depleted, mark as inactive
-                if seller_fraction.units == 0:
-                    seller_fraction.is_active = False
-                
-                # Create new fraction for buyer
-                new_buyer_fraction = Fraction(
-                    asset_id=offer.asset_id,
-                    owner_id=buyer_id,
-                    parent_fraction_id=seller_fraction.fraction_id,
-                    units=units_from_this_fraction,
-                    is_active=True,
-                    created_at=datetime.utcnow(),
-                    value_perunit=trade_price
-                )
-                db.session.add(new_buyer_fraction)
-                db.session.flush()  # Get the new fraction_id
-                
-                # Create transaction record
-                transaction = Transaction(
-                    fraction_id=new_buyer_fraction.fraction_id,
-                    unit_moved=units_from_this_fraction,
-                    transaction_type='trade',
-                    transaction_at=datetime.utcnow(),
-                    from_owner_id=seller_id,
-                    to_owner_id=buyer_id,
-                    offer_id=offer_id,
-                    price_perunit=trade_price
-                )
-                db.session.add(transaction)
-                transactions_created.append({
-                    'units': units_from_this_fraction,
-                    'price': float(trade_price)
-                })
-                
-                remaining_units -= units_from_this_fraction
-            
-            # Commit all changes
-            db.session.commit()
-            
-            return {
-                'success': True,
-                'message': 'Trade executed successfully',
-                'trade_details': {
-                    'offer_id': offer_id,
-                    'offer_type': 'buy' if offer.is_buyer else 'sell',
-                    'asset_id': offer.asset_id,
-                    'buyer_id': buyer_id,
-                    'seller_id': seller_id,
-                    'units_traded': units_to_trade,
-                    'price_perunit': float(trade_price),
-                    'total_value': float(units_to_trade * trade_price),
-                    'transactions_count': len(transactions_created)
-                }
-            }
+            return TradingService._process_fractions_and_transactions(
+                offer, buyer_id, seller_id, seller_fractions
+            )
             
         except Exception as e:
             db.session.rollback()
-            raise ValueError(f"Trade execution failed: {str(e)}")
+            raise ValueError(f"Trade execution failed: {str(e)}") from e
+
+    @staticmethod
+    def _process_fractions_and_transactions(offer, buyer_id, seller_id, seller_fractions):
+        """Process fractions and create transactions for a trade."""
+        remaining_units = offer.units
+        transactions_created = []
+        
+        for seller_fraction in seller_fractions:
+            if remaining_units <= 0:
+                break
+            
+            # Determine how many units to take from this fraction
+            units_from_this_fraction = min(remaining_units, seller_fraction.units)
+            
+            # Deduct from seller's fraction
+            seller_fraction.units -= units_from_this_fraction
+            
+            # If fraction is depleted, mark as inactive
+            if seller_fraction.units == 0:
+                seller_fraction.is_active = False
+            
+            # Create new fraction for buyer
+            new_buyer_fraction = Fraction(
+                asset_id=offer.asset_id,
+                owner_id=buyer_id,
+                parent_fraction_id=seller_fraction.fraction_id,
+                units=units_from_this_fraction,
+                is_active=True,
+                created_at=datetime.utcnow(),
+                value_perunit=offer.price_perunit
+            )
+            db.session.add(new_buyer_fraction)
+            db.session.flush()  # Get the new fraction_id
+            
+            # Create transaction record
+            transaction = Transaction(
+                fraction_id=new_buyer_fraction.fraction_id,
+                unit_moved=units_from_this_fraction,
+                transaction_type='trade',
+                transaction_at=datetime.utcnow(),
+                from_owner_id=seller_id,
+                to_owner_id=buyer_id,
+                offer_id=offer.offer_id,
+                price_perunit=offer.price_perunit
+            )
+            db.session.add(transaction)
+            transactions_created.append({
+                'units': units_from_this_fraction,
+                'price': float(offer.price_perunit)
+            })
+            
+            remaining_units -= units_from_this_fraction
+        
+        # Commit all changes
+        db.session.commit()
+        
+        return {
+            'success': True,
+            'message': 'Trade executed successfully',
+            'trade_details': {
+                'offer_id': offer.offer_id,
+                'offer_type': 'buy' if offer.is_buyer else 'sell',
+                'asset_id': offer.asset_id,
+                'buyer_id': buyer_id,
+                'seller_id': seller_id,
+                'units_traded': offer.units,
+                'price_perunit': float(offer.price_perunit),
+                'total_value': float(offer.units * offer.price_perunit),
+                'transactions_count': len(transactions_created)
+            }
+        }
 
     @staticmethod
     def get_asset_offers(asset_id: int) -> Dict[str, Any]:

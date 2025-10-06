@@ -5,9 +5,10 @@ Trading controller for handling trade execution requests.
 from flask import request
 from app.services.trading_service import TradingService
 from app.views.trading_view import TradingView
+from app.controllers.base_controller import BaseController
 
 
-class TradingController:
+class TradingController(BaseController):
     """Controller for trading operations."""
     
     def __init__(self):
@@ -27,7 +28,7 @@ class TradingController:
         Returns:
             Response: JSON response with trade execution result
         """
-        try:
+        def _execute():
             data = request.get_json()
             if not data:
                 return self.view.render_error("No JSON data provided", 400)
@@ -40,11 +41,7 @@ class TradingController:
             
             result = self.service.execute_trade(offer_id, user_id)
             return self.view.render_trade_success(result)
-            
-        except ValueError as e:
-            return self.view.render_error(str(e), 400)
-        except Exception as e:
-            return self.view.render_error(f"Server error: {str(e)}", 500)
+        return self.handle_request(_execute)
     
     def get_asset_offers(self, asset_id):
         """

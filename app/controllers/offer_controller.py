@@ -6,9 +6,10 @@ Handles business logic and communicates with the OfferService and OfferView.
 from flask import request
 from app.services.offer_service import OfferService
 from app.views.offer_view import OfferView
+from app.controllers.base_controller import BaseController
 
 
-class OfferController:
+class OfferController(BaseController):
     """Controller for handling offer routes."""
 
     def __init__(self):
@@ -17,14 +18,11 @@ class OfferController:
 
     def create_offer(self):
         """Create a new offer."""
-        try:
+        def _create():
             data = request.json
             offer = self.service.create_offer(data)
             return self.view.render_offer_created(offer)
-        except ValueError as e:
-            return self.view.render_error(str(e), 400)
-        except Exception as e:
-            return self.view.render_error(f"Server error: {str(e)}", 500)
+        return self.handle_request(_create)
 
     def get_offer(self, offer_id: int):
         """Get offer by ID."""
@@ -88,16 +86,13 @@ class OfferController:
 
     def update_offer(self, offer_id: int):
         """Update an existing offer."""
-        try:
+        def _update():
             data = request.json
             offer = self.service.update_offer(offer_id, data)
             if not offer:
                 return self.view.render_error(f"Offer {offer_id} not found", 404)
             return self.view.render_offer_updated(offer)
-        except ValueError as e:
-            return self.view.render_error(str(e), 400)
-        except Exception as e:
-            return self.view.render_error(f"Server error: {str(e)}", 500)
+        return self.handle_request(_update)
 
     def delete_offer(self, offer_id: int):
         """Delete an offer."""

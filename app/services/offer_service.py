@@ -5,20 +5,12 @@ Offer service for offer-related business logic.
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from app.database import db
-from app.models import Offer
+from app.models import Offer, Fraction
 
 
 class OfferService:
     """Service class for offer operations."""
 
-    '''
-    只显示is_valid = TRUE的offer
-    无论buyer还是seller只能发布一个offer
-    buyer可以随意发布offer seller发布offer的时候需要check是否有units
-
-    update offer 必须根据id来track 调get_offers_by_user 
-    delete offer 是把is_valid改为false
-    '''
 
     @staticmethod
     def create_offer(offer_data: Dict[str, Any]) -> Offer:
@@ -62,7 +54,7 @@ class OfferService:
             total_units = db.session.query(db.func.sum(Fraction.units)).filter(
                 Fraction.asset_id == offer_data['asset_id'],
                 Fraction.owner_id == offer_data['user_id'],
-                Fraction.is_active == True
+                Fraction.is_active.is_(True)
             ).scalar() or 0
             
             if total_units < offer_data['units']:
@@ -171,7 +163,7 @@ class OfferService:
             total_units = db.session.query(db.func.sum(Fraction.units)).filter(
                 Fraction.asset_id == offer.asset_id,
                 Fraction.owner_id == offer.user_id,
-                Fraction.is_active == True
+                Fraction.is_active.is_(True)
             ).scalar() or 0
             
             if total_units < offer_data['units']:

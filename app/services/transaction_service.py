@@ -4,6 +4,7 @@ Transaction service for transaction-related business logic.
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any
+from sqlalchemy import or_
 from app.database import db
 from app.models import Transaction, Fraction, User
 

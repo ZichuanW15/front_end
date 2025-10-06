@@ -2,11 +2,11 @@
 Asset controller for handling asset-related requests.
 """
 
-from datetime import datetime
 from flask import request
 from app.services.asset_service import AssetService
-from app.services.asset_value_service import AssetValueService
 from app.views.asset_view import AssetView
+from datetime import datetime
+from app.services.asset_value_service import AssetValueService
 
 
 class AssetController:
@@ -129,16 +129,8 @@ class AssetController:
         except Exception as e:
             return self.asset_view.render_error(str(e), 500)
         
+    # Get the history of an asset
     def get_asset_values(self, asset_id):
-        """
-        Get the history of an asset.
-        
-        Args:
-            asset_id: Asset ID
-            
-        Returns:
-            Response: JSON response with asset value history
-        """
         try:
             p_from = request.args.get("from")
             p_to   = request.args.get("to")
@@ -175,16 +167,8 @@ class AssetController:
         except Exception as e:
             return self.asset_view.render_error(str(e), 500)
     
+    # Administrators can manually adjust asset values
     def adjust_asset_value(self, asset_id):
-        """
-        Administrators can manually adjust asset values.
-        
-        Args:
-            asset_id: Asset ID
-            
-        Returns:
-            Response: JSON response with adjustment data
-        """
         try:
             data = request.get_json()
             if not data:
@@ -212,39 +196,5 @@ class AssetController:
             return self.asset_view.render_adjustment_created(row)
         except PermissionError as e:
             return self.asset_view.render_error(str(e), 403)
-        except Exception as e:
-            return self.asset_view.render_error(str(e), 500)
-    
-    def create_asset_with_initial_fraction(self):
-        """
-        Handle complete asset creation workflow with initial fraction and value history.
-        This is the admin endpoint for creating assets with all necessary components.
-        
-        Returns:
-            Response: JSON response with created asset, fraction, and value history data
-        """
-        try:
-            data = request.get_json()
-            if not data:
-                return self.asset_view.render_error("No JSON data provided", 400)
-            
-            # Extract asset data, owner_id, and adjusted_by
-            asset_data = {k: v for k, v in data.items() if k not in ['owner_id', 'adjusted_by']}
-            owner_id = data.get('owner_id')
-            adjusted_by = data.get('adjusted_by')
-            
-            if not owner_id:
-                return self.asset_view.render_error("owner_id is required", 400)
-            
-            if not adjusted_by:
-                return self.asset_view.render_error("adjusted_by is required", 400)
-            
-            # Create asset with initial fraction and value history
-            result = self.asset_service.create_asset_with_initial_fraction(asset_data, owner_id, adjusted_by)
-            
-            return self.asset_view.render_asset_with_fraction_created(result)
-            
-        except ValueError as e:
-            return self.asset_view.render_error(str(e), 400)
         except Exception as e:
             return self.asset_view.render_error(str(e), 500)

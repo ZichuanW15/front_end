@@ -2,8 +2,8 @@
 Frontend routes for serving HTML pages.
 """
 
+from flask import Blueprint, send_from_directory, current_app
 import os
-from flask import Blueprint, send_from_directory, current_app, redirect, url_for
 
 bp = Blueprint('frontend', __name__)
 
@@ -26,6 +26,7 @@ def index():
     """
     Redirect root to login page.
     """
+    from flask import redirect, url_for
     return redirect('/frontend/login.html')
 
 @bp.route('/login')
@@ -33,4 +34,6 @@ def login_redirect():
     """
     Redirect /login to /frontend/login.html
     """
+    from flask import redirect, url_for
     return redirect('/frontend/login.html')
+

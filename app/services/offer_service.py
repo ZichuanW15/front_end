@@ -2,10 +2,10 @@
 Offer service for offer-related business logic.
 """
 
+from app import db
+from app.models import Offer
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from app.database import db
-from app.models import Offer
 
 
 class OfferService:
@@ -25,7 +25,7 @@ class OfferService:
         Raises:
             ValueError: If required fields are missing
         """
-        required_fields = ['asset_id', 'user_id', 'is_buyer', 'units', 'price_perunit']
+        required_fields = ['asset_id', 'user_id', 'is_buyer', 'units']
         for field in required_fields:
             if field not in offer_data or offer_data[field] is None:
                 raise ValueError(f"Missing required field: {field}")
@@ -36,7 +36,6 @@ class OfferService:
             user_id=offer_data['user_id'],
             is_buyer=offer_data['is_buyer'],
             units=offer_data['units'],
-            price_perunit = offer_data['price_perunit'], 
             create_at=datetime.utcnow()
         )
 

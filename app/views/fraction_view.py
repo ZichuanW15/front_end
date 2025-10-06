@@ -3,15 +3,10 @@ Fraction view for formatting fraction-related responses.
 """
 
 from flask import jsonify
-from .base_view import BaseView
 
 
-class FractionView(BaseView):
+class FractionView:
     """View class for fraction responses."""
-    
-    def __init__(self):
-        """Initialize FractionView with entity name."""
-        super().__init__('Fraction')
     
     def render_fraction(self, fraction):
         """
@@ -23,7 +18,10 @@ class FractionView(BaseView):
         Returns:
             Response: JSON response
         """
-        return self.render_single(fraction)
+        return jsonify({
+            'fraction': fraction.to_dict(),
+            'status': 'success'
+        })
     
     def render_fraction_created(self, fraction):
         """
@@ -35,7 +33,11 @@ class FractionView(BaseView):
         Returns:
             Response: JSON response
         """
-        return self.render_created(fraction)
+        return jsonify({
+            'fraction': fraction.to_dict(),
+            'message': 'Fraction created successfully',
+            'status': 'success'
+        }), 201
     
     def render_fraction_updated(self, fraction):
         """
@@ -47,7 +49,11 @@ class FractionView(BaseView):
         Returns:
             Response: JSON response
         """
-        return self.render_updated(fraction)
+        return jsonify({
+            'fraction': fraction.to_dict(),
+            'message': 'Fraction updated successfully',
+            'status': 'success'
+        })
     
     def render_fraction_deleted(self):
         """
@@ -56,7 +62,10 @@ class FractionView(BaseView):
         Returns:
             Response: JSON response
         """
-        return self.render_deleted()
+        return jsonify({
+            'message': 'Fraction deleted successfully',
+            'status': 'success'
+        })
     
     def render_fractions_list(self, fractions):
         """
@@ -68,4 +77,25 @@ class FractionView(BaseView):
         Returns:
             Response: JSON response
         """
-        return self.render_list(fractions, 'fractions')
+        return jsonify({
+            'fractions': [fraction.to_dict() for fraction in fractions],
+            'count': len(fractions),
+            'status': 'success'
+        })
+    
+    def render_error(self, error_message, status_code):
+        """
+        Render error response.
+        
+        Args:
+            error_message: Error message
+            status_code: HTTP status code
+            
+        Returns:
+            Response: JSON error response
+        """
+        return jsonify({
+            'error': 'Fraction Error',
+            'message': error_message,
+            'status_code': status_code
+        }), status_code

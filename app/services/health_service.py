@@ -2,9 +2,9 @@
 Health service for system health checks and monitoring.
 """
 
-from datetime import datetime
 from sqlalchemy import text
-from app.database import db
+from app import db
+from datetime import datetime
 
 
 class HealthService:

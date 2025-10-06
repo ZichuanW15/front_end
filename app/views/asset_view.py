@@ -3,15 +3,10 @@ Asset view for formatting asset-related responses.
 """
 
 from flask import jsonify
-from .base_view import BaseView
 
 
-class AssetView(BaseView):
+class AssetView:
     """View class for asset responses."""
-    
-    def __init__(self):
-        """Initialize AssetView with entity name."""
-        super().__init__('Asset')
     
     def render_asset(self, asset):
         """
@@ -23,7 +18,10 @@ class AssetView(BaseView):
         Returns:
             Response: JSON response
         """
-        return self.render_single(asset)
+        return jsonify({
+            'asset': asset.to_dict(),
+            'status': 'success'
+        })
     
     def render_asset_created(self, asset):
         """
@@ -35,7 +33,11 @@ class AssetView(BaseView):
         Returns:
             Response: JSON response
         """
-        return self.render_created(asset)
+        return jsonify({
+            'asset': asset.to_dict(),
+            'message': 'Asset created successfully',
+            'status': 'success'
+        }), 201
     
     def render_asset_updated(self, asset):
         """
@@ -47,7 +49,11 @@ class AssetView(BaseView):
         Returns:
             Response: JSON response
         """
-        return self.render_updated(asset)
+        return jsonify({
+            'asset': asset.to_dict(),
+            'message': 'Asset updated successfully',
+            'status': 'success'
+        })
     
     def render_asset_deleted(self):
         """
@@ -56,7 +62,10 @@ class AssetView(BaseView):
         Returns:
             Response: JSON response
         """
-        return self.render_deleted()
+        return jsonify({
+            'message': 'Asset deleted successfully',
+            'status': 'success'
+        })
     
     def render_assets_list(self, assets):
         """
@@ -68,7 +77,11 @@ class AssetView(BaseView):
         Returns:
             Response: JSON response
         """
-        return self.render_list(assets, 'assets')
+        return jsonify({
+            'assets': [asset.to_dict() for asset in assets],
+            'count': len(assets),
+            'status': 'success'
+        })
     
     def render_asset_fractions(self, fractions):
         """
@@ -86,51 +99,32 @@ class AssetView(BaseView):
             'status': 'success'
         })
     
-    def render_value_history(self, items, asset_id):
+    def render_error(self, error_message, status_code):
         """
-        Render asset value history response.
+        Render error response.
         
         Args:
-            items: List of asset value history items
-            asset_id: Asset ID
+            error_message: Error message
+            status_code: HTTP status code
             
         Returns:
-            JSON response with value history data
+            Response: JSON error response
         """
+        return jsonify({
+            'error': 'Asset Error',
+            'message': error_message,
+            'status_code': status_code
+        }), status_code
+    
+    # New methods for asset value history
+    def render_value_history(self, items, asset_id):
         return jsonify({
             "asset_id": asset_id,
             "count": len(items),
             "items": [it.to_dict() for it in items],
             "status": "success",
         })
-    
+    # New method to render adjustment creation response
     def render_adjustment_created(self, row):
-        """
-        Render adjustment creation response.
-        
-        Args:
-            row: AssetValueHistory record
-            
-        Returns:
-            JSON response with adjustment data
-        """
         data = row.to_dict()
         return jsonify({"status": "created", "item": data}), 201
-    
-    def render_asset_with_fraction_created(self, result):
-        """
-        Render asset creation with initial fraction response.
-        
-        Args:
-            result: Dictionary containing asset, fraction, and value_history
-            
-        Returns:
-            Response: JSON response
-        """
-        return jsonify({
-            'asset': result['asset'].to_dict(),
-            'fraction': result['fraction'].to_dict(),
-            'value_history': result['value_history'].to_dict(),
-            'message': 'Asset created successfully with initial fraction and value history',
-            'status': 'success'
-        }), 201

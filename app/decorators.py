@@ -58,7 +58,8 @@ def require_login(f):
             user = UserService.get_user_by_id(session['user_id'])
             if user:
                 return f(*args, **kwargs)
-            session.clear()
+            else:
+                session.clear()
         
         # Check for Bearer token authentication
         auth_header = request.headers.get('Authorization')

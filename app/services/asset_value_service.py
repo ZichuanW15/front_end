@@ -2,32 +2,22 @@
 Asset value history service: Query history and allow administrators to manually adjust values.
 """
 
+from app import db
+from app.models import AssetValueHistory, Asset, User
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from app.database import db
-from app.models import AssetValueHistory, Asset, User
 
 
 
 class AssetValueService:
     """Service class for asset value history operations."""
+    # 1) Query the history of an asset over a period of time (in ascending order of time)
     @staticmethod
     def list_history(
         asset_id: int,
         dt_from: Optional[datetime] = None,
         dt_to: Optional[datetime] = None,
     ) -> List[AssetValueHistory]:
-        """
-        Query the history of an asset over a period of time (in ascending order of time).
-        
-        Args:
-            asset_id: Asset ID to query history for
-            dt_from: Start date filter (optional)
-            dt_to: End date filter (optional)
-            
-        Returns:
-            List of AssetValueHistory records
-        """
         q = AssetValueHistory.query.filter(AssetValueHistory.asset_id == asset_id)
         if dt_from:
             q = q.filter(AssetValueHistory.recorded_at >= dt_from)
@@ -35,6 +25,7 @@ class AssetValueService:
             q = q.filter(AssetValueHistory.recorded_at <= dt_to)
         return q.order_by(AssetValueHistory.recorded_at.asc()).all()
 
+    # 2) For administrators only: Add a new "manual adjustment" history record
     @staticmethod
     def add_adjustment(
         asset_id: int,
@@ -43,22 +34,6 @@ class AssetValueService:
         reason: str = "",
         recorded_at: Optional[datetime] = None,
     ) -> AssetValueHistory:
-        """
-        For administrators only: Add a new "manual adjustment" history record.
-        
-        Args:
-            asset_id: Asset ID to adjust
-            value: New asset value
-            adjusted_by: User ID of the administrator making the adjustment
-            reason: Reason for the adjustment (optional)
-            recorded_at: Timestamp for the adjustment (optional, defaults to now)
-            
-        Returns:
-            Created AssetValueHistory record
-            
-        Raises:
-            PermissionError: If user is not a manager
-        """
         # must be an administrator
         user = User.query.get(adjusted_by)
         if not user or not user.is_manager:
@@ -83,17 +58,9 @@ class AssetValueService:
         db.session.commit()
         return item
 
+    # 3) Get the latest value (sometimes the page needs to display the "current value")
     @staticmethod
     def latest_value(asset_id: int) -> Optional[AssetValueHistory]:
-        """
-        Get the latest value for an asset.
-        
-        Args:
-            asset_id: Asset ID to get latest value for
-            
-        Returns:
-            Latest AssetValueHistory record or None if not found
-        """
         return (
             AssetValueHistory.query.filter_by(asset_id=asset_id)
             .order_by(AssetValueHistory.recorded_at.desc())

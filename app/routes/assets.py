@@ -109,8 +109,26 @@ def get_asset_fractions(asset_id):
 
 @bp.route('/<int:asset_id>/values', methods=['GET'])
 def get_asset_values(asset_id):
+    """
+    Get asset value history.
+    
+    Args:
+        asset_id: Asset ID
+        
+    Returns:
+        JSON response with asset value history
+    """
     return asset_controller.get_asset_values(asset_id)
 
 @bp.route('/<int:asset_id>/values/adjust', methods=['POST'])
 def adjust_asset_value(asset_id):
+    """
+    Adjust asset value manually.
+    
+    Args:
+        asset_id: Asset ID
+        
+    Returns:
+        JSON response with adjustment data
+    """
     return asset_controller.adjust_asset_value(asset_id)

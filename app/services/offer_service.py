@@ -2,10 +2,10 @@
 Offer service for offer-related business logic.
 """
 
-from app import db
-from app.models import Offer, Fraction
 from datetime import datetime
 from typing import Optional, List, Dict, Any
+from app.database import db
+from app.models import Offer
 
 
 class OfferService:

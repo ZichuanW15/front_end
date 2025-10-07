@@ -93,7 +93,7 @@
           <div class="row">
             <div class="col">
             <label>Total Units (Available Fractions)</label>
-            <input type="number" id="newAssetTotalUnits" required min="1" placeholder="Maximum number of fractions">
+            <input type="number" id="newAssetTotalUnits" required min="1" placeholder="Maximum number of fractions" oninput="validateAssetUnits()">
             </div>
             <div class="col">
             <label>Initial Fraction Owner</label>
@@ -109,13 +109,14 @@
         <div class="row">
           <div class="col">
             <label>Minimum Units per Fraction</label>
-            <input type="number" id="newAssetMinUnits" required min="1" placeholder="1">
+            <input type="number" id="newAssetMinUnits" required min="1" placeholder="1" oninput="validateAssetUnits()">
           </div>
           <div class="col">
             <label>Maximum Units per Fraction</label>
-            <input type="number" id="newAssetMaxUnits" required min="1" placeholder="100">
+            <input type="number" id="newAssetMaxUnits" required min="1" placeholder="100" oninput="validateAssetUnits()">
         </div>
       </div>
+        <div id="unitsValidationError" style="color: #f44336; font-size: 14px; margin-top: 5px; display: none;"></div>
         
         <div class="card" style="background: var(--background); margin: 15px 0; padding: 15px;">
           <h4 style="margin: 0 0 10px 0; color: var(--accent);">Initial Fraction Details</h4>
@@ -469,6 +470,52 @@
     function hideAddAssetModal() {
       document.getElementById('addAssetModal').style.display = 'none';
       document.getElementById('addAssetForm').reset();
+      document.getElementById('unitsValidationError').style.display = 'none';
+    }
+
+    function validateAssetUnits() {
+      const totalUnits = parseInt(document.getElementById('newAssetTotalUnits').value) || 0;
+      const minUnits = parseInt(document.getElementById('newAssetMinUnits').value) || 0;
+      const maxUnits = parseInt(document.getElementById('newAssetMaxUnits').value) || 0;
+      const errorDiv = document.getElementById('unitsValidationError');
+      
+      // Clear previous errors
+      errorDiv.style.display = 'none';
+      errorDiv.textContent = '';
+      
+      // Only validate if all fields have values
+      if (!totalUnits || !minUnits || !maxUnits) {
+        return;
+      }
+      
+      // Validate constraints
+      if (minUnits < 1) {
+        errorDiv.textContent = '⚠️ Minimum units must be at least 1';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (maxUnits < minUnits) {
+        errorDiv.textContent = '⚠️ Maximum units per fraction cannot be less than minimum units per fraction';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (minUnits > totalUnits) {
+        errorDiv.textContent = '⚠️ Minimum units per fraction cannot be greater than total units';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      // All validations passed - provide helpful feedback
+      errorDiv.style.color = '#4CAF50';
+      if (maxUnits >= totalUnits) {
+        errorDiv.textContent = '✓ Valid configuration: Single fraction can hold all units';
+      } else {
+        const minFractions = Math.ceil(totalUnits / maxUnits);
+        errorDiv.textContent = `✓ Valid configuration: Asset will require at least ${minFractions} fraction(s)`;
+      }
+      errorDiv.style.display = 'block';
     }
 
     // Asset Modify Modal Functions
@@ -796,81 +843,65 @@
       
       console.log('Asset creation started...');
       
+      // Get asset description from form
+      const assetDescription = document.getElementById('newAssetDescription').value.trim();
+      
+      // Prepare complete data including description
       const assetData = {
         asset_name: document.getElementById('newAssetName').value,
+        asset_description: assetDescription || null,  // Include description
         total_unit: parseInt(document.getElementById('newAssetTotalUnits').value),
         unit_min: parseInt(document.getElementById('newAssetMinUnits').value),
         unit_max: parseInt(document.getElementById('newAssetMaxUnits').value),
-        total_value: parseFloat(document.getElementById('newAssetTotalValue').value)
+        total_value: parseFloat(document.getElementById('newAssetTotalValue').value),
+        owner_id: parseInt(document.getElementById('newAssetOwner').value),
+        adjusted_by: user.user_id  // Include admin user ID for value history
       };
       
-      const ownerId = document.getElementById('newAssetOwner').value;
-      
       console.log('Asset data:', assetData);
-      console.log('Owner ID:', ownerId);
       
-      if (!ownerId) {
+      if (!assetData.owner_id) {
         showMessage('Please select a user to own the initial fraction', false);
         return;
       }
       
       // Validate form data
-      if (assetData.unit_min > assetData.unit_max) {
-        showMessage('Minimum units cannot be greater than maximum units', false);
+      if (assetData.unit_min < 1) {
+        showMessage('Minimum units must be at least 1', false);
         return;
       }
       
-      if (assetData.unit_max > assetData.total_unit) {
-        showMessage('Maximum units cannot be greater than total units', false);
+      if (assetData.unit_max < assetData.unit_min) {
+        showMessage('Maximum units per fraction cannot be less than minimum units per fraction', false);
+        return;
+      }
+      
+      if (assetData.unit_min > assetData.total_unit) {
+        showMessage('Minimum units per fraction cannot be greater than total units', false);
         return;
       }
       
       try {
-        // Step 1: Create the asset
-        showMessage('Creating asset...', true);
-        const assetResponse = await fetch(`${API}/assets`, {
+        // Create asset with initial fraction and value history in one call
+        showMessage('Creating asset with initial fraction and value history...', true);
+        const response = await fetch(`${API}/assets/with-initial-fraction`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(assetData)
         });
         
-        if (!assetResponse.ok) {
-          const error = await assetResponse.json();
+        if (!response.ok) {
+          const error = await response.json();
           throw new Error(error.message || error.error || 'Failed to create asset');
         }
         
-        const assetResult = await assetResponse.json();
-        const assetId = assetResult.asset.asset_id;
-        
-        // Step 2: Create the initial fraction
-        showMessage('Creating initial fraction...', true);
-        const valuePerUnit = assetData.total_value / assetData.total_unit;
-        
-        const fractionData = {
-          asset_id: assetId,
-          owner_id: parseInt(ownerId),
-          parent_fraction_id: null,
-          units: assetData.total_unit,
-          is_active: true,
-          value_perunit: Math.round(valuePerUnit * 100) / 100 // Round to 2 decimal places
-        };
-        
-        const fractionResponse = await fetch(`${API}/fractions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(fractionData)
-        });
-        
-        if (!fractionResponse.ok) {
-          const error = await fractionResponse.json();
-          throw new Error(error.message || error.error || 'Failed to create initial fraction');
-        }
-        
+        const result = await response.json();
+        console.log('Asset creation result:', result);
         
         // Success!
         hideAddAssetModal();
         refreshData();
-        showMessage(`Asset "${assetData.asset_name}" created successfully with initial fraction assigned to selected user`, true);
+        showMessage(`Asset "${assetData.asset_name}" created successfully with initial fraction and value history`, true);
         
       } catch (error) {
         console.error('Error creating asset:', error);

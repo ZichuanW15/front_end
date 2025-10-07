@@ -18,9 +18,9 @@ class TestAssetService:
         asset_data = {
             'asset_name': 'Test Asset',
             'asset_description': 'Test Description',
-            'total_unit': 100,
+            'total_unit': 1000,
             'unit_min': 1,
-            'unit_max': 1000,
+            'unit_max': 100,
             'total_value': '10000.00'
         }
         
@@ -63,17 +63,30 @@ class TestAssetService:
         with pytest.raises(ValueError, match="Missing required field: total_value"):
             AssetService.create_asset(asset_data)
     
+    def test_create_asset_unit_min_less_than_one(self):
+        """Test asset creation with unit_min < 1."""
+        asset_data = {
+            'asset_name': 'Test Asset',
+            'total_unit': 1000,
+            'unit_min': 0,  # Invalid: less than 1
+            'unit_max': 100,
+            'total_value': '10000.00'
+        }
+        
+        with pytest.raises(ValueError, match="unit_min must be at least 1"):
+            AssetService.create_asset(asset_data)
+    
     def test_create_asset_unit_min_greater_than_max(self):
         """Test asset creation with unit_min > unit_max."""
         asset_data = {
             'asset_name': 'Test Asset',
             'total_unit': 1000,
             'unit_min': 100,
-            'unit_max': 50,  # min > max
+            'unit_max': 50,  # max < min
             'total_value': '10000.00'
         }
         
-        with pytest.raises(ValueError, match="unit_min cannot be greater than unit_max"):
+        with pytest.raises(ValueError, match="unit_max cannot be less than unit_min"):
             AssetService.create_asset(asset_data)
     
     def test_create_asset_total_unit_less_than_min(self):
@@ -86,30 +99,40 @@ class TestAssetService:
             'total_value': '10000.00'
         }
         
-        with pytest.raises(ValueError, match="total_unit cannot be less than unit_min"):
+        with pytest.raises(ValueError, match="unit_min cannot be greater than total_unit"):
             AssetService.create_asset(asset_data)
     
-    def test_create_asset_total_unit_greater_than_max(self):
-        """Test asset creation with total_unit > unit_max."""
+    def test_create_asset_unit_max_greater_than_total(self):
+        """Test asset creation with unit_max > total_unit - this should be ALLOWED."""
         asset_data = {
             'asset_name': 'Test Asset',
-            'total_unit': 300,
-            'unit_min': 100,
-            'unit_max': 200,
+            'total_unit': 100,
+            'unit_min': 1,
+            'unit_max': 200,  # max > total is allowed
             'total_value': '10000.00'
         }
         
-        with pytest.raises(ValueError, match="total_unit cannot be greater than unit_max"):
-            AssetService.create_asset(asset_data)
+        # This should succeed - unit_max can be greater than total_unit
+        with patch('app.services.asset_service.db') as mock_db:
+            mock_asset = Mock(spec=Asset)
+            mock_db.session.add.return_value = None
+            mock_db.session.commit.return_value = None
+            
+            with patch('app.services.asset_service.Asset', return_value=mock_asset):
+                result = AssetService.create_asset(asset_data)
+                
+                assert result == mock_asset
+                mock_db.session.add.assert_called_once()
+                mock_db.session.commit.assert_called_once()
     
     def test_create_asset_with_initial_fraction_success(self):
         """Test successful asset creation with initial fraction."""
         asset_data = {
             'asset_name': 'Test Asset',
             'asset_description': 'Test Description',
-            'total_unit': 100,
+            'total_unit': 1000,
             'unit_min': 1,
-            'unit_max': 1000,
+            'unit_max': 100,
             'total_value': '10000.00'
         }
         owner_id = 1
@@ -160,9 +183,9 @@ class TestAssetService:
         """Test asset creation with non-existent owner."""
         asset_data = {
             'asset_name': 'Test Asset',
-            'total_unit': 100,
+            'total_unit': 1000,
             'unit_min': 1,
-            'unit_max': 1000,
+            'unit_max': 100,
             'total_value': '10000.00'
         }
         owner_id = 999  # Non-existent
@@ -178,9 +201,9 @@ class TestAssetService:
         """Test asset creation with non-existent admin."""
         asset_data = {
             'asset_name': 'Test Asset',
-            'total_unit': 100,
+            'total_unit': 1000,
             'unit_min': 1,
-            'unit_max': 1000,
+            'unit_max': 100,
             'total_value': '10000.00'
         }
         owner_id = 1
@@ -197,9 +220,9 @@ class TestAssetService:
         """Test asset creation with non-manager admin."""
         asset_data = {
             'asset_name': 'Test Asset',
-            'total_unit': 100,
+            'total_unit': 1000,
             'unit_min': 1,
-            'unit_max': 1000,
+            'unit_max': 100,
             'total_value': '10000.00'
         }
         owner_id = 1
@@ -219,9 +242,9 @@ class TestAssetService:
         """Test that asset creation is rolled back if fraction/history creation fails."""
         asset_data = {
             'asset_name': 'Test Asset',
-            'total_unit': 100,
+            'total_unit': 1000,
             'unit_min': 1,
-            'unit_max': 1000,
+            'unit_max': 100,
             'total_value': '10000.00'
         }
         owner_id = 1

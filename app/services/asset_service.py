@@ -35,14 +35,14 @@ class AssetService:
         unit_min = asset_data['unit_min']
         unit_max = asset_data['unit_max']
         
-        if unit_min > unit_max:
-            raise ValueError("unit_min cannot be greater than unit_max")
+        if unit_min < 1:
+            raise ValueError("unit_min must be at least 1")
         
-        if total_unit < unit_min:
-            raise ValueError("total_unit cannot be less than unit_min")
+        if unit_max < unit_min:
+            raise ValueError("unit_max cannot be less than unit_min")
         
-        if total_unit > unit_max:
-            raise ValueError("total_unit cannot be greater than unit_max")
+        if unit_min > total_unit:
+            raise ValueError("unit_min cannot be greater than total_unit")
         
         asset = Asset(
             asset_name=asset_data['asset_name'],
@@ -209,7 +209,7 @@ class AssetService:
                 recorded_at=datetime.utcnow(),
                 source='initial_creation',
                 adjusted_by=admin_user_id,  # Admin who created the asset
-                adjustment_reason='Initial asset creation'
+                adjustment_reason='Initial value'
             )
             
             db.session.add(value_history)

@@ -359,15 +359,18 @@
         chart.destroy();
       }
       
+      const isBar = chartType === 'bar';
       const data = {
         labels: valueHistory.map(h => new Date(h.date).toLocaleDateString()),
         datasets: [{
           label: 'Unit Price (¥)',
           data: valueHistory.map(h => h.value),
           borderColor: '#f7c948',
-          backgroundColor: chartType === 'area' ? 'rgba(247, 201, 72, 0.1)' : 'transparent',
+          // For bar chart use solid yellow so bars are visible; for area use translucent fill; for line keep transparent background
+          backgroundColor: isBar ? '#f7c948' : (chartType === 'area' ? 'rgba(247, 201, 72, 0.1)' : 'transparent'),
           fill: chartType === 'area',
-          tension: 0.4
+          tension: 0.4,
+          borderWidth: isBar ? 0 : 2
         }]
       };
       

@@ -102,35 +102,6 @@
       font-size: 12px;
       color: #999;
     }
-    .filters-section {
-      background: #f8f9fa;
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    .filters-row {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .filter-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .filter-group label {
-      font-size: 12px;
-      color: #666;
-      font-weight: 500;
-    }
-    .filter-group input,
-    .filter-group select {
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-    }
     .modal {
       display: none;
       position: fixed;
@@ -265,10 +236,6 @@
         grid-template-columns: 1fr;
         gap: 8px;
       }
-      .filters-row {
-        flex-direction: column;
-        align-items: stretch;
-      }
       .modal-content {
         margin: 10% auto;
         width: 95%;
@@ -307,34 +274,6 @@
       <div class="row">
         <button onclick="openCreateOfferModal()" class="success" style="margin-right: 10px;">Create Offer</button>
         <button onclick="refreshOffers()" class="small">Refresh</button>
-      </div>
-    </div>
-
-    <!-- Filters Section -->
-    <div class="filters-section">
-      <div class="filters-row">
-        <div class="filter-group">
-          <label>Asset</label>
-          <select id="assetFilter" onchange="handleAssetFilterChange()">
-            <option value="">All Assets</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label>Price Range</label>
-          <input type="number" id="minPrice" placeholder="Min" oninput="debouncedApplyFilters()">
-        </div>
-        <div class="filter-group">
-          <label>&nbsp;</label>
-          <input type="number" id="maxPrice" placeholder="Max" oninput="debouncedApplyFilters()">
-        </div>
-        <div class="filter-group">
-          <label>User ID</label>
-          <input type="number" id="userFilter" placeholder="User ID" oninput="debouncedApplyFilters()">
-        </div>
-        <div class="filter-group">
-          <label>&nbsp;</label>
-          <button onclick="clearFilters()" class="small">Clear Filters</button>
-        </div>
       </div>
     </div>
 
@@ -471,8 +410,6 @@
     let assets = [];
     let allOffers = [];
     let currentTradeOffer = null;
-    let filterTimeout = null;
-    let offersCache = new Map(); // Cache for asset-specific offers
     
     // Check if user is manager
     if (user.is_manager) {
@@ -543,20 +480,6 @@
     function populateAssetDropdowns() {
       console.log('Populating asset dropdowns with', assets.length, 'assets');
       
-      // Main filter dropdown
-      const assetFilter = document.getElementById('assetFilter');
-      if (assetFilter) {
-        assetFilter.innerHTML = '<option value="">All Assets</option>';
-        
-        assets.forEach(asset => {
-          const filterOption = document.createElement('option');
-          filterOption.value = asset.asset_id;
-          filterOption.textContent = asset.asset_name;
-          assetFilter.appendChild(filterOption);
-        });
-        console.log('Main filter dropdown populated with', assetFilter.options.length, 'options');
-      }
-      
       // Create offer modal dropdown
       const offerAsset = document.getElementById('offerAsset');
       if (offerAsset) {
@@ -587,7 +510,7 @@
         
         if (data.status === 'success') {
           allOffers = data.offers || [];
-          applyFilters();
+          displayOffers(allOffers);
           
           // Show helpful message if no offers exist
           if (allOffers.length === 0) {
@@ -602,138 +525,12 @@
       }
     }
 
-    // Refresh offers (clears cache and reloads)
+    // Refresh offers
     function refreshOffers() {
-      offersCache.clear(); // Clear cache
-      const assetId = document.getElementById('assetFilter').value;
-      if (assetId) {
-        handleAssetFilterChange(); // Reload specific asset
-      } else {
-        loadOffers(); // Reload all offers
-      }
+      loadOffers();
     }
 
-    // Apply filters to offers (client-side filtering for better performance)
-    function applyFilters(showLoading = false) {
-      if (showLoading) {
-        // Show loading state for all containers
-        document.getElementById('buyOffersContainer').innerHTML = '<div class="text-muted text-center" style="padding: 20px;"><div class="spinner"></div><p>Filtering...</p></div>';
-        document.getElementById('sellOffersContainer').innerHTML = '<div class="text-muted text-center" style="padding: 20px;"><div class="spinner"></div><p>Filtering...</p></div>';
-        document.getElementById('allOffersContainer').innerHTML = '<div class="text-muted text-center" style="padding: 20px;"><div class="spinner"></div><p>Filtering...</p></div>';
-      }
-
-      const assetId = document.getElementById('assetFilter').value;
-      const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
-      const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
-      const userId = document.getElementById('userFilter').value;
-
-      let filteredOffers = allOffers.filter(offer => {
-        if (assetId && offer.asset_id != assetId) return false;
-        if (offer.price_perunit < minPrice || offer.price_perunit > maxPrice) return false;
-        if (userId && offer.user_id != userId) return false;
-        return true;
-      });
-
-      displayFilteredOffers(filteredOffers);
-    }
-
-    // Debounced filter application for better performance
-    function debouncedApplyFilters() {
-      if (filterTimeout) {
-        clearTimeout(filterTimeout);
-      }
-      filterTimeout = setTimeout(() => {
-        applyFilters(true);
-      }, 300); // 300ms delay
-    }
-
-    // Handle asset filter change (only reload if needed)
-    async function handleAssetFilterChange() {
-      const assetId = document.getElementById('assetFilter').value;
-      console.log('Asset filter changed to:', assetId);
-      
-      // Show loading immediately
-      applyFilters(true);
-      
-      // If no asset selected and we have all offers loaded, just apply filters
-      if (!assetId && allOffers.length > 0) {
-        console.log('No asset selected, applying filters to existing offers');
-        applyFilters();
-        return;
-      }
-      
-      // If no asset selected, load all offers
-      if (!assetId) {
-        console.log('No asset selected, loading all offers');
-        await loadOffers();
-        return;
-      }
-      
-      // If asset selected, load specific asset offers
-      console.log('Asset selected, loading offers for asset:', assetId);
-      await loadOffersForAsset(assetId);
-      
-      // Auto-switch to Buy Offers tab after loading asset offers
-      switchToBuyTab();
-    }
-
-    // Load offers for specific asset (optimized with cache)
-    async function loadOffersForAsset(assetId) {
-      console.log('Loading offers for asset:', assetId);
-      
-      // Check cache first
-      if (offersCache.has(assetId)) {
-        console.log('Using cached offers for asset:', assetId);
-        allOffers = offersCache.get(assetId);
-        applyFilters();
-        return;
-      }
-
-      try {
-        console.log('Fetching offers from API for asset:', assetId);
-        const response = await fetch(`${API}/trading/offers/${assetId}`);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log('API response for asset offers:', data);
-        
-        if (data.status === 'success') {
-          // Convert asset-specific offers to the same format as all offers
-          const assetOffers = [
-            ...data.buy_offers.map(o => ({ ...o, is_buyer: true })),
-            ...data.sell_offers.map(o => ({ ...o, is_buyer: false }))
-          ];
-          
-          console.log('Converted asset offers:', assetOffers);
-          
-          // Cache the results
-          offersCache.set(assetId, assetOffers);
-          
-          // Update allOffers with just this asset's offers
-          allOffers = assetOffers;
-          applyFilters();
-        } else {
-          console.error('Failed to load asset offers:', data.message || 'Unknown error');
-        }
-      } catch (error) {
-        console.error('Error loading asset offers:', error);
-        showMessage('Error loading offers for selected asset: ' + error.message, false);
-      }
-    }
-
-    function clearFilters() {
-      document.getElementById('assetFilter').value = '';
-      document.getElementById('minPrice').value = '';
-      document.getElementById('maxPrice').value = '';
-      document.getElementById('userFilter').value = '';
-      offersCache.clear(); // Clear cache when clearing filters
-      loadOffers(); // Reload all offers when clearing filters
-    }
-
-    function displayFilteredOffers(offers) {
+    function displayOffers(offers) {
       const buyOffers = offers.filter(o => o.is_buyer).sort((a, b) => b.price_perunit - a.price_perunit);
       const sellOffers = offers.filter(o => !o.is_buyer).sort((a, b) => a.price_perunit - b.price_perunit);
       const allOffersSorted = offers.sort((a, b) => b.price_perunit - a.price_perunit);
@@ -747,19 +544,19 @@
       const container = document.getElementById(containerId);
       const countElement = document.getElementById(countId);
       
+      if (!container || !countElement) {
+        console.error(`Container or count element not found: ${containerId}, ${countId}`);
+        return;
+      }
+      
       countElement.textContent = `${offers.length} offers`;
       
       if (offers.length === 0) {
-        const hasFilters = document.getElementById('assetFilter').value || 
-                          document.getElementById('minPrice').value || 
-                          document.getElementById('maxPrice').value || 
-                          document.getElementById('userFilter').value;
-        
         container.innerHTML = `
           <div class="empty-state">
             <div class="empty-state-icon">📊</div>
-            <p>${hasFilters ? 'No offers found matching your criteria' : 'No offers available yet'}</p>
-            ${!hasFilters ? '<p class="text-muted">Be the first to create an offer!</p>' : ''}
+            <p>No offers available yet</p>
+            <p class="text-muted">Be the first to create an offer!</p>
           </div>
         `;
         return;
@@ -998,7 +795,6 @@
       if (!offer) {
         showMessage('Offer not found. It may have been traded already.', false);
         // Refresh offers to get latest data
-        offersCache.clear();
         await loadOffers();
         return;
       }
@@ -1109,9 +905,7 @@
           // Remove the traded offer from display immediately
           removeOfferFromDisplay(tradedOfferId);
           
-          // Clear cache for the specific asset and refresh data
-          offersCache.delete(tradedAssetId);
-          offersCache.clear(); // Clear all cache to be safe
+          // Refresh data
           await loadOffers();
           await loadMyOffers();
         } else {

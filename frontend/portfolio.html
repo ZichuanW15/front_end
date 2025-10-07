@@ -32,9 +32,8 @@
         <p class="text-muted">Manage your asset holdings and portfolio</p>
       </div>
       <div class="row">
-        <button onclick="refreshData()" class="small">Refresh Data</button>
-        <button onclick="exportPortfolio()" class="small">Export Report</button>
-        <button onclick="rebalancePortfolio()" class="primary small">Rebalance</button>
+  <button onclick="refreshData()" class="small">Refresh Data</button>
+  <button onclick="exportPortfolio()" class="small">Export Report</button>
       </div>
     </div>
 
@@ -54,19 +53,7 @@
         <div class="text-muted" id="totalUnits">0 Total Units</div>
       </div>
       
-      <div class="card">
-        <h3>Daily Gain</h3>
-        <div style="font-size: 24px; font-weight: bold;" id="dailyGain">¥0</div>
-        <p class="text-muted">Today's P&L</p>
-        <div class="text-success" id="dailyGainPercent">+0%</div>
-      </div>
-      
-      <div class="card">
-        <h3>Total Gain</h3>
-        <div style="font-size: 24px; font-weight: bold;" id="totalGain">¥0</div>
-        <p class="text-muted">Cumulative P&L</p>
-        <div class="text-success" id="totalGainPercent">+0%</div>
-      </div>
+      <!-- Only show basic summary values available from backend -->
     </div>
 
     <!-- Portfolio Chart -->
@@ -94,13 +81,10 @@
           <select id="sortBy" onchange="sortHoldings()">
             <option value="value">Sort by Value</option>
             <option value="units">Sort by Units</option>
-            <option value="gain">Sort by Gain</option>
             <option value="name">Sort by Name</option>
           </select>
           <select id="filterBy" onchange="filterHoldings()" style="margin-left: 10px;">
             <option value="all">All Assets</option>
-            <option value="profitable">Profitable Assets</option>
-            <option value="losing">Losing Assets</option>
             <option value="top5">Top 5 Holdings</option>
           </select>
         </div>
@@ -127,35 +111,7 @@
       </div>
     </div>
 
-    <!-- Performance Analysis -->
-    <div class="card">
-      <h3>Investment Performance Analysis</h3>
-      <div class="grid">
-        <div class="card">
-          <h4>Sharpe Ratio</h4>
-          <div style="font-size: 20px; font-weight: bold;" id="sharpeRatio">0.00</div>
-          <p class="text-muted">Risk-Adjusted Return</p>
-        </div>
-        
-        <div class="card">
-          <h4>Max Drawdown</h4>
-          <div style="font-size: 20px; font-weight: bold; color: var(--error);" id="maxDrawdown">-0%</div>
-          <p class="text-muted">Maximum Loss</p>
-        </div>
-        
-        <div class="card">
-          <h4>Volatility</h4>
-          <div style="font-size: 20px; font-weight: bold;" id="volatility">0%</div>
-          <p class="text-muted">Price Volatility</p>
-        </div>
-        
-        <div class="card">
-          <h4>Win Rate</h4>
-          <div style="font-size: 20px; font-weight: bold;" id="winRate">0%</div>
-          <p class="text-muted">Profitable Trade Ratio</p>
-        </div>
-      </div>
-    </div>
+    <!-- Performance analysis removed: backend doesn't provide these metrics -->
 
     <!-- Asset Detail Modal -->
     <div id="assetDetailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
@@ -205,9 +161,23 @@
         const holdingsWrap = await holdingsRes.json();
         const holdings = holdingsWrap.items || [];
         
-        // Fetch all assets for reference
+        // Optionally fetch all assets for other pages, but for price per unit prefer user's fractions if available
         const assetsRes = await fetch(`${API}/assets`, { credentials: 'include' });
         allAssets = await assetsRes.json();
+
+        // Fetch user's fractions to get value_perunit when available
+        const fracResForPrices = await fetch(`${API}/fractions/owner/${user.user_id}`, { credentials: 'include' });
+        const fracWrapForPrices = await fracResForPrices.json();
+        const allUserFractionsForPrices = fracWrapForPrices.fractions || fracWrapForPrices.items || [];
+        // build price map: asset_id -> value_perunit (prefer the latest/non-null)
+        const priceMap = {};
+        allUserFractionsForPrices.forEach(f => {
+          const aid = String(f.asset_id);
+          const v = f.value_perunit || f.value_per_unit || f.price_perunit || f.unit_price;
+          if (v != null && v !== '') {
+            priceMap[aid] = parseFloat(v);
+          }
+        });
         
         // Fetch recent transactions
         const transactionsRes = await fetch(`${API}/users/${user.user_id}/transactions?per_page=10`, {
@@ -216,41 +186,40 @@
         const txWrap = await transactionsRes.json();
         transactions = txWrap.items || [];
         
-        // Process portfolio data
-        portfolioData = processPortfolioData(holdings, allAssets);
-        
-        updatePortfolioSummary();
-        updateChart();
-        updateHoldingsTable();
-        updateRecentTransactions();
-        updatePerformanceAnalysis();
+  // Process portfolio data using backend-provided fields and fraction price map
+  portfolioData = processPortfolioData(holdings, allAssets, priceMap);
+
+  updatePortfolioSummary();
+  updateChart();
+  updateHoldingsTable();
+  updateRecentTransactions();
       } catch (error) {
         console.error('Error fetching portfolio data:', error);
         showError('Failed to load portfolio data, please try again later');
       }
     }
 
-    function processPortfolioData(holdings, assets) {
+    function processPortfolioData(holdings, assets, priceMap = {}) {
       // holdings is aggregated from backend: [{ asset_id, asset_name, units, latest_value, estimated_value }]
       const portfolio = [];
       holdings.forEach(h => {
-        const currentPrice = parseFloat(h.latest_value || 0);
-        const currentValue = parseFloat(h.estimated_value || (currentPrice * (h.units || 0)));
-        const costBasis = currentValue * (0.8 + Math.random() * 0.4); // Mock cost basis
-        const gain = currentValue - costBasis;
-        const gainPercent = costBasis ? (gain / costBasis) * 100 : 0;
+        const assetIdStr = String(h.asset_id);
+        // prefer explicit per-unit price from user's fraction data if available
+        const fractionUnitPrice = priceMap[assetIdStr];
+        const latestValue = parseFloat(h.latest_value || 0);
+        // fallback to latest_value if fraction unit price not available
+        const unitPrice = (fractionUnitPrice != null) ? fractionUnitPrice : latestValue;
+        const units = parseInt(h.units || 0);
+        // total price should be units * unitPrice
+  const totalPrice = unitPrice * units;
         const name = h.asset_name || (assets.find(a => a.asset_id == h.asset_id)?.asset_name) || `Asset ${h.asset_id}`;
 
         portfolio.push({
           asset_id: h.asset_id,
           asset_name: name,
-          units: parseInt(h.units || 0),
-          current_price: currentPrice,
-          current_value: currentValue,
-          cost_basis: costBasis,
-          gain: gain,
-          gain_percent: gainPercent,
-          category: getAssetCategory({ asset_name: name })
+          units: units,
+          unit_price: unitPrice,
+          total_price: totalPrice
         });
       });
       return portfolio;
@@ -266,29 +235,16 @@
     }
 
     function updatePortfolioSummary() {
-      const totalValue = portfolioData.reduce((sum, item) => sum + item.current_value, 0);
-      const totalCost = portfolioData.reduce((sum, item) => sum + item.cost_basis, 0);
-      const totalGain = totalValue - totalCost;
-      const totalGainPercent = (totalGain / totalCost) * 100;
-      
-      // Mock daily change
-      const dailyChange = (Math.random() - 0.5) * 0.1;
-      const dailyGain = totalValue * dailyChange;
-      
+      // Use only data provided by backend (total of total_price)
+      const totalValue = portfolioData.reduce((sum, item) => sum + (item.total_price || 0), 0);
+
       document.getElementById('totalPortfolioValue').textContent = `¥${totalValue.toLocaleString()}`;
       document.getElementById('totalAssets').textContent = portfolioData.length;
       document.getElementById('totalUnits').textContent = portfolioData.reduce((sum, item) => sum + item.units, 0);
-      
-      document.getElementById('dailyGain').textContent = `¥${dailyGain.toFixed(2)}`;
-      document.getElementById('dailyGainPercent').textContent = `${dailyChange > 0 ? '+' : ''}${(dailyChange * 100).toFixed(2)}%`;
-      document.getElementById('dailyGainPercent').className = dailyChange > 0 ? 'text-success' : 'text-error';
-      
-      document.getElementById('totalGain').textContent = `¥${totalGain.toFixed(2)}`;
-      document.getElementById('totalGainPercent').textContent = `${totalGainPercent > 0 ? '+' : ''}${totalGainPercent.toFixed(2)}%`;
-      document.getElementById('totalGainPercent').className = totalGainPercent > 0 ? 'text-success' : 'text-error';
-      
-      document.getElementById('portfolioChange').textContent = `${dailyChange > 0 ? '+' : ''}${(dailyChange * 100).toFixed(2)}% Today`;
-      document.getElementById('portfolioChange').className = dailyChange > 0 ? 'text-success' : 'text-error';
+
+      // Portfolio change and gains are not available from backend; hide/leave default text
+      document.getElementById('portfolioChange').textContent = '';
+      document.getElementById('portfolioChange').className = '';
     }
 
     function updateChart() {
@@ -302,7 +258,7 @@
       const data = {
         labels: portfolioData.map(item => item.asset_name),
         datasets: [{
-          data: portfolioData.map(item => item.current_value),
+          data: portfolioData.map(item => item.total_price),
           backgroundColor: [
             '#f7c948', '#6fd37f', '#ff6b6b', '#2196f3', '#ffa726',
             '#9c27b0', '#00bcd4', '#8bc34a', '#ff5722', '#607d8b'
@@ -345,24 +301,20 @@
 
     function updateHoldingsTable() {
       const container = document.getElementById('holdingsTable');
-      
+
       if (portfolioData.length === 0) {
         container.innerHTML = '<p class="text-muted text-center">No assets held</p>';
         return;
       }
-      
+
       container.innerHTML = `
         <table>
           <thead>
             <tr>
               <th>Asset Name</th>
+              <th>Unit Price</th>
               <th>Units Held</th>
-              <th>Current Price</th>
-              <th>Current Value</th>
-              <th>Cost Basis</th>
-              <th>Gain/Loss</th>
-              <th>Return %</th>
-              <th>Actions</th>
+              <th>Total Price</th>
             </tr>
           </thead>
           <tbody>
@@ -370,21 +322,10 @@
               <tr onclick="showAssetDetail(${item.asset_id})" style="cursor: pointer;">
                 <td>
                   <div style="font-weight: 500;">${item.asset_name}</div>
-                  <div class="text-muted" style="font-size: 12px;">${item.category}</div>
                 </td>
-                <td>${item.units.toLocaleString()}</td>
-                <td>¥${item.current_price.toFixed(2)}</td>
-                <td>¥${item.current_value.toLocaleString()}</td>
-                <td>¥${item.cost_basis.toLocaleString()}</td>
-                <td class="${item.gain > 0 ? 'text-success' : 'text-error'}">
-                  ${item.gain > 0 ? '+' : ''}¥${item.gain.toFixed(2)}
-                </td>
-                <td class="${item.gain_percent > 0 ? 'text-success' : 'text-error'}">
-                  ${item.gain_percent > 0 ? '+' : ''}${item.gain_percent.toFixed(2)}%
-                </td>
-                <td>
-                  <button onclick="event.stopPropagation(); quickSell(${item.asset_id})" class="small danger">Sell</button>
-                </td>
+                <td>¥${(item.unit_price || 0).toFixed(2)}</td>
+                <td>${(item.units || 0).toLocaleString()}</td>
+                <td>¥${(item.total_price || 0).toLocaleString()}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -423,18 +364,7 @@
       }).join('');
     }
 
-    function updatePerformanceAnalysis() {
-      // Mock performance metrics
-      const sharpeRatio = (Math.random() * 2).toFixed(2);
-      const maxDrawdown = -(Math.random() * 20).toFixed(1);
-      const volatility = (Math.random() * 30 + 10).toFixed(1);
-      const winRate = (Math.random() * 40 + 30).toFixed(1);
-      
-      document.getElementById('sharpeRatio').textContent = sharpeRatio;
-      document.getElementById('maxDrawdown').textContent = `${maxDrawdown}%`;
-      document.getElementById('volatility').textContent = `${volatility}%`;
-      document.getElementById('winRate').textContent = `${winRate}%`;
-    }
+    // Performance metrics are not available from backend in current API.
 
     function sortHoldings() {
       const sortBy = document.getElementById('sortBy').value;
@@ -442,11 +372,12 @@
       portfolioData.sort((a, b) => {
         switch (sortBy) {
           case 'value':
-            return b.current_value - a.current_value;
+            return (b.total_price || 0) - (a.total_price || 0);
           case 'units':
             return b.units - a.units;
           case 'gain':
-            return b.gain - a.gain;
+            // gain sorting not available - fallback to total price
+            return (b.total_price || 0) - (a.total_price || 0);
           case 'name':
             return a.asset_name.localeCompare(b.asset_name);
           default:
@@ -463,14 +394,17 @@
       
       switch (filter) {
         case 'profitable':
-          filteredData = portfolioData.filter(item => item.gain > 0);
+          // Backend does not provide gain; cannot filter by profitability. Show all.
+          filteredData = [...portfolioData];
           break;
         case 'losing':
-          filteredData = portfolioData.filter(item => item.gain < 0);
+          // Backend does not provide gain; cannot filter by losing. Show all.
+          filteredData = [...portfolioData];
           break;
         case 'top5':
           filteredData = portfolioData
-            .sort((a, b) => b.current_value - a.current_value)
+            .slice()
+            .sort((a, b) => (b.total_price || 0) - (a.total_price || 0))
             .slice(0, 5);
           break;
       }
@@ -489,53 +423,28 @@
       selectedAsset = asset;
       
       document.getElementById('modalAssetName').textContent = asset.asset_name;
+      // Show only basic details available
       document.getElementById('modalAssetContent').innerHTML = `
         <div class="row" style="margin-bottom: 20px;">
           <div class="col">
             <div class="text-muted">Units Held</div>
-            <div style="font-size: 24px; font-weight: bold;">${asset.units.toLocaleString()}</div>
+            <div style="font-size: 24px; font-weight: bold;">${(asset.units || 0).toLocaleString()}</div>
           </div>
           <div class="col">
-            <div class="text-muted">Current Price</div>
-            <div style="font-size: 24px; font-weight: bold; color: var(--accent);">¥${asset.current_price.toFixed(2)}</div>
+            <div class="text-muted">Unit Price</div>
+            <div style="font-size: 24px; font-weight: bold; color: var(--accent);">¥${(asset.unit_price || 0).toFixed(2)}</div>
           </div>
         </div>
-        
-        <div class="row" style="margin-bottom: 20px;">
-          <div class="col">
-            <div class="text-muted">Current Value</div>
-            <div style="font-size: 20px; font-weight: bold;">¥${asset.current_value.toLocaleString()}</div>
-          </div>
-          <div class="col">
-            <div class="text-muted">Cost Basis</div>
-            <div style="font-size: 20px; font-weight: bold;">¥${asset.cost_basis.toLocaleString()}</div>
-          </div>
-        </div>
-        
-        <div class="row" style="margin-bottom: 20px;">
-          <div class="col">
-            <div class="text-muted">Gain/Loss</div>
-            <div style="font-size: 20px; font-weight: bold;" class="${asset.gain > 0 ? 'text-success' : 'text-error'}">
-              ${asset.gain > 0 ? '+' : ''}¥${asset.gain.toFixed(2)}
-            </div>
-          </div>
-          <div class="col">
-            <div class="text-muted">Return %</div>
-            <div style="font-size: 20px; font-weight: bold;" class="${asset.gain_percent > 0 ? 'text-success' : 'text-error'}">
-              ${asset.gain_percent > 0 ? '+' : ''}${asset.gain_percent.toFixed(2)}%
-            </div>
-          </div>
-        </div>
-        
         <div>
-          <div class="text-muted">Asset Category</div>
-          <div><span class="badge info">${asset.category}</span></div>
+          <div class="text-muted">Total Price</div>
+          <div style="font-size: 20px; font-weight: bold;">¥${(asset.total_price || 0).toLocaleString()}</div>
         </div>
       `;
       
       // Now fetch user's fractions for this asset and render them below
       try {
-        const fracRes = await fetch(`${API}/fractions/owner/${user.user_id}`, { credentials: 'include' });
+  // Keep fetching user's fractions for this asset (if backend provides them)
+  const fracRes = await fetch(`${API}/fractions/owner/${user.user_id}`, { credentials: 'include' });
         const fracWrap = await fracRes.json();
         const allUserFractions = fracWrap.fractions || fracWrap.items || [];
         const myFractions = allUserFractions.filter(f => String(f.asset_id) === String(assetId));
@@ -593,7 +502,7 @@
                 txs.forEach(t => {
                   const tr = document.createElement('tr');
                   const time = new Date(t.created_at || t.transaction_at || t.timestamp || Date.now()).toLocaleString();
-                  tr.innerHTML = `<td>${time}</td><td>${t.type || t.transaction_type || ''}</td><td>${t.units || t.unit_moved || t.amount || ''}</td><td>¥${(t.price || t.unit_price || 0).toLocaleString()}</td>`;
+                  tr.innerHTML = `<td>${time}</td><td>${t.type || t.transaction_type || ''}</td><td>${t.units || t.unit_moved || t.amount || ''}</td><td>¥${(t.price || t.price_perunit || 0).toLocaleString()}</td>`;
                   tb.appendChild(tr);
                 });
                 table.appendChild(tb);
@@ -650,14 +559,15 @@
     }
 
     function rebalancePortfolio() {
-      showMessage('Rebalancing feature under development...', false);
+      // Rebalance feature removed because backend does not provide required data
+      showMessage('Rebalance feature is not available.', false);
     }
 
     function exportPortfolio() {
       const csv = [
-        'Asset Name,Units Held,Current Price,Current Value,Cost Basis,Gain,Return %',
+        'Asset Name,Unit Price,Units Held,Total Price',
         ...portfolioData.map(item => 
-          `${item.asset_name},${item.units},${item.current_price.toFixed(2)},${item.current_value.toFixed(2)},${item.cost_basis.toFixed(2)},${item.gain.toFixed(2)},${item.gain_percent.toFixed(2)}%`
+          `${item.asset_name},${(item.unit_price||0).toFixed(2)},${item.units},${(item.total_price||0).toFixed(2)}`
         )
       ].join('\n');
       

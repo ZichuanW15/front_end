@@ -6,14 +6,10 @@
   <title>Trading Center - Asset Trading Platform</title>
   <link rel="stylesheet" href="common.css">
   <style>
-    /* Trading-specific styles that complement common.css */
     .tab-container {
       display: flex;
-      border-bottom: 2px solid var(--border);
+      border-bottom: 2px solid #e0e0e0;
       margin-bottom: 20px;
-      background: var(--card);
-      border-radius: 10px 10px 0 0;
-      padding: 0 10px;
     }
     .tab {
       padding: 12px 24px;
@@ -22,19 +18,16 @@
       background: none;
       font-size: 16px;
       font-weight: 500;
-      color: var(--muted);
+      color: #666;
       border-bottom: 2px solid transparent;
       transition: all 0.3s ease;
-      border-radius: 8px 8px 0 0;
     }
     .tab.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-      background: rgba(247, 201, 72, 0.1);
+      color: #007bff;
+      border-bottom-color: #007bff;
     }
     .tab:hover {
-      color: var(--accent);
-      background: rgba(247, 201, 72, 0.05);
+      color: #007bff;
     }
     .tab-content {
       display: none;
@@ -43,17 +36,15 @@
       display: block;
     }
     .offer-card {
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
       padding: 16px;
       margin-bottom: 12px;
-      background: var(--card);
-      transition: all 0.2s ease;
+      background: #fff;
+      transition: box-shadow 0.2s ease;
     }
     .offer-card:hover {
-      border-color: var(--accent);
-      box-shadow: 0 4px 12px rgba(247, 201, 72, 0.1);
-      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     .offer-header {
       display: flex;
@@ -62,21 +53,19 @@
       margin-bottom: 12px;
     }
     .offer-type {
-      padding: 6px 12px;
-      border-radius: 6px;
+      padding: 4px 8px;
+      border-radius: 4px;
       font-size: 12px;
       font-weight: 600;
       text-transform: uppercase;
     }
     .offer-type.buy {
-      background: rgba(111, 211, 127, 0.2);
-      color: var(--success);
-      border: 1px solid var(--success);
+      background: #d4edda;
+      color: #155724;
     }
     .offer-type.sell {
-      background: rgba(255, 107, 107, 0.2);
-      color: var(--error);
-      border: 1px solid var(--error);
+      background: #f8d7da;
+      color: #721c24;
     }
     .offer-details {
       display: grid;
@@ -89,20 +78,19 @@
     }
     .offer-detail-label {
       font-size: 12px;
-      color: var(--muted);
+      color: #666;
       margin-bottom: 4px;
-      font-weight: 500;
     }
     .offer-detail-value {
       font-size: 16px;
       font-weight: 600;
-      color: var(--fg);
+      color: #333;
     }
     .offer-price {
-      color: var(--accent);
+      color: #007bff;
     }
     .offer-user {
-      color: var(--muted);
+      color: #666;
       font-size: 14px;
     }
     .offer-actions {
@@ -112,7 +100,36 @@
     }
     .offer-time {
       font-size: 12px;
-      color: var(--muted);
+      color: #999;
+    }
+    .filters-section {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .filters-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .filter-group label {
+      font-size: 12px;
+      color: #666;
+      font-weight: 500;
+    }
+    .filter-group input,
+    .filter-group select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
     }
     .modal {
       display: none;
@@ -122,39 +139,33 @@
       top: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0,0,0,0.7);
+      background-color: rgba(0,0,0,0.5);
     }
     .modal-content {
-      background-color: var(--card);
+      background-color: #fff;
       margin: 5% auto;
-      padding: 24px;
-      border-radius: 14px;
+      padding: 20px;
+      border-radius: 8px;
       width: 90%;
       max-width: 500px;
       max-height: 80vh;
       overflow-y: auto;
-      border: 1px solid var(--border);
     }
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-    .modal-header h3 {
-      margin: 0;
-      color: var(--fg);
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e0e0e0;
     }
     .modal-close {
       font-size: 24px;
       cursor: pointer;
-      color: var(--muted);
-      transition: color 0.2s;
+      color: #999;
     }
     .modal-close:hover {
-      color: var(--fg);
+      color: #333;
     }
     .form-group {
       margin-bottom: 16px;
@@ -163,30 +174,26 @@
       display: block;
       margin-bottom: 6px;
       font-weight: 500;
-      color: var(--fg);
-      margin: 0 0 6px 0;
+      color: #333;
     }
     .form-group input,
     .form-group select {
       width: 100%;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
       font-size: 14px;
       box-sizing: border-box;
-      background: var(--bg-secondary);
-      color: var(--fg);
-      transition: border-color 0.2s;
     }
     .form-group input:focus,
     .form-group select:focus {
       outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(247, 201, 72, 0.2);
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
     }
     .radio-group {
       display: flex;
-      gap: 20px;
+      gap: 16px;
     }
     .radio-option {
       display: flex;
@@ -195,11 +202,6 @@
     }
     .radio-option input[type="radio"] {
       width: auto;
-      margin: 0;
-    }
-    .radio-option label {
-      margin: 0;
-      cursor: pointer;
     }
     .my-offers-section {
       margin-top: 40px;
@@ -213,13 +215,12 @@
     .section-title {
       font-size: 20px;
       font-weight: 600;
-      color: var(--fg);
-      margin: 0;
+      color: #333;
     }
     .empty-state {
       text-align: center;
       padding: 40px;
-      color: var(--muted);
+      color: #666;
     }
     .empty-state-icon {
       font-size: 48px;
@@ -232,15 +233,15 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(15, 15, 15, 0.8);
+      background: rgba(255,255,255,0.8);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 10;
     }
     .ownership-summary {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
       border-radius: 8px;
       padding: 16px;
       margin-top: 16px;
@@ -249,7 +250,7 @@
       display: flex;
       justify-content: space-between;
       padding: 8px 0;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #e9ecef;
     }
     .ownership-item:last-child {
       border-bottom: none;
@@ -259,34 +260,18 @@
       cursor: not-allowed;
       pointer-events: none;
     }
-    .badge {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .badge.success {
-      background: rgba(111, 211, 127, 0.2);
-      color: var(--success);
-      border: 1px solid var(--success);
-    }
-    .badge.error {
-      background: rgba(255, 107, 107, 0.2);
-      color: var(--error);
-      border: 1px solid var(--error);
-    }
     @media (max-width: 768px) {
       .offer-details {
         grid-template-columns: 1fr;
         gap: 8px;
       }
+      .filters-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
       .modal-content {
         margin: 10% auto;
         width: 95%;
-      }
-      .radio-group {
-        flex-direction: column;
-        gap: 12px;
       }
     }
   </style>
@@ -323,6 +308,34 @@
       <div class="row">
         <button onclick="openCreateOfferModal()" class="success" style="margin-right: 10px;">Create Offer</button>
         <button onclick="refreshOffers()" class="small">Refresh</button>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+      <div class="filters-row">
+        <div class="filter-group">
+          <label>Asset</label>
+          <select id="assetFilter" onchange="handleAssetFilterChange()">
+            <option value="">All Assets</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Price Range</label>
+          <input type="number" id="minPrice" placeholder="Min" oninput="debouncedApplyFilters()">
+        </div>
+        <div class="filter-group">
+          <label>&nbsp;</label>
+          <input type="number" id="maxPrice" placeholder="Max" oninput="debouncedApplyFilters()">
+        </div>
+        <div class="filter-group">
+          <label>User ID</label>
+          <input type="number" id="userFilter" placeholder="User ID" oninput="debouncedApplyFilters()">
+        </div>
+        <div class="filter-group">
+          <label>&nbsp;</label>
+          <button onclick="clearFilters()" class="small">Clear Filters</button>
+        </div>
       </div>
     </div>
 
@@ -459,6 +472,9 @@
     let assets = [];
     let allOffers = [];
     let currentTradeOffer = null;
+    let filterTimeout = null;
+    let offersCache = new Map(); // Cache for asset-specific offers
+    
     // Check if user is manager
     if (user.is_manager) {
       document.getElementById('adminLink').style.display = 'inline-block';
@@ -528,6 +544,20 @@
     function populateAssetDropdowns() {
       console.log('Populating asset dropdowns with', assets.length, 'assets');
       
+      // Main filter dropdown
+      const assetFilter = document.getElementById('assetFilter');
+      if (assetFilter) {
+        assetFilter.innerHTML = '<option value="">All Assets</option>';
+        
+        assets.forEach(asset => {
+          const filterOption = document.createElement('option');
+          filterOption.value = asset.asset_id;
+          filterOption.textContent = asset.asset_name;
+          assetFilter.appendChild(filterOption);
+        });
+        console.log('Main filter dropdown populated with', assetFilter.options.length, 'options');
+      }
+      
       // Create offer modal dropdown
       const offerAsset = document.getElementById('offerAsset');
       if (offerAsset) {
@@ -558,7 +588,7 @@
         
         if (data.status === 'success') {
           allOffers = data.offers || [];
-          displayOffers(allOffers);
+          applyFilters();
           
           // Show helpful message if no offers exist
           if (allOffers.length === 0) {
@@ -573,12 +603,138 @@
       }
     }
 
-    // Refresh offers
+    // Refresh offers (clears cache and reloads)
     function refreshOffers() {
-      loadOffers(); // Reload all offers
+      offersCache.clear(); // Clear cache
+      const assetId = document.getElementById('assetFilter').value;
+      if (assetId) {
+        handleAssetFilterChange(); // Reload specific asset
+      } else {
+        loadOffers(); // Reload all offers
+      }
     }
 
-    function displayOffers(offers) {
+    // Apply filters to offers (client-side filtering for better performance)
+    function applyFilters(showLoading = false) {
+      if (showLoading) {
+        // Show loading state for all containers
+        document.getElementById('buyOffersContainer').innerHTML = '<div class="text-muted text-center" style="padding: 20px;"><div class="spinner"></div><p>Filtering...</p></div>';
+        document.getElementById('sellOffersContainer').innerHTML = '<div class="text-muted text-center" style="padding: 20px;"><div class="spinner"></div><p>Filtering...</p></div>';
+        document.getElementById('allOffersContainer').innerHTML = '<div class="text-muted text-center" style="padding: 20px;"><div class="spinner"></div><p>Filtering...</p></div>';
+      }
+
+      const assetId = document.getElementById('assetFilter').value;
+      const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+      const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+      const userId = document.getElementById('userFilter').value;
+
+      let filteredOffers = allOffers.filter(offer => {
+        if (assetId && offer.asset_id != assetId) return false;
+        if (offer.price_perunit < minPrice || offer.price_perunit > maxPrice) return false;
+        if (userId && offer.user_id != userId) return false;
+        return true;
+      });
+
+      displayFilteredOffers(filteredOffers);
+    }
+
+    // Debounced filter application for better performance
+    function debouncedApplyFilters() {
+      if (filterTimeout) {
+        clearTimeout(filterTimeout);
+      }
+      filterTimeout = setTimeout(() => {
+        applyFilters(true);
+      }, 300); // 300ms delay
+    }
+
+    // Handle asset filter change (only reload if needed)
+    async function handleAssetFilterChange() {
+      const assetId = document.getElementById('assetFilter').value;
+      console.log('Asset filter changed to:', assetId);
+      
+      // Show loading immediately
+      applyFilters(true);
+      
+      // If no asset selected and we have all offers loaded, just apply filters
+      if (!assetId && allOffers.length > 0) {
+        console.log('No asset selected, applying filters to existing offers');
+        applyFilters();
+        return;
+      }
+      
+      // If no asset selected, load all offers
+      if (!assetId) {
+        console.log('No asset selected, loading all offers');
+        await loadOffers();
+        return;
+      }
+      
+      // If asset selected, load specific asset offers
+      console.log('Asset selected, loading offers for asset:', assetId);
+      await loadOffersForAsset(assetId);
+      
+      // Auto-switch to Buy Offers tab after loading asset offers
+      switchToBuyTab();
+    }
+
+    // Load offers for specific asset (optimized with cache)
+    async function loadOffersForAsset(assetId) {
+      console.log('Loading offers for asset:', assetId);
+      
+      // Check cache first
+      if (offersCache.has(assetId)) {
+        console.log('Using cached offers for asset:', assetId);
+        allOffers = offersCache.get(assetId);
+        applyFilters();
+        return;
+      }
+
+      try {
+        console.log('Fetching offers from API for asset:', assetId);
+        const response = await fetch(`${API}/trading/offers/${assetId}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('API response for asset offers:', data);
+        
+        if (data.status === 'success') {
+          // Convert asset-specific offers to the same format as all offers
+          const assetOffers = [
+            ...data.buy_offers.map(o => ({ ...o, is_buyer: true })),
+            ...data.sell_offers.map(o => ({ ...o, is_buyer: false }))
+          ];
+          
+          console.log('Converted asset offers:', assetOffers);
+          
+          // Cache the results
+          offersCache.set(assetId, assetOffers);
+          
+          // Update allOffers with just this asset's offers
+          allOffers = assetOffers;
+          applyFilters();
+        } else {
+          console.error('Failed to load asset offers:', data.message || 'Unknown error');
+        }
+      } catch (error) {
+        console.error('Error loading asset offers:', error);
+        showMessage('Error loading offers for selected asset: ' + error.message, false);
+      }
+    }
+
+    function clearFilters() {
+      document.getElementById('assetFilter').value = '';
+      document.getElementById('minPrice').value = '';
+      document.getElementById('maxPrice').value = '';
+      document.getElementById('userFilter').value = '';
+      offersCache.clear(); // Clear cache when clearing filters
+      loadOffers(); // Reload all offers when clearing filters
+    }
+
+    function displayFilteredOffers(offers) {
       const buyOffers = offers.filter(o => o.is_buyer).sort((a, b) => b.price_perunit - a.price_perunit);
       const sellOffers = offers.filter(o => !o.is_buyer).sort((a, b) => a.price_perunit - b.price_perunit);
       const allOffersSorted = offers.sort((a, b) => b.price_perunit - a.price_perunit);
@@ -592,19 +748,19 @@
       const container = document.getElementById(containerId);
       const countElement = document.getElementById(countId);
       
-      if (!container || !countElement) {
-        console.error(`Container or count element not found: ${containerId}, ${countId}`);
-        return;
-      }
-      
       countElement.textContent = `${offers.length} offers`;
       
       if (offers.length === 0) {
+        const hasFilters = document.getElementById('assetFilter').value || 
+                          document.getElementById('minPrice').value || 
+                          document.getElementById('maxPrice').value || 
+                          document.getElementById('userFilter').value;
+        
         container.innerHTML = `
           <div class="empty-state">
             <div class="empty-state-icon">📊</div>
-            <p>No offers available yet</p>
-            <p class="text-muted">Be the first to create an offer!</p>
+            <p>${hasFilters ? 'No offers found matching your criteria' : 'No offers available yet'}</p>
+            ${!hasFilters ? '<p class="text-muted">Be the first to create an offer!</p>' : ''}
           </div>
         `;
         return;
@@ -843,6 +999,7 @@
       if (!offer) {
         showMessage('Offer not found. It may have been traded already.', false);
         // Refresh offers to get latest data
+        offersCache.clear();
         await loadOffers();
         return;
       }
@@ -953,7 +1110,9 @@
           // Remove the traded offer from display immediately
           removeOfferFromDisplay(tradedOfferId);
           
-          // Refresh data
+          // Clear cache for the specific asset and refresh data
+          offersCache.delete(tradedAssetId);
+          offersCache.clear(); // Clear all cache to be safe
           await loadOffers();
           await loadMyOffers();
         } else {

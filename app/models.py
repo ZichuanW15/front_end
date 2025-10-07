@@ -51,7 +51,7 @@ class Asset(Base):
     
     asset_id = Column(BigInteger, primary_key=True, autoincrement=True)
     asset_name = Column(Text, nullable=False)
-    # asset_description = Column(Text)
+    asset_description = Column(Text)
     total_unit = Column(BigInteger, nullable=False)
     unit_min = Column(BigInteger, nullable=False)
     unit_max = Column(BigInteger, nullable=False)
@@ -66,7 +66,7 @@ class Asset(Base):
         return {
             'asset_id': self.asset_id,
             'asset_name': self.asset_name,
-            # 'asset_description': self.asset_description,
+            'asset_description': self.asset_description,
             'total_unit': self.total_unit,
             'unit_min': self.unit_min,
             'unit_max': self.unit_max,
@@ -122,8 +122,9 @@ class Offer(Base):
     user_id = Column(BigInteger, ForeignKey('Users.user_id'), nullable=False)
     is_buyer = Column(Boolean, nullable=False)
     units = Column(BigInteger, nullable=False)
-    price_perunit = Column(Numeric(18, 2), nullable=False)
+    price_perunit = Column(Numeric(18, 2), nullable=True)
     create_at = Column(DateTime, nullable=False)
+    is_valid = Column(Boolean, nullable=False, default=True)
     
     def to_dict(self):
         """Convert offer to dictionary representation."""
@@ -134,9 +135,11 @@ class Offer(Base):
             'user_id': self.user_id,
             'is_buyer': self.is_buyer,
             'units': self.units,
-            'price_perunit': float(self.price_perunit) if self.price_perunit is not None else None,
+            'price_perunit': float(self.price_perunit) if self.price_perunit else None,
+            'is_valid': self.is_valid,
             'create_at': self.create_at.isoformat() if self.create_at else None
         }
+    
     
     def __repr__(self):
         return f'<Offer {self.offer_id}>'
@@ -156,6 +159,7 @@ class Transaction(Base):
     offer_id = Column(BigInteger, ForeignKey('Offers.offer_id'), nullable=False)
     price_perunit = Column(Numeric(18, 2), nullable=False)
     
+    
     offer = relationship('Offer', backref='transactions')
     
     def to_dict(self):
@@ -169,7 +173,7 @@ class Transaction(Base):
             'from_owner_id': self.from_owner_id,
             'to_owner_id': self.to_owner_id,
             'offer_id': self.offer_id,
-            'price_perunit' : float(self.price_perunit) if self.price_perunit is not None else None
+            'price_perunit': float(self.price_perunit) if self.price_perunit else None
         }
     
     def __repr__(self):

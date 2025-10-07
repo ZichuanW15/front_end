@@ -61,7 +61,8 @@ CREATE TABLE IF NOT EXISTS "Offers" (
     is_buyer BOOLEAN NOT NULL,
     units BIGINT NOT NULL,
     create_at TIMESTAMP NOT NULL DEFAULT now(),
-    price_perunit NUMERIC(18,2) NOT NULL
+    price_perunit NUMERIC(18,2) NOT NULL,
+    is_valid BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 -- Create Transactions table (matching new schema)
@@ -87,6 +88,8 @@ CREATE TABLE IF NOT EXISTS "AssetValueHistory" (
   adjusted_by BIGINT REFERENCES "Users"(user_id),
   adjustment_reason TEXT
 );
+CREATE INDEX IF NOT EXISTS idx_avh_asset_time ON "AssetValueHistory"(asset_id, recorded_at);
+
 -- Indexes for Offers table
 CREATE INDEX idx_offers_asset ON "Offers"(asset_id);
 CREATE INDEX idx_offers_fraction ON "Offers"(fraction_id);

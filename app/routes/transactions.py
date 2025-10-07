@@ -13,17 +13,6 @@ bp = Blueprint('transactions', __name__, url_prefix='/transactions')
 transaction_controller = TransactionController()
 
 
-@bp.route('', methods=['POST'])
-def create_transaction():
-    """
-    Create a new transaction.
-    
-    Returns:
-        JSON response with created transaction data
-    """
-    return transaction_controller.create_transaction()
-
-
 @bp.route('/<int:transaction_id>', methods=['GET'])
 def get_transaction(transaction_id):
     """
@@ -43,10 +32,10 @@ def get_all_transactions():
     """
     Get all transactions with pagination.
     
-    Query Parameters:
-        page: Page number (default: 1)
-        per_page: Items per page (default: 20)
-        
+    Query params:
+        - page: int (default 1)
+        - per_page: int (default 20)
+    
     Returns:
         JSON response with transactions list
     """
@@ -56,7 +45,7 @@ def get_all_transactions():
 @bp.route('/fraction/<int:fraction_id>', methods=['GET'])
 def get_transactions_by_fraction(fraction_id):
     """
-    Get all transactions for a fraction.
+    Get all transactions for a specific fraction.
     
     Args:
         fraction_id: Fraction ID
@@ -70,10 +59,13 @@ def get_transactions_by_fraction(fraction_id):
 @bp.route('/user/<int:user_id>', methods=['GET'])
 def get_transactions_by_user(user_id):
     """
-    Get all transactions involving a user.
+    Get all transactions involving a specific user.
     
     Args:
         user_id: User ID
+    
+    Query params:
+        - transaction_type: str (optional, e.g., 'trade', 'initial')
         
     Returns:
         JSON response with transactions list
@@ -81,15 +73,46 @@ def get_transactions_by_user(user_id):
     return transaction_controller.get_transactions_by_user(user_id)
 
 
-@bp.route('/fraction/<int:fraction_id>/history', methods=['GET'])
-def get_transaction_history(fraction_id):
+@bp.route('/asset/<int:asset_id>', methods=['GET'])
+def get_transactions_by_asset(asset_id):
     """
-    Get transaction history for a fraction.
+    Get all transactions for a specific asset.
     
     Args:
-        fraction_id: Fraction ID
+        asset_id: Asset ID
+    
+    Query params:
+        - limit: int (optional)
         
     Returns:
-        JSON response with transaction history
+        JSON response with transactions list
     """
-    return transaction_controller.get_transaction_history(fraction_id)
+    return transaction_controller.get_transactions_by_asset(asset_id)
+
+
+@bp.route('/user/<int:user_id>/buy', methods=['GET'])
+def get_user_buy_transactions(user_id):
+    """
+    Get all transactions where user was the buyer.
+    
+    Args:
+        user_id: User ID
+        
+    Returns:
+        JSON response with buy transactions list
+    """
+    return transaction_controller.get_user_buy_transactions(user_id)
+
+
+@bp.route('/user/<int:user_id>/sell', methods=['GET'])
+def get_user_sell_transactions(user_id):
+    """
+    Get all transactions where user was the seller.
+    
+    Args:
+        user_id: User ID
+        
+    Returns:
+        JSON response with sell transactions list
+    """
+    return transaction_controller.get_user_sell_transactions(user_id)

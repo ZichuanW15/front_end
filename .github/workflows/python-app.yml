@@ -64,12 +64,3 @@ jobs:
       - name: Run API tests
         run: |
           pytest test/tests/test_user_api.py -v --tb=short --maxfail=3
-
-      - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage-reports
-          path: |
-            htmlcov/
-            coverage.xml

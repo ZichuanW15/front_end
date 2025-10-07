@@ -1,7 +1,10 @@
+"""Portfolio service for managing user portfolio and transaction operations."""
+
 from typing import List, Dict, Any, Optional, Tuple
 from sqlalchemy import func, or_
 from app import db
 from app.models import Fraction, Asset, AssetValueHistory, Transaction
+
 
 class PortfolioService:
     """Provide aggregated owning-fractions + user transaction history."""
@@ -17,7 +20,7 @@ class PortfolioService:
                 Fraction.asset_id,
                 func.sum(Fraction.units).label("units"),
             )
-            .filter(Fraction.owner_id == user_id, Fraction.is_active == True)  # noqa: E712
+            .filter(Fraction.owner_id == user_id, Fraction.is_active.is_(True))
             .group_by(Fraction.asset_id)
             .all()
         )

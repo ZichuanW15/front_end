@@ -1,9 +1,24 @@
+"""Portfolio view for rendering portfolio-related responses."""
+
 from typing import List, Dict, Any
 from flask import jsonify
 from app.models import Transaction
 
+
 class PortfolioView:
+    """View class for rendering portfolio responses."""
+
     def render_owning(self, user_id: int, items: List[Dict[str, Any]]):
+        """
+        Render user's owning fractions response.
+
+        Args:
+            user_id: The ID of the user.
+            items: List of owning fraction data.
+
+        Returns:
+            JSON response with user's owning fractions.
+        """
         return jsonify({
             "user_id": user_id,
             "count": len(items),
@@ -11,7 +26,27 @@ class PortfolioView:
             "status": "success",
         })
 
-    def render_user_transactions(self, user_id: int, items: List[Transaction], total: int, page: int, per_page: int):
+    def render_user_transactions(
+        self,
+        user_id: int,
+        items: List[Transaction],
+        total: int,
+        page: int,
+        per_page: int
+    ):
+        """
+        Render user's transaction history response.
+
+        Args:
+            user_id: The ID of the user.
+            items: List of Transaction objects.
+            total: Total number of transactions.
+            page: Current page number.
+            per_page: Number of items per page.
+
+        Returns:
+            JSON response with user's transactions.
+        """
         return jsonify({
             "user_id": user_id,
             "page": page,
@@ -22,6 +57,16 @@ class PortfolioView:
         })
 
     def render_error(self, message: str, status_code: int):
+        """
+        Render error response.
+
+        Args:
+            message: Error message.
+            status_code: HTTP status code.
+
+        Returns:
+            JSON response with error details and status code.
+        """
         return jsonify({
             "error": "Portfolio Error",
             "message": message,

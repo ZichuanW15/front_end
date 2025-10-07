@@ -2,7 +2,18 @@
 -- This script should be run after import_postgres.sql to ensure all sequences are properly synchronized
 
 -- Fix Users sequence (handle empty table case)
-SELECT setval('"Users_user_id_seq"', COALESCE((SELECT MAX(user_id) FROM "Users"), 1), false);
+DO $$
+DECLARE
+    max_user_id INTEGER;
+BEGIN
+    SELECT MAX(user_id) INTO max_user_id FROM "Users";
+    IF max_user_id IS NOT NULL THEN
+        PERFORM setval('"Users_user_id_seq"', max_user_id);
+    ELSE
+        -- Initialize sequence to start from 1 (next value will be 1)
+        PERFORM setval('"Users_user_id_seq"', 1, false);
+    END IF;
+END $$;
 
 -- Fix Assets sequence (handle empty table case) 
 DO $$
@@ -34,17 +45,29 @@ END $$;
 
 -- Fix AssetValueHistory sequence (only if table exists)
 DO $$
+DECLARE
+    max_history_id INTEGER;
 BEGIN
-    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'AssetValueHistory') THEN
-        PERFORM setval('"AssetValueHistory_id_seq"', COALESCE((SELECT MAX(id) FROM "AssetValueHistory"), 1), false);
+    SELECT MAX(id) INTO max_history_id FROM "AssetValueHistory";
+    IF max_history_id IS NOT NULL THEN
+        PERFORM setval('"AssetValueHistory_id_seq"', max_history_id);
+    ELSE
+        -- Initialize sequence to start from 1 (next value will be 1)
+        PERFORM setval('"AssetValueHistory_id_seq"', 1, false);
     END IF;
 END $$;
 
 -- Fix Offers sequence (only if table exists)
 DO $$
+DECLARE
+    max_offer_id INTEGER;
 BEGIN
-    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'Offers') THEN
-        PERFORM setval('"Offers_offer_id_seq"', COALESCE((SELECT MAX(offer_id) FROM "Offers"), 1), false);
+    SELECT MAX(offer_id) INTO max_offer_id FROM "Offers";
+    IF max_offer_id IS NOT NULL THEN
+        PERFORM setval('"Offers_offer_id_seq"', max_offer_id);
+    ELSE
+        -- Initialize sequence to start from 1 (next value will be 1)
+        PERFORM setval('"Offers_offer_id_seq"', 1, false);
     END IF;
 END $$;
 
@@ -70,7 +93,11 @@ SELECT 'Assets_asset_id_seq', last_value FROM "Assets_asset_id_seq"
 UNION ALL
 SELECT 'Fractions_fraction_id_seq', last_value FROM "Fractions_fraction_id_seq"
 UNION ALL
-SELECT 'Transactions_transaction_id_seq', last_value FROM "Transactions_transaction_id_seq";
+SELECT 'Transactions_transaction_id_seq', last_value FROM "Transactions_transaction_id_seq"
+UNION ALL
+SELECT 'AssetValueHistory_id_seq', last_value FROM "AssetValueHistory_id_seq" WHERE EXISTS (SELECT 1 FROM pg_class WHERE relname = 'AssetValueHistory_id_seq')
+UNION ALL
+SELECT 'Offers_offer_id_seq', last_value FROM "Offers_offer_id_seq" WHERE EXISTS (SELECT 1 FROM pg_class WHERE relname = 'Offers_offer_id_seq');
 
 \echo '✅ All sequences synchronized successfully!'
 \echo '   - Users sequence fixed'

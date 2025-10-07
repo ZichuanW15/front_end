@@ -12,7 +12,6 @@
       <div class="nav-content">
         <h1>Browse Assets</h1>
         <div class="nav-links">
-          <a href="dashboard.html">Dashboard</a>
           <a href="browsing.html" class="active">Browse Assets</a>
           <a href="trading.html">Trading</a>
           <a href="portfolio.html">My Assets</a>
@@ -150,8 +149,7 @@
       </div>
       
       <div class="row" style="margin-top: 20px;">
-        <button onclick="quickBuyFromModal()" class="primary col" style="margin-right: 10px;">Quick Buy</button>
-        <button onclick="addToWatchlist()" class="col">Add to Watchlist</button>
+        <button onclick="quickBuyFromModal()" class="primary col">Quick Buy</button>
       </div>
     </div>
   </div>
@@ -173,10 +171,15 @@
 
     async function fetchAssets() {
       try {
-        const response = await fetch(`${API}/assets`);
-        allAssets = await response.json();
+        // Request more items from the API so the frontend can show/search all assets client-side.
+        // If the backend paginates, ask for a large per_page value.
+        const response = await fetch(`${API}/assets?per_page=1000`);
+        const data = await response.json();
+
+        // The API returns an object like { assets: [...], count: N, status: 'success' }
+        allAssets = Array.isArray(data) ? data : (data.assets || []);
         filteredAssets = [...allAssets];
-        
+
         updateStatistics();
         displayAssets();
         updatePagination();
@@ -272,8 +275,7 @@
           </div>
           
           <div class="row">
-            <button onclick="event.stopPropagation(); quickBuy(${asset.asset_id})" class="primary small col" style="margin-right: 5px;">Buy</button>
-            <button onclick="event.stopPropagation(); addToWatchlist(${asset.asset_id})" class="small col">Watch</button>
+            <button onclick="event.stopPropagation(); quickBuy(${asset.asset_id})" class="primary small col">Buy</button>
           </div>
         </div>
       `;
@@ -297,7 +299,6 @@
           <td>${new Date(asset.created_at).toLocaleDateString()}</td>
           <td>
             <button onclick="event.stopPropagation(); quickBuy(${asset.asset_id})" class="small success">Buy</button>
-            <button onclick="event.stopPropagation(); addToWatchlist(${asset.asset_id})" class="small">Watch</button>
           </td>
         </tr>
       `;
@@ -440,7 +441,7 @@
       }
     }
 
-    function showAssetDetail(assetId) {
+    async function showAssetDetail(assetId) {
       const asset = allAssets.find(a => a.asset_id == assetId);
       if (!asset) return;
       
@@ -496,6 +497,94 @@
         </div>
       `;
       
+      // Fetch fractions for this asset
+      try {
+        const fRes = await fetch(`${API}/fractions/asset/${assetId}`, { credentials: 'include' });
+        const fWrap = await fRes.json();
+        const fractions = Array.isArray(fWrap) ? fWrap : (fWrap.fractions || fWrap.items || []);
+
+        const section = document.createElement('div');
+        section.style.marginTop = '18px';
+        section.innerHTML = `<h4>Fractions (${fractions.length})</h4>`;
+
+        if (fractions.length === 0) {
+          const p = document.createElement('div');
+          p.className = 'text-muted';
+          p.textContent = 'No fractions for this asset.';
+          section.appendChild(p);
+        } else {
+          const table = document.createElement('table');
+          table.innerHTML = `
+            <thead>
+              <tr>
+                <th>Fraction ID</th>
+                <th>Owner</th>
+                <th>Units</th>
+                <th>Active</th>
+                <th>Value/Unit</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          `;
+          const tbody = table.querySelector('tbody');
+          fractions.forEach(fr => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${fr.fraction_id}</td>
+              <td>${fr.owner_id ?? '-'}</td>
+              <td>${Number(fr.units || 0).toLocaleString()}</td>
+              <td>${fr.is_active ? '<span class="badge success">Active</span>' : '<span class="badge error">Inactive</span>'}</td>
+              <td>${fr.value_perunit != null ? Number(fr.value_perunit).toLocaleString() : '-'}</td>
+              <td><button class="small" data-fid="${fr.fraction_id}">View Transactions</button></td>
+            `;
+            const btn = tr.querySelector('button');
+            btn.onclick = async (e) => {
+              e.stopPropagation();
+              btn.disabled = true;
+              // Fetch transactions for this fraction
+              const tRes = await fetch(`${API}/transactions/fraction/${fr.fraction_id}`, { credentials: 'include' });
+              const tWrap = await tRes.json();
+              const txs = Array.isArray(tWrap) ? tWrap : (tWrap.transactions || tWrap.items || tWrap.transaction_history || []);
+              // Render below this row
+              const tr2 = document.createElement('tr');
+              const td = document.createElement('td');
+              td.colSpan = 6;
+              if (txs.length === 0) {
+                td.innerHTML = '<div class="text-muted">No transactions for this fraction.</div>';
+              } else {
+                const tTable = document.createElement('table');
+                tTable.style.width = '100%';
+                tTable.innerHTML = `
+                  <thead><tr><th>Time</th><th>Type</th><th>Units</th><th>Price</th><th>From</th><th>To</th></tr></thead>
+                  <tbody>
+                    ${txs.map(t => `
+                      <tr>
+                        <td>${new Date(t.transaction_at || t.created_at || Date.now()).toLocaleString()}</td>
+                        <td>${t.transaction_type || t.type || ''}</td>
+                        <td>${t.unit_moved || t.units || 0}</td>
+                        <td>${t.price_perunit != null ? '¥' + Number(t.price_perunit).toLocaleString() : '-'}</td>
+                        <td>${t.from_owner_id ?? ''}</td>
+                        <td>${t.to_owner_id ?? ''}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                `;
+                td.appendChild(tTable);
+              }
+              tr2.appendChild(td);
+              tr.parentNode.insertBefore(tr2, tr.nextSibling);
+            };
+            tbody.appendChild(tr);
+          });
+          section.appendChild(table);
+        }
+
+        document.getElementById('modalAssetContent').appendChild(section);
+      } catch (err) {
+        console.error('Failed to load fractions for asset', err);
+      }
+
       document.getElementById('assetDetailModal').style.display = 'block';
     }
 
@@ -516,10 +605,7 @@
       }
     }
 
-    function addToWatchlist(assetId) {
-      // Mock watchlist functionality
-      showMessage('Added to watchlist', true);
-    }
+    // watchlist functionality removed
 
     function refreshData() {
       fetchAssets();

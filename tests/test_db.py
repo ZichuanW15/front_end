@@ -4,13 +4,36 @@ Database connectivity tests for the API backbone.
 
 import pytest
 from sqlalchemy import text
-from app import create_app
-from app.database import db
-from test.test_utils.database_utils import verify_database_tables
+from app import create_app, db
 
 
-def test_app_creation(app):
+@pytest.fixture
+def app():
+    """Create application for testing."""
+    app = create_app('testing')
+    
+    with app.app_context():
+        # Initialize database using SQLAlchemy models
+        try:
+            # Create all tables from models
+            db.create_all()
+        except Exception as e:
+            print(f"Warning: Could not create database tables: {e}")
+            raise
+        
+        yield app
+        db.drop_all()
+
+
+@pytest.fixture
+def client(app):
+    """Create test client."""
+    return app.test_client()
+
+
+def test_app_creation():
     """Test that the Flask app can be created."""
+    app = create_app('testing')
     assert app is not None
     assert app.config['TESTING'] is True
 
@@ -26,7 +49,14 @@ def test_database_connection(app):
 def test_database_tables_creation(app):
     """Test that database tables can be created."""
     with app.app_context():
-        assert verify_database_tables(db), "Not all expected tables found in database"
+        # Check that tables exist
+        inspector = db.inspect(db.engine)
+        tables = inspector.get_table_names()
+        
+        # Should have the main tables from schema
+        expected_tables = ['Users', 'Assets', 'Fractions', 'Ownership', 'Transactions', 'ValueHistory']
+        for table in expected_tables:
+            assert table in tables, f"Table {table} not found in database"
 
 
 def test_database_functions_creation(app):
@@ -90,28 +120,29 @@ def test_database_model_operations(app):
     from app.models import User, Asset
     
     with app.app_context():
-        # Create a new user (without specifying user_id since it's GENERATED ALWAYS)
+        # Create a new user
         user = User(
-            user_name='testuser',
+            user_id=1,
+            username='testuser',
             email='test@example.com',
             password='password123',
             is_manager=False,
-            created_at=db.func.now()
+            create_time=db.func.now()
         )
         db.session.add(user)
         db.session.commit()
         
-        # Retrieve the user by name to avoid conflicts with seeded data
-        retrieved_user = User.query.filter_by(user_name='testuser').first()
+        # Retrieve the user
+        retrieved_user = User.query.first()
         assert retrieved_user is not None
-        assert retrieved_user.user_name == 'testuser'
+        assert retrieved_user.username == 'testuser'
         assert retrieved_user.email == 'test@example.com'
         
         # Test to_dict method
         user_dict = retrieved_user.to_dict()
-        assert user_dict['user_name'] == 'testuser'
+        assert user_dict['username'] == 'testuser'
         assert 'user_id' in user_dict
-        assert 'created_at' in user_dict
+        assert 'create_time' in user_dict
 
 
 def test_asset_creation_with_manager_constraint(app):
@@ -120,67 +151,69 @@ def test_asset_creation_with_manager_constraint(app):
     from datetime import datetime
     
     with app.app_context():
-        # Create a manager and regular user (without specifying user_id since it's GENERATED ALWAYS)
+        # Create a manager and regular user
         manager = User(
-            user_name='manager',
+            user_id=1,
+            username='manager',
             email='manager@example.com',
             password='password123',
             is_manager=True,
-            created_at=datetime.utcnow()
+            create_time=datetime.utcnow()
         )
         
         regular_user = User(
-            user_name='user',
+            user_id=2,
+            username='user',
             email='user@example.com',
             password='password123',
             is_manager=False,
-            created_at=datetime.utcnow()
+            create_time=datetime.utcnow()
         )
         
         db.session.add_all([manager, regular_user])
         db.session.commit()
         
-        # Create asset approved by manager (should work) - without specifying asset_id since it's GENERATED ALWAYS
+        # Create asset approved by manager (should work)
         asset_approved = Asset(
-            asset_name='Test Asset',
-            asset_description='Test Description',
-            total_unit=100,
-            unit_min=1,
-            unit_max=100,
-            total_value='1000.00',
-            created_at=datetime.utcnow()
+            asset_id=1,
+            name='Test Asset',
+            description='Test Description',
+            max_fractions=100,
+            min_fractions=1,
+            available_fractions=100,
+            submitted_by_Users_user_id=1,
+            created_at=datetime.utcnow(),
+            status='approved',
+            approved_at=datetime.utcnow(),
+            approved_by_Users_user_id=1  # Manager
         )
         
         db.session.add(asset_approved)
         db.session.commit()
         
-        # Verify asset was created (check for our specific asset)
-        test_asset = Asset.query.filter_by(asset_name='Test Asset').first()
-        assert test_asset is not None
+        # Verify asset was created
+        assert Asset.query.count() == 1
         
-        # Try to create asset approved by regular user - without specifying asset_id since it's GENERATED ALWAYS
+        # Try to create asset approved by regular user
         asset_rejected = Asset(
-            asset_name='Test Asset 2',
-            asset_description='Test Description 2',
-            total_unit=100,
-            unit_min=1,
-            unit_max=100,
-            total_value='2000.00',
-            created_at=datetime.utcnow()
+            asset_id=2,
+            name='Test Asset 2',
+            description='Test Description 2',
+            max_fractions=100,
+            min_fractions=1,
+            available_fractions=100,
+            submitted_by_Users_user_id=1,
+            created_at=datetime.utcnow(),
+            status='approved',
+            approved_at=datetime.utcnow(),
+            approved_by_Users_user_id=2  # Regular user
         )
         
         db.session.add(asset_rejected)
         db.session.commit()
         
         # Verify both assets were created (trigger not implemented yet)
-        # Account for seeded data (3 seeded assets + 2 test assets = 5 total)
-        assert Asset.query.count() >= 5
-        
-        # Verify our specific test assets exist
-        test_asset_1 = Asset.query.filter_by(asset_name='Test Asset').first()
-        test_asset_2 = Asset.query.filter_by(asset_name='Test Asset 2').first()
-        assert test_asset_1 is not None
-        assert test_asset_2 is not None
+        assert Asset.query.count() == 2
         
         # TODO: Implement database trigger for manager approval constraint
         # When trigger is implemented, this test should raise an exception

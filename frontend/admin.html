@@ -21,7 +21,6 @@
       <div class="nav-content">
         <h1>Admin Panel</h1>
         <div class="nav-links">
-          <a href="dashboard.html">Dashboard</a>
           <a href="browsing.html">Browse Assets</a>
           <a href="trading.html">Trading</a>
           <a href="portfolio.html">My Assets</a>
@@ -93,8 +92,8 @@
         
           <div class="row">
             <div class="col">
-            <label>Available Fractions</label>
-            <input type="number" id="newAssetTotalUnits" required min="1" placeholder="Maximum number of fractions" onchange="validateAssetUnits()">
+            <label>Total Units (Available Fractions)</label>
+            <input type="number" id="newAssetTotalUnits" required min="1" placeholder="Maximum number of fractions">
             </div>
             <div class="col">
             <label>Initial Fraction Owner</label>
@@ -109,22 +108,20 @@
         
         <div class="row">
           <div class="col">
-            <label>Minimum Number of Fractions</label>
-            <input type="number" id="newAssetMinUnits" required min="1" placeholder="1" onchange="validateAssetUnits()">
+            <label>Minimum Units per Fraction</label>
+            <input type="number" id="newAssetMinUnits" required min="1" placeholder="1">
           </div>
           <div class="col">
-            <label>Maximum Number of Fraction</label>
-            <input type="number" id="newAssetMaxUnits" required min="1" placeholder="100" onchange="validateAssetUnits()">
+            <label>Maximum Units per Fraction</label>
+            <input type="number" id="newAssetMaxUnits" required min="1" placeholder="100">
         </div>
       </div>
         
         <div class="card" style="background: var(--background); margin: 15px 0; padding: 15px;">
-          <h4 style="margin: 0 0 10px 0; color: var(--accent);">Unit Constraints</h4>
+          <h4 style="margin: 0 0 10px 0; color: var(--accent);">Initial Fraction Details</h4>
           <p class="text-muted" style="margin: 0; font-size: 14px;">
-            <strong>Validation Rules:</strong><br>
-            • Minimum Units ≤ Total Units ≤ Maximum Units<br>
-            • The initial fraction will be created with all available units and assigned to the selected admin user.<br>
-            • Value per unit will be calculated as: Total Value ÷ Total Units
+            The initial fraction will be created with all available units and assigned to the selected admin user.
+            Value per unit will be calculated as: Total Value ÷ Total Units
           </p>
         </div>
         
@@ -823,39 +820,52 @@
         return;
       }
       
-      if (assetData.total_unit < assetData.unit_min) {
-        showMessage('Total units cannot be less than minimum units', false);
-        return;
-      }
-      
-      if (assetData.total_unit > assetData.unit_max) {
-        showMessage('Total units cannot be greater than maximum units', false);
+      if (assetData.unit_max > assetData.total_unit) {
+        showMessage('Maximum units cannot be greater than total units', false);
         return;
       }
       
       try {
-        // Create asset with initial fraction using the new endpoint
-        showMessage('Creating asset with initial fraction...', true);
-        
-        const completeAssetData = {
-          ...assetData,
-          asset_description: document.getElementById('newAssetDescription').value || null,
-          owner_id: parseInt(ownerId),
-          adjusted_by: user.user_id
-        };
-        
-        const response = await fetch(`${API}/assets/with-initial-fraction`, {
+        // Step 1: Create the asset
+        showMessage('Creating asset...', true);
+        const assetResponse = await fetch(`${API}/assets`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(completeAssetData)
+          body: JSON.stringify(assetData)
         });
         
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || error.error || 'Failed to create asset with initial fraction');
+        if (!assetResponse.ok) {
+          const error = await assetResponse.json();
+          throw new Error(error.message || error.error || 'Failed to create asset');
         }
         
-        const result = await response.json();
+        const assetResult = await assetResponse.json();
+        const assetId = assetResult.asset.asset_id;
+        
+        // Step 2: Create the initial fraction
+        showMessage('Creating initial fraction...', true);
+        const valuePerUnit = assetData.total_value / assetData.total_unit;
+        
+        const fractionData = {
+          asset_id: assetId,
+          owner_id: parseInt(ownerId),
+          parent_fraction_id: null,
+          units: assetData.total_unit,
+          is_active: true,
+          value_perunit: Math.round(valuePerUnit * 100) / 100 // Round to 2 decimal places
+        };
+        
+        const fractionResponse = await fetch(`${API}/fractions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fractionData)
+        });
+        
+        if (!fractionResponse.ok) {
+          const error = await fractionResponse.json();
+          throw new Error(error.message || error.error || 'Failed to create initial fraction');
+        }
+        
         
         // Success!
         hideAddAssetModal();
@@ -903,52 +913,6 @@
       }
       sessionStorage.clear();
       location.href = 'login.html';
-    }
-
-    // Real-time validation for asset units
-    function validateAssetUnits() {
-      const totalUnits = parseInt(document.getElementById('newAssetTotalUnits').value) || 0;
-      const minUnits = parseInt(document.getElementById('newAssetMinUnits').value) || 0;
-      const maxUnits = parseInt(document.getElementById('newAssetMaxUnits').value) || 0;
-      
-      const totalUnitsInput = document.getElementById('newAssetTotalUnits');
-      const minUnitsInput = document.getElementById('newAssetMinUnits');
-      const maxUnitsInput = document.getElementById('newAssetMaxUnits');
-      
-      // Reset all field styles
-      totalUnitsInput.style.borderColor = '#ddd';
-      minUnitsInput.style.borderColor = '#ddd';
-      maxUnitsInput.style.borderColor = '#ddd';
-      
-      let hasError = false;
-      
-      // Validate min <= max
-      if (minUnits > 0 && maxUnits > 0 && minUnits > maxUnits) {
-        minUnitsInput.style.borderColor = '#f44336';
-        maxUnitsInput.style.borderColor = '#f44336';
-        hasError = true;
-      }
-      
-      // Validate total >= min (if both are set)
-      if (totalUnits > 0 && minUnits > 0 && totalUnits < minUnits) {
-        totalUnitsInput.style.borderColor = '#f44336';
-        minUnitsInput.style.borderColor = '#f44336';
-        hasError = true;
-      }
-      
-      // Validate total <= max (if both are set)
-      if (totalUnits > 0 && maxUnits > 0 && totalUnits > maxUnits) {
-        totalUnitsInput.style.borderColor = '#f44336';
-        maxUnitsInput.style.borderColor = '#f44336';
-        hasError = true;
-      }
-      
-      // If no errors and all fields have values, show success
-      if (!hasError && totalUnits > 0 && minUnits > 0 && maxUnits > 0) {
-        totalUnitsInput.style.borderColor = '#4CAF50';
-        minUnitsInput.style.borderColor = '#4CAF50';
-        maxUnitsInput.style.borderColor = '#4CAF50';
-      }
     }
 
     // Event listeners

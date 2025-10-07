@@ -179,7 +179,7 @@ def init_sample_data():
         
         
         # Add to database
-        db.session.add_all([manager, user1, asset, fraction])
+        db.session.add_all([manager, user1, asset, fraction, value_history])
         db.session.commit()
         
         print("✅ Sample data initialized successfully!")

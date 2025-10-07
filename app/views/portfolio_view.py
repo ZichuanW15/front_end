@@ -30,10 +30,7 @@ class PortfolioView:
         self,
         user_id: int,
         items: List[Transaction],
-        *,
-        total: int,
-        page: int,
-        per_page: int
+        pagination: Dict[str, int]
     ):
         """
         Render user's transaction history response.
@@ -41,18 +38,16 @@ class PortfolioView:
         Args:
             user_id: The ID of the user.
             items: List of Transaction objects.
-            total: Total number of transactions.
-            page: Current page number.
-            per_page: Number of items per page.
+            pagination: Dict with 'total', 'page', and 'per_page' keys.
 
         Returns:
             JSON response with user's transactions.
         """
         return jsonify({
             "user_id": user_id,
-            "page": page,
-            "per_page": per_page,
-            "total": total,
+            "page": pagination["page"],
+            "per_page": pagination["per_page"],
+            "total": pagination["total"],
             "items": [t.to_dict() for t in items],
             "status": "success",
         })

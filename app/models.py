@@ -122,7 +122,9 @@ class Offer(Base):
     user_id = Column(BigInteger, ForeignKey('Users.user_id'), nullable=False)
     is_buyer = Column(Boolean, nullable=False)
     units = Column(BigInteger, nullable=False)
+    price_perunit = Column(Numeric(18, 2), nullable=True)
     create_at = Column(DateTime, nullable=False)
+    is_valid = Column(Boolean, nullable=False, default=True)
     
     def to_dict(self):
         """Convert offer to dictionary representation."""
@@ -133,8 +135,11 @@ class Offer(Base):
             'user_id': self.user_id,
             'is_buyer': self.is_buyer,
             'units': self.units,
+            'price_perunit': float(self.price_perunit) if self.price_perunit else None,
+            'is_valid': self.is_valid,
             'create_at': self.create_at.isoformat() if self.create_at else None
         }
+    
     
     def __repr__(self):
         return f'<Offer {self.offer_id}>'
@@ -152,6 +157,8 @@ class Transaction(Base):
     from_owner_id = Column(BigInteger, ForeignKey('Users.user_id'), nullable=False)
     to_owner_id = Column(BigInteger, ForeignKey('Users.user_id'), nullable=False)
     offer_id = Column(BigInteger, ForeignKey('Offers.offer_id'), nullable=False)
+    price_perunit = Column(Numeric(18, 2), nullable=False)
+    
     
     offer = relationship('Offer', backref='transactions')
     
@@ -164,7 +171,9 @@ class Transaction(Base):
             'transaction_type': self.transaction_type,
             'transaction_at': self.transaction_at.isoformat() if self.transaction_at else None,
             'from_owner_id': self.from_owner_id,
-            'to_owner_id': self.to_owner_id
+            'to_owner_id': self.to_owner_id,
+            'offer_id': self.offer_id,
+            'price_perunit': float(self.price_perunit) if self.price_perunit else None
         }
     
     def __repr__(self):

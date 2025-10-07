@@ -8,7 +8,6 @@ from app.database import db
 from app.models import AssetValueHistory, Asset, User
 
 
-
 class AssetValueService:
     """Service class for asset value history operations."""
     @staticmethod

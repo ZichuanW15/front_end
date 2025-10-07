@@ -19,25 +19,9 @@ class TransactionView:
             Response: JSON response
         """
         return jsonify({
-            'transaction': transaction.to_dict(),
+            'transaction': self._format_transaction(transaction),
             'status': 'success'
         })
-    
-    def render_transaction_created(self, transaction):
-        """
-        Render transaction creation response.
-        
-        Args:
-            transaction: Created Transaction model instance
-            
-        Returns:
-            Response: JSON response
-        """
-        return jsonify({
-            'transaction': transaction.to_dict(),
-            'message': 'Transaction created successfully',
-            'status': 'success'
-        }), 201
     
     def render_transactions_list(self, transactions):
         """
@@ -50,23 +34,7 @@ class TransactionView:
             Response: JSON response
         """
         return jsonify({
-            'transactions': [transaction.to_dict() for transaction in transactions],
-            'count': len(transactions),
-            'status': 'success'
-        })
-    
-    def render_transaction_history(self, transactions):
-        """
-        Render transaction history response.
-        
-        Args:
-            transactions: List of Transaction model instances ordered by date
-            
-        Returns:
-            Response: JSON response
-        """
-        return jsonify({
-            'transaction_history': [transaction.to_dict() for transaction in transactions],
+            'transactions': [self._format_transaction(t) for t in transactions],
             'count': len(transactions),
             'status': 'success'
         })
@@ -87,3 +55,26 @@ class TransactionView:
             'message': error_message,
             'status_code': status_code
         }), status_code
+    
+    def _format_transaction(self, transaction):
+        """
+        Format a single transaction object.
+        
+        Args:
+            transaction: Transaction model instance
+            
+        Returns:
+            dict: Formatted transaction dictionary
+        """
+        return {
+            'transaction_id': transaction.transaction_id,
+            'fraction_id': transaction.fraction_id,
+            'unit_moved': transaction.unit_moved,
+            'transaction_type': transaction.transaction_type,
+            'transaction_at': transaction.transaction_at.isoformat() if transaction.transaction_at else None,
+            'from_owner_id': transaction.from_owner_id,
+            'to_owner_id': transaction.to_owner_id,
+            'offer_id': transaction.offer_id,
+            'price_perunit': float(transaction.price_perunit) if transaction.price_perunit else None,
+            'total_value': float(transaction.unit_moved * transaction.price_perunit) if transaction.price_perunit else None
+        }

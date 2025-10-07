@@ -55,7 +55,7 @@ class Asset(Base):
     total_unit = Column(BigInteger, nullable=False)
     unit_min = Column(BigInteger, nullable=False)
     unit_max = Column(BigInteger, nullable=False)
-    total_value = Column(Numeric(18, 2), nullable=False)
+    total_value = Column(String, nullable=False)
     created_at = Column(DateTime, nullable=False)
     
     # Relationships
@@ -89,7 +89,7 @@ class Fraction(Base):
     units = Column(BigInteger, nullable=False)
     is_active = Column(Boolean, nullable=False)
     created_at = Column(DateTime, nullable=False)
-    value_perunit = Column(Numeric(18, 2), nullable=False)
+    value_perunit = Column(BigInteger)
     
     # Relationships
     parent_fraction = relationship('Fraction', remote_side='Fraction.fraction_id', backref='child_fractions')

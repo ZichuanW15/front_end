@@ -197,7 +197,7 @@ class AssetService:
                 units=total_unit,
                 is_active=True,
                 created_at=datetime.utcnow(),
-                value_perunit=int(value_per_unit * 100)  # Store as integer (cents)
+                value_perunit=value_per_unit  # Store as decimal (NUMERIC(18,2))
             )
             
             db.session.add(fraction)

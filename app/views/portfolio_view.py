@@ -30,6 +30,7 @@ class PortfolioView:
         self,
         user_id: int,
         items: List[Transaction],
+        *,
         total: int,
         page: int,
         per_page: int

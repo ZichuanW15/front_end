@@ -49,6 +49,6 @@ class PortfolioController:
                 page=page,
                 per_page=per_page,
             )
-            return self.view.render_user_transactions(user_id, items, total, page, per_page)
+            return self.view.render_user_transactions(user_id, items, total=total, page=page, per_page=per_page)
         except Exception as e:
             return self.view.render_error(str(e), 500)

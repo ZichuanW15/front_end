@@ -398,6 +398,18 @@ tr:hover {
   font-weight: 500;
 }
 
+/* Modal header sticky helper: keeps header visible when modal content scrolls */
+.modal-header-sticky {
+  position: sticky;
+  top: 0;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  background: var(--card);
+  z-index: 12;
+  border-bottom: 1px solid var(--border);
+}
+
 .danger:hover {
   background-color: #c82333;
 }

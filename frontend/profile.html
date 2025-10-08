@@ -480,23 +480,7 @@
     hideDeleteConfirmation();
   }
 
-  // Logout function
-  async function logout() {
-    try {
-      await fetch(`${API}/auth/logout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include' // Include cookies for session-based auth
-      });
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      sessionStorage.clear();
-      location.href = 'login.html';
-    }
-  }
+
 
   // Event listeners
   el('profileForm').addEventListener('submit', updateProfile);
@@ -523,5 +507,6 @@
     });
   });
 </script>
+  <script src="./js/logout.js"></script>
 </body>
 </html>

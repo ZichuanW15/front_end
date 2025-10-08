@@ -663,13 +663,11 @@
       }, 3000);
     }
 
-    function logout() {
-      sessionStorage.clear();
-      location.href = 'login.html';
-    }
+    // logout() provided by logout.js shared script
 
     // Load data on page load
     fetchAssets();
   </script>
+  <script src="./js/logout.js"></script>
 </body>
 </html>

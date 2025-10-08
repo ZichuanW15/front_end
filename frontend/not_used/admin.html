@@ -936,15 +936,7 @@
 
 
 
-    async function logout() {
-      try {
-        await fetch(`${API}/auth/logout`, { method: 'POST' });
-      } catch (e) {
-        console.error('Logout error:', e);
-      }
-      sessionStorage.clear();
-      location.href = 'login.html';
-    }
+    // logout() provided by logout.js shared script
 
     // Event listeners
     document.getElementById('addAssetForm').addEventListener('submit', addAsset);
@@ -953,6 +945,7 @@
     // Load data on page load
     fetchAdminData();
   </script>
+  <script src="./js/logout.js"></script>
 </body>
 </html>
 

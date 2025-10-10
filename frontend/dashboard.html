@@ -40,7 +40,7 @@
     <div class="grid">
       <div class="card">
         <h3>Total Asset Value</h3>
-        <div style="font-size: 24px; font-weight: bold; color: var(--accent);" id="totalValue">¥0</div>
+        <div style="font-size: 24px; font-weight: bold; color: var(--accent);" id="totalValue">$0</div>
         <p class="text-muted">vs Yesterday <span id="valueChange" class="text-success">+0%</span></p>
       </div>
       
@@ -127,7 +127,7 @@
     function updateDashboard(portfolio, transactions, assets) {
       // Update stats
       const totalValue = portfolio.total_value || 0;
-      document.getElementById('totalValue').textContent = `¥${totalValue.toLocaleString()}`;
+      document.getElementById('totalValue').textContent = `$${totalValue.toLocaleString()}`;
       document.getElementById('assetCount').textContent = portfolio.asset_count || 0;
       document.getElementById('monthlyTrades').textContent = portfolio.monthly_trades || 0;
       document.getElementById('pendingTrades').textContent = portfolio.pending_trades || 0;
@@ -180,7 +180,7 @@
         <div class="row" style="padding: 12px; border-bottom: 1px solid var(--border);">
           <div class="col">
             <div style="font-weight: 500;">${asset.asset_name}</div>
-            <div class="text-muted" style="font-size: 12px;">Total Value: ¥${parseFloat(asset.total_value).toLocaleString()}</div>
+            <div class="text-muted" style="font-size: 12px;">Total Value: $${parseFloat(asset.total_value).toLocaleString()}</div>
           </div>
           <div class="text-right">
             <div class="text-success">+${(Math.random() * 5).toFixed(2)}%</div>

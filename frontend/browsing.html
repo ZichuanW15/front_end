@@ -72,7 +72,7 @@
       <!-- Price Range Filter -->
       <div class="row">
         <div class="col">
-          <label>Price Range (¥)</label>
+          <label>Price Range ($)</label>
           <div class="row">
             <input type="number" id="minPrice" placeholder="Min Price" onchange="filterAssets()" style="width: 48%;">
             <input type="number" id="maxPrice" placeholder="Max Price" onchange="filterAssets()" style="width: 48%;">
@@ -101,13 +101,13 @@
       
       <div class="card">
         <h3>Average Price</h3>
-        <div style="font-size: 24px; font-weight: bold;" id="avgPrice">¥0</div>
+        <div style="font-size: 24px; font-weight: bold;" id="avgPrice">$0</div>
         <p class="text-muted">Average Price per Unit</p>
       </div>
       
       <div class="card">
         <h3>Total Market Value</h3>
-        <div style="font-size: 24px; font-weight: bold;" id="totalMarketValue">¥0</div>
+        <div style="font-size: 24px; font-weight: bold;" id="totalMarketValue">$0</div>
         <p class="text-muted">Total Value of All Assets</p>
       </div>
       
@@ -199,8 +199,8 @@
         allAssets.reduce((sum, asset) => sum + (parseFloat(asset.total_value) / parseInt(asset.total_unit)), 0) / allAssets.length : 0;
       
       document.getElementById('totalAssets').textContent = totalAssets;
-      document.getElementById('avgPrice').textContent = `¥${avgPrice.toFixed(2)}`;
-      document.getElementById('totalMarketValue').textContent = `¥${totalValue.toLocaleString()}`;
+      document.getElementById('avgPrice').textContent = `$${avgPrice.toFixed(2)}`;
+      document.getElementById('totalMarketValue').textContent = `$${totalValue.toLocaleString()}`;
       document.getElementById('topCategory').textContent = 'Real Estate'; // Mock data
     }
 
@@ -258,7 +258,7 @@
           <div class="row" style="margin-bottom: 10px;">
             <div class="col">
               <div class="text-muted">Unit Price</div>
-              <div style="font-size: 18px; font-weight: bold;">¥${price.toFixed(2)}</div>
+              <div style="font-size: 18px; font-weight: bold;">$${price.toFixed(2)}</div>
             </div>
             <div class="col">
               <div class="text-muted">Change</div>
@@ -273,7 +273,7 @@
             </div>
             <div class="col">
               <div class="text-muted">Total Value</div>
-              <div>¥${parseFloat(asset.total_value).toLocaleString()}</div>
+              <div>$${parseFloat(asset.total_value).toLocaleString()}</div>
             </div>
           </div>
           
@@ -296,9 +296,9 @@
             <div class="text-muted" style="font-size: 12px;">ID: ${asset.asset_id}</div>
           </td>
           <td><span class="badge info">${category}</span></td>
-          <td>¥${price.toFixed(2)}</td>
+          <td>$${price.toFixed(2)}</td>
           <td>${asset.total_unit}</td>
-          <td>¥${parseFloat(asset.total_value).toLocaleString()}</td>
+          <td>$${parseFloat(asset.total_value).toLocaleString()}</td>
           <td>${new Date(asset.created_at).toLocaleDateString()}</td>
           <td>
             <button onclick="event.stopPropagation(); quickBuy(${asset.asset_id})" class="small success">Buy</button>
@@ -468,7 +468,7 @@
         <div class="row" style="margin-bottom: 20px;">
           <div class="col">
             <div class="text-muted">Unit Price</div>
-            <div style="font-size: 24px; font-weight: bold; color: var(--accent);">¥${price.toFixed(2)}</div>
+            <div style="font-size: 24px; font-weight: bold; color: var(--accent);">$${price.toFixed(2)}</div>
           </div>
           <div class="col">
             <div class="text-muted">Change</div>
@@ -483,7 +483,7 @@
           </div>
           <div class="col">
             <div class="text-muted">Total Value</div>
-            <div style="font-size: 18px; font-weight: bold;">¥${parseFloat(asset.total_value).toLocaleString()}</div>
+            <div style="font-size: 18px; font-weight: bold;">$${parseFloat(asset.total_value).toLocaleString()}</div>
           </div>
         </div>
         
@@ -566,7 +566,7 @@
                         <td>${new Date(t.transaction_at || t.created_at || Date.now()).toLocaleString()}</td>
                         <td>${t.transaction_type || t.type || ''}</td>
                         <td>${t.unit_moved || t.units || 0}</td>
-                        <td>${t.price_perunit != null ? '¥' + Number(t.price_perunit).toLocaleString() : '-'}</td>
+                        <td>${t.price_perunit != null ? '$' + Number(t.price_perunit).toLocaleString() : '-'}</td>
                         <td>${t.from_owner_id ?? ''}</td>
                         <td>${t.to_owner_id ?? ''}</td>
                       </tr>

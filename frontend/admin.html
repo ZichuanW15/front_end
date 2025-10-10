@@ -84,7 +84,7 @@
             <input type="text" id="newAssetName" required placeholder="Enter asset name">
           </div>
           <div class="col">
-            <label>Total Value (¥)</label>
+            <label>Total Value ($)</label>
             <input type="number" id="newAssetTotalValue" required min="0" step="0.01" placeholder="0.00">
         </div>
       </div>
@@ -95,7 +95,7 @@
           <div class="row">
             <div class="col">
             <label>Total Units (Available Fractions)</label>
-            <input type="number" id="newAssetTotalUnits" required min="1" placeholder="Maximum number of fractions" oninput="validateAssetUnits()">
+            <input type="number" id="newAssetTotalUnits" required min="1" placeholder="Total number of fractions" oninput="validateAssetUnits()">
             </div>
             <div class="col">
             <label>Initial Fraction Owner</label>
@@ -195,7 +195,7 @@
           <p style="margin: 0;"><strong>Total Units:</strong> <span id="modifyTotalUnits">-</span></p>
         </div>
         
-        <label>New Total Value (¥) <span style="color: red;">*</span></label>
+        <label>New Total Value ($) <span style="color: red;">*</span></label>
         <input type="number" id="modifyNewValue" required min="0" step="0.01" placeholder="Enter new total value" style="border: 2px solid #ddd; padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box;" oninput="validateNewValue(this)">
         <small style="color: #666; font-size: 12px;">Enter the NEW total value for this asset (not the current value).</small>
         <div id="newValueError" style="color: red; font-size: 12px; margin-top: 5px; display: none;"></div>
@@ -291,7 +291,7 @@
                 <td>${a.asset_id}</td>
                 <td>${a.asset_name}</td>
                 <td>${a.total_unit}</td>
-                <td>¥${parseFloat(a.total_value).toLocaleString()}</td>
+                <td>$${parseFloat(a.total_value).toLocaleString()}</td>
                 <td>${new Date(a.created_at).toLocaleDateString()}</td>
                 <td>
                   <span class="text-muted">View only</span>
@@ -541,7 +541,7 @@
         window.adminData.assets.forEach(asset => {
           const option = document.createElement('option');
           option.value = asset.asset_id;
-          option.textContent = `${asset.asset_name} (Current: ¥${parseFloat(asset.total_value).toLocaleString()})`;
+          option.textContent = `${asset.asset_name} (Current: $${parseFloat(asset.total_value).toLocaleString()})`;
           option.setAttribute('data-asset-data', JSON.stringify(asset));
           select.appendChild(option);
           console.log('Added asset option:', asset.asset_name, 'ID:', asset.asset_id);
@@ -632,13 +632,13 @@
         
         // Update asset information display
         document.getElementById('modifyAssetName').textContent = assetData.asset_name;
-        document.getElementById('modifyCurrentValue').textContent = `¥${parseFloat(assetData.total_value).toLocaleString()}`;
+        document.getElementById('modifyCurrentValue').textContent = `$${parseFloat(assetData.total_value).toLocaleString()}`;
         document.getElementById('modifyTotalUnits').textContent = assetData.total_unit;
         
         // Clear and set the new value input to current value as starting point
         const newValueInput = document.getElementById('modifyNewValue');
         newValueInput.value = ''; // Clear first
-        newValueInput.placeholder = `Current: ¥${parseFloat(assetData.total_value).toLocaleString()}`;
+        newValueInput.placeholder = `Current: $${parseFloat(assetData.total_value).toLocaleString()}`;
         newValueInput.focus(); // Focus on the input so user can type
         
         // Add real-time validation
@@ -827,7 +827,7 @@
         console.log('Asset modification completed successfully');
         hideAssetModifyModal();
         refreshData();
-        showMessage(`Asset value updated successfully to ¥${newValue.toLocaleString()}`, true);
+        showMessage(`Asset value updated successfully to $${newValue.toLocaleString()}`, true);
         
       } catch (error) {
         console.error('Error modifying asset:', error);

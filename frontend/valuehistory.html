@@ -71,7 +71,7 @@
     <div class="grid" id="valueSummary" style="display: none;">
       <div class="card">
         <h3>Current Value</h3>
-        <div style="font-size: 24px; font-weight: bold; color: var(--accent);" id="currentValue">¥0</div>
+        <div style="font-size: 24px; font-weight: bold; color: var(--accent);" id="currentValue">$0</div>
         <p class="text-muted">Per unit price</p>
       </div>
       
@@ -135,19 +135,19 @@
       <div class="grid">
         <div class="card">
           <h4>Highest Value</h4>
-          <div style="font-size: 20px; font-weight: bold; color: var(--success);" id="highestPrice">¥0</div>
+          <div style="font-size: 20px; font-weight: bold; color: var(--success);" id="highestPrice">$0</div>
           <p class="text-muted" id="highestPriceDate">-</p>
         </div>
         
         <div class="card">
           <h4>Lowest Value</h4>
-          <div style="font-size: 20px; font-weight: bold; color: var(--error);" id="lowestPrice">¥0</div>
+          <div style="font-size: 20px; font-weight: bold; color: var(--error);" id="lowestPrice">$0</div>
           <p class="text-muted" id="lowestPriceDate">-</p>
         </div>
         
         <div class="card">
           <h4>Average Value</h4>
-          <div style="font-size: 20px; font-weight: bold;" id="averagePrice">¥0</div>
+          <div style="font-size: 20px; font-weight: bold;" id="averagePrice">$0</div>
           <p class="text-muted">Mean value</p>
         </div>
         
@@ -224,7 +224,7 @@
         assets.forEach(asset => {
           const option = document.createElement('option');
           option.value = asset.asset_id;
-          option.textContent = `${asset.asset_name} - ¥${(parseFloat(asset.total_value) / parseInt(asset.total_unit)).toFixed(2)}/unit`;
+          option.textContent = `${asset.asset_name} - $${(parseFloat(asset.total_value) / parseInt(asset.total_unit)).toFixed(2)}/unit`;
           select.appendChild(option);
         });
         
@@ -330,7 +330,7 @@
       const previous = valueHistory[valueHistory.length - 2] || current;
       const first = valueHistory[0];
       
-      document.getElementById('currentValue').textContent = `¥${current.value.toFixed(2)}`;
+      document.getElementById('currentValue').textContent = `$${current.value.toFixed(2)}`;
       
       // Calculate change from previous record (not necessarily daily)
       const changeFromPrevious = ((current.value - previous.value) / previous.value * 100).toFixed(2);
@@ -363,7 +363,7 @@
       const data = {
         labels: valueHistory.map(h => new Date(h.date).toLocaleDateString()),
         datasets: [{
-          label: 'Unit Price (¥)',
+          label: 'Unit Price ($)',
           data: valueHistory.map(h => h.value),
           borderColor: '#f7c948',
           // For bar chart use solid yellow so bars are visible; for area use translucent fill; for line keep transparent background
@@ -397,7 +397,7 @@
             ticks: {
               color: '#a0a0a0',
               callback: function(value) {
-                return '¥' + value.toFixed(2);
+                return '$' + value.toFixed(2);
               }
             },
             grid: {
@@ -452,8 +452,8 @@
               return `
                 <tr>
                   <td>${new Date(h.date).toLocaleDateString()}</td>
-                  <td>¥${h.value.toFixed(2)}</td>
-                  <td class="${change > 0 ? 'text-success' : 'text-error'}">${change > 0 ? '+' : ''}¥${change.toFixed(2)}</td>
+                  <td>$${h.value.toFixed(2)}</td>
+                  <td class="${change > 0 ? 'text-success' : 'text-error'}">${change > 0 ? '+' : ''}$${change.toFixed(2)}</td>
                   <td class="${change > 0 ? 'text-success' : 'text-error'}">${change > 0 ? '+' : ''}${changePercent}%</td>
                   <td>${sourceBadge}</td>
                   <td>${reason}</td>
@@ -497,13 +497,13 @@
       const highestIndex = values.indexOf(highest);
       const lowestIndex = values.indexOf(lowest);
       
-      document.getElementById('highestPrice').textContent = `¥${highest.toFixed(2)}`;
+      document.getElementById('highestPrice').textContent = `$${highest.toFixed(2)}`;
       document.getElementById('highestPriceDate').textContent = new Date(valueHistory[highestIndex].date).toLocaleDateString();
       
-      document.getElementById('lowestPrice').textContent = `¥${lowest.toFixed(2)}`;
+      document.getElementById('lowestPrice').textContent = `$${lowest.toFixed(2)}`;
       document.getElementById('lowestPriceDate').textContent = new Date(valueHistory[lowestIndex].date).toLocaleDateString();
       
-      document.getElementById('averagePrice').textContent = `¥${average.toFixed(2)}`;
+      document.getElementById('averagePrice').textContent = `$${average.toFixed(2)}`;
       document.getElementById('volatility').textContent = `${volatility.toFixed(2)}%`;
     }
 

@@ -590,7 +590,7 @@
               </div>
               <div class="offer-detail">
                 <div class="offer-detail-label">Price/Unit</div>
-                <div class="offer-detail-value offer-price">¥${offer.price_perunit.toFixed(2)}</div>
+                <div class="offer-detail-value offer-price">$${offer.price_perunit.toFixed(2)}</div>
               </div>
             </div>
             <div class="offer-actions">
@@ -661,7 +661,7 @@
               </div>
               <div class="offer-detail">
                 <div class="offer-detail-label">Price/Unit</div>
-                <div class="offer-detail-value offer-price">¥${offer.price_perunit.toFixed(2)}</div>
+                <div class="offer-detail-value offer-price">$${offer.price_perunit.toFixed(2)}</div>
               </div>
             </div>
             <div class="offer-actions">
@@ -826,13 +826,13 @@
             </div>
             <div class="offer-detail">
               <div class="offer-detail-label">Price/Unit</div>
-              <div class="offer-detail-value offer-price">¥${offer.price_perunit.toFixed(2)}</div>
+              <div class="offer-detail-value offer-price">$${offer.price_perunit.toFixed(2)}</div>
             </div>
           </div>
           <div class="ownership-summary">
             <div class="ownership-item">
               <span><strong>Total Value:</strong></span>
-              <span><strong>¥${(offer.units * offer.price_perunit).toFixed(2)}</strong></span>
+              <span><strong>$${(offer.units * offer.price_perunit).toFixed(2)}</strong></span>
             </div>
             <div class="ownership-item">
               <span>Your Role:</span>
@@ -891,7 +891,7 @@
           showMessage(
             `✅ Trade executed successfully!<br>
             <strong>${assetName}</strong><br>
-            ${trade.units_traded} units @ ¥${trade.price_perunit.toFixed(2)} = ¥${trade.total_value.toFixed(2)}<br>
+            ${trade.units_traded} units @ $${trade.price_perunit.toFixed(2)} = $${trade.total_value.toFixed(2)}<br>
             <small>Offer has been removed from marketplace</small>`,
             true
           );

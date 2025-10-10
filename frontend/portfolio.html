@@ -41,7 +41,7 @@
     <div class="grid">
       <div class="card">
         <h3>Total Asset Value</h3>
-        <div style="font-size: 28px; font-weight: bold; color: var(--accent);" id="totalPortfolioValue">¥0</div>
+        <div style="font-size: 28px; font-weight: bold; color: var(--accent);" id="totalPortfolioValue">$0</div>
         <p class="text-muted">Total Portfolio Value</p>
         <div class="text-success" id="portfolioChange">+0% Today</div>
       </div>
@@ -217,7 +217,7 @@
       // Use only data provided by backend (total of total_price)
       const totalValue = portfolioData.reduce((sum, item) => sum + (item.total_price || 0), 0);
 
-      document.getElementById('totalPortfolioValue').textContent = `¥${totalValue.toLocaleString()}`;
+      document.getElementById('totalPortfolioValue').textContent = `$${totalValue.toLocaleString()}`;
       document.getElementById('totalAssets').textContent = portfolioData.length;
       document.getElementById('totalUnits').textContent = portfolioData.reduce((sum, item) => sum + item.units, 0);
 
@@ -264,7 +264,7 @@
                 const value = context.parsed;
                 const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
                 const percentage = ((value / total) * 100).toFixed(1);
-                return `${context.label}: ¥${value.toLocaleString()} (${percentage}%)`;
+                return `${context.label}: $${value.toLocaleString()} (${percentage}%)`;
               }
             }
           }
@@ -302,9 +302,9 @@
                 <td>
                   <div style="font-weight: 500;">${item.asset_name}</div>
                 </td>
-                <td>¥${(item.unit_price || 0).toFixed(2)}</td>
+                <td>$${(item.unit_price || 0).toFixed(2)}</td>
                 <td>${(item.units || 0).toLocaleString()}</td>
-                <td>¥${(item.total_price || 0).toLocaleString()}</td>
+                <td>$${(item.total_price || 0).toLocaleString()}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -382,12 +382,12 @@
           </div>
           <div class="col">
             <div class="text-muted">Unit Price</div>
-            <div style="font-size: 24px; font-weight: bold; color: var(--accent);">¥${(asset.unit_price || 0).toFixed(2)}</div>
+            <div style="font-size: 24px; font-weight: bold; color: var(--accent);">$${(asset.unit_price || 0).toFixed(2)}</div>
           </div>
         </div>
         <div>
           <div class="text-muted">Total Price</div>
-          <div style="font-size: 20px; font-weight: bold;">¥${(asset.total_price || 0).toLocaleString()}</div>
+          <div style="font-size: 20px; font-weight: bold;">$${(asset.total_price || 0).toLocaleString()}</div>
         </div>
       `;
       
@@ -452,7 +452,7 @@
                 txs.forEach(t => {
                   const tr = document.createElement('tr');
                   const time = new Date(t.created_at || t.transaction_at || t.timestamp || Date.now()).toLocaleString();
-                  tr.innerHTML = `<td>${time}</td><td>${t.type || t.transaction_type || ''}</td><td>${t.units || t.unit_moved || t.amount || ''}</td><td>¥${(t.price || t.price_perunit || 0).toLocaleString()}</td>`;
+                  tr.innerHTML = `<td>${time}</td><td>${t.type || t.transaction_type || ''}</td><td>${t.units || t.unit_moved || t.amount || ''}</td><td>$${(t.price || t.price_perunit || 0).toLocaleString()}</td>`;
                   tb.appendChild(tr);
                 });
                 table.appendChild(tb);

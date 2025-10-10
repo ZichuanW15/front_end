@@ -42,16 +42,7 @@
         <div class="col">
           <input type="text" id="searchInput" placeholder="Search asset name or description..." onkeyup="searchAssets()" style="width: 100%;">
         </div>
-        <div class="col" style="max-width: 200px;">
-          <select id="categoryFilter" onchange="filterAssets()">
-            <option value="all">All Categories</option>
-            <option value="real_estate">Real Estate</option>
-            <option value="stocks">Stocks</option>
-            <option value="commodities">Commodities</option>
-            <option value="crypto">Cryptocurrency</option>
-            <option value="bonds">Bonds</option>
-          </select>
-        </div>
+        <!-- category filter removed -->
         <div class="col" style="max-width: 200px;">
           <select id="sortBy" onchange="sortAssets()">
             <option value="name">Sort by Name</option>
@@ -91,32 +82,7 @@
       </div>
     </div>
 
-    <!-- Asset Statistics -->
-    <div class="grid">
-      <div class="card">
-        <h3>Total Assets</h3>
-        <div style="font-size: 24px; font-weight: bold; color: var(--accent);" id="totalAssets">0</div>
-        <p class="text-muted">Investable Assets</p>
-      </div>
-      
-      <div class="card">
-        <h3>Average Price</h3>
-        <div style="font-size: 24px; font-weight: bold;" id="avgPrice">$0</div>
-        <p class="text-muted">Average Price per Unit</p>
-      </div>
-      
-      <div class="card">
-        <h3>Total Market Value</h3>
-        <div style="font-size: 24px; font-weight: bold;" id="totalMarketValue">$0</div>
-        <p class="text-muted">Total Value of All Assets</p>
-      </div>
-      
-      <div class="card">
-        <h3>Popular Category</h3>
-        <div style="font-size: 24px; font-weight: bold;" id="topCategory">-</div>
-        <p class="text-muted">Most Popular Investment Category</p>
-      </div>
-    </div>
+    
 
     <!-- Assets Display -->
     <div id="assetsContainer">
@@ -183,7 +149,6 @@
         allAssets = Array.isArray(data) ? data : (data.assets || []);
         filteredAssets = [...allAssets];
 
-        updateStatistics();
         displayAssets();
         updatePagination();
       } catch (error) {
@@ -192,17 +157,7 @@
       }
     }
 
-    function updateStatistics() {
-      const totalAssets = allAssets.length;
-      const totalValue = allAssets.reduce((sum, asset) => sum + parseFloat(asset.total_value), 0);
-      const avgPrice = allAssets.length > 0 ? 
-        allAssets.reduce((sum, asset) => sum + (parseFloat(asset.total_value) / parseInt(asset.total_unit)), 0) / allAssets.length : 0;
-      
-      document.getElementById('totalAssets').textContent = totalAssets;
-      document.getElementById('avgPrice').textContent = `$${avgPrice.toFixed(2)}`;
-      document.getElementById('totalMarketValue').textContent = `$${totalValue.toLocaleString()}`;
-      document.getElementById('topCategory').textContent = 'Real Estate'; // Mock data
-    }
+    
 
     function displayAssets() {
       const container = document.getElementById('assetsContainer');
@@ -324,12 +279,12 @@
     }
 
     function filterAssets() {
-      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-      const category = document.getElementById('categoryFilter').value;
-      const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
-      const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
-      const minUnits = parseInt(document.getElementById('minUnits').value) || 0;
-      const maxUnits = parseInt(document.getElementById('maxUnits').value) || Infinity;
+      const searchTerm = (document.getElementById('searchInput') && document.getElementById('searchInput').value || '').toLowerCase();
+      const category = 'all';
+      const minPrice = parseFloat((document.getElementById('minPrice') && document.getElementById('minPrice').value) || 0) || 0;
+      const maxPrice = parseFloat((document.getElementById('maxPrice') && document.getElementById('maxPrice').value) || '') || Infinity;
+      const minUnits = parseInt((document.getElementById('minUnits') && document.getElementById('minUnits').value) || 0) || 0;
+      const maxUnits = parseInt((document.getElementById('maxUnits') && document.getElementById('maxUnits').value) || '') || Infinity;
       
       filteredAssets = allAssets.filter(asset => {
         const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
@@ -391,14 +346,13 @@
     }
 
     function clearFilters() {
-      document.getElementById('searchInput').value = '';
-      document.getElementById('categoryFilter').value = 'all';
-      document.getElementById('minPrice').value = '';
-      document.getElementById('maxPrice').value = '';
-      document.getElementById('minUnits').value = '';
-      document.getElementById('maxUnits').value = '';
-      document.getElementById('sortBy').value = 'name';
-      document.getElementById('sortOrder').value = 'asc';
+      if (document.getElementById('searchInput')) document.getElementById('searchInput').value = '';
+      if (document.getElementById('minPrice')) document.getElementById('minPrice').value = '';
+      if (document.getElementById('maxPrice')) document.getElementById('maxPrice').value = '';
+      if (document.getElementById('minUnits')) document.getElementById('minUnits').value = '';
+      if (document.getElementById('maxUnits')) document.getElementById('maxUnits').value = '';
+      if (document.getElementById('sortBy')) document.getElementById('sortBy').value = 'name';
+      if (document.getElementById('sortOrder')) document.getElementById('sortOrder').value = 'asc';
       
       filteredAssets = [...allAssets];
       currentPage = 1;

@@ -168,6 +168,9 @@
     if (user.is_manager) {
       document.getElementById('adminLink').style.display = 'inline-block';
     }
+    if (!user || !user.user_id) {
+      location.href = 'login.html';
+    }
 
     async function fetchAssets() {
       try {

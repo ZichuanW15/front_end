@@ -4,7 +4,9 @@ Place this file in: app/routes/offer_filters.py
 """
 
 from flask import Blueprint
+
 from app.controllers.offer_filter_controller import OfferFilterController
+
 
 bp = Blueprint('offer_filters', __name__, url_prefix='/api/offers')
 

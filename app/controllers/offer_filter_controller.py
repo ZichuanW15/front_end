@@ -3,9 +3,11 @@ Controller for offer filtering operations.
 Handles request parsing and validation for filter endpoints.
 """
 
-from flask import request
-from typing import Dict, Any, Tuple
 from datetime import datetime
+from typing import Any, Dict, Tuple
+
+from flask import request
+
 from app.services.offer_filter_service import OfferFilterService
 from app.views.offer_filter_view import OfferFilterView
 

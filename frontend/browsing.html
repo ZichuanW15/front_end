@@ -200,7 +200,6 @@
 
     function createAssetCard(asset) {
       const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
-      const change = (Math.random() * 10 - 5).toFixed(2);
       const category = getAssetCategory(asset);
       
       return `
@@ -209,18 +208,6 @@
             <h4 style="margin: 0;">${asset.asset_name}</h4>
             <span class="badge info">${category}</span>
           </div>
-          
-          <div class="row" style="margin-bottom: 10px;">
-            <div class="col">
-              <div class="text-muted">Unit Price</div>
-              <div style="font-size: 18px; font-weight: bold;">$${price.toFixed(2)}</div>
-            </div>
-            <div class="col">
-              <div class="text-muted">Change</div>
-              <div class="${change > 0 ? 'text-success' : 'text-error'}">${change > 0 ? '+' : ''}${change}%</div>
-            </div>
-          </div>
-          
           <div class="row" style="margin-bottom: 15px;">
             <div class="col">
               <div class="text-muted">Total Units</div>
@@ -231,6 +218,14 @@
               <div>$${parseFloat(asset.total_value).toLocaleString()}</div>
             </div>
           </div>
+          <div class="row" style="margin-bottom: 10px;">
+            <div class="col">
+              <div class="text-muted">Unit Price</div>
+              <div style="font-size: 18px; font-weight: bold;">$${price.toFixed(2)}</div>
+            </div>
+          </div>
+          
+          
           
           <div class="row">
             <button onclick="event.stopPropagation(); quickBuy(${asset.asset_id})" class="primary small col">Buy</button>
@@ -241,7 +236,6 @@
 
     function createAssetRow(asset) {
       const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
-      const change = (Math.random() * 10 - 5).toFixed(2);
       const category = getAssetCategory(asset);
       
       return `
@@ -404,7 +398,6 @@
       
       selectedAsset = asset;
       const price = parseFloat(asset.total_value) / parseInt(asset.total_unit);
-      const change = (Math.random() * 10 - 5).toFixed(2);
       
       document.getElementById('modalAssetName').textContent = asset.asset_name;
       document.getElementById('modalAssetContent').innerHTML = `
@@ -423,10 +416,6 @@
           <div class="col">
             <div class="text-muted">Unit Price</div>
             <div style="font-size: 24px; font-weight: bold; color: var(--accent);">$${price.toFixed(2)}</div>
-          </div>
-          <div class="col">
-            <div class="text-muted">Change</div>
-            <div class="${change > 0 ? 'text-success' : 'text-error'}" style="font-size: 18px; font-weight: bold;">${change > 0 ? '+' : ''}${change}%</div>
           </div>
         </div>
         

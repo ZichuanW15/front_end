@@ -954,6 +954,17 @@
     document.getElementById('assetModifyForm').addEventListener('submit', modifySelectedAsset);
 
     // Load data on page load
+
+    async function logout() {
+      try {
+        await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' });
+      } catch (e) {
+        // swallow network errors; proceed to clear session
+      } finally {
+        try { sessionStorage.clear(); } catch (_) {}
+        location.href = 'login.html';
+      }
+    }
     fetchAdminData();
   </script>
 </body>

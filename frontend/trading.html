@@ -1063,7 +1063,17 @@
         closeTradeConfirmModal();
       }
     }
+
+    async function logout() {
+      try {
+        await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' });
+      } catch (e) {
+        // swallow network errors; proceed to clear session
+      } finally {
+        try { sessionStorage.clear(); } catch (_) {}
+        location.href = 'login.html';
+      }
+    }
   </script>
-  <script src="./js/logout.js"></script>
 </body>
 </html>

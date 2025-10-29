@@ -34,9 +34,8 @@
       <div id="msg" class="msg muted">Please enter username and password</div>
     </div>
   </div>
-
+<script src="config.js"></script>
 <script>
-const API = 'http://localhost:5001'; // Backend API server
 const el = id => document.getElementById(id);
 const setMsg = (txt, ok=null) => {
   const m = el('msg'); m.textContent = txt; m.className = 'msg ' + (ok===null?'muted': ok?'ok':'err');

@@ -6,10 +6,14 @@ Flask application entry point for the API backbone.
 import os
 from sqlalchemy import text
 from app import create_app, db
+from flask_cors import CORS
 
 # Create Flask application instance
 app = create_app()
 
+CORS(app, resources={r"/*": {"origins": [
+    "https://front-end-1-wfbt.onrender.com",   
+]}})
 
 def execute_sql_file(file_path):
     """

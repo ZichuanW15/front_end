@@ -144,9 +144,8 @@
   </div>
 
   <div id="msg" class="msg muted" style="display: none;"></div>
-
+<script src="config.js"></script>
 <script>
-  const API = 'http://localhost:5001'; // Backend API server
   const el = id => document.getElementById(id);
   const setMsg = (txt, ok=null) => {
     const m = el('msg'); 

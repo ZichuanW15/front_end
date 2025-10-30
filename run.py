@@ -13,7 +13,7 @@ app = create_app()
 
 CORS(app, resources={r"/*": {"origins": [
     "https://front-end-1-wfbt.onrender.com",   
-]}})
+]}}, supports_credentials=True)
 
 def execute_sql_file(file_path):
     """
